@@ -1,0 +1,13 @@
+group: topobench
+group_alias: TopoBench
+task:
+  - continuity_2d_maze
+  - continuity_3d_maze
+  - knots_static
+  - separation_objects
+  - enclosure_hole_detection
+  - enclosure_sheep
+  - order_bead_string
+  - order_origami
+metadata:
+  version: 0.1

@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KnotBench — 3D Topology Benchmark Gallery</title>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+        }
+      }
+    </script>
+    <style>
+      :root {
+        --bg: #0f1220;
+        --panel: #151a2e;
+        --accent: #2a335a;
+        --cyan: #72e6ff;
+        --gold: #ffd08a;
+        --red: #ff6b6b;
+        --green: #6bcb77;
+        --text: #e6e6e6;
+        --muted: #9aa3c7;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        background: var(--bg);
+        color: var(--text);
+        height: 100vh;
+        overflow: hidden;
+      }
+      #app { display: flex; height: 100vh; }
+
+      .panel {
+        width: 340px;
+        background: var(--panel);
+        border-right: 1px solid var(--accent);
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+      .panel::-webkit-scrollbar { width: 6px; }
+      .panel::-webkit-scrollbar-track { background: var(--bg); }
+      .panel::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
+
+      h1 { font-size: 18px; font-weight: 700; color: var(--cyan); }
+      h1 span { color: var(--gold); }
+      .sub { font-size: 11px; color: var(--muted); line-height: 1.5; }
+      .row { display: flex; gap: 8px; }
+      label { font-size: 11px; color: var(--muted); display: flex; justify-content: space-between; }
+
+      input, select {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid var(--accent);
+        border-radius: 6px;
+        background: var(--bg);
+        color: var(--text);
+        font-family: inherit;
+        font-size: 12px;
+      }
+      input:focus, select:focus { outline: none; border-color: var(--cyan); }
+
+      button {
+        padding: 10px;
+        border: none;
+        border-radius: 6px;
+        background: var(--accent);
+        color: var(--text);
+        font-family: inherit;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+      button:hover { background: #36417a; transform: translateY(-1px); }
+      button:active { transform: translateY(0); }
+      .btn-primary { background: var(--cyan); color: #0f1220; font-weight: 700; }
+      .btn-primary:hover { background: #5ad4f0; }
+      .btn-gold { background: var(--gold); color: #0f1220; font-weight: 700; }
+      .btn-gold:hover { background: #ffbc60; }
+
+      .card {
+        border: 1px solid rgba(114,230,255,0.18);
+        background: rgba(114,230,255,0.04);
+        border-radius: 8px;
+        padding: 10px;
+      }
+      .card-gold {
+        border-color: rgba(255,208,138,0.35);
+        background: rgba(255,208,138,0.06);
+      }
+      .card-red {
+        border-color: rgba(255,107,107,0.35);
+        background: rgba(255,107,107,0.06);
+      }
+
+      .section-title {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--gold);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .section-title::before {
+        content: '';
+        flex: 0 0 3px;
+        height: 12px;
+        background: var(--gold);
+        border-radius: 2px;
+      }
+
+      .kv { font-size: 11px; color: var(--muted); line-height: 1.6; }
+      .kv b { color: var(--text); font-weight: 700; }
+
+      #view { flex: 1; position: relative; }
+
+      .pill {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 999px;
+        border: 1px solid rgba(255,255,255,0.12);
+        background: rgba(0,0,0,0.22);
+        font-size: 10px;
+        color: var(--muted);
+      }
+      .pill-easy { border-color: var(--green); color: var(--green); }
+      .pill-medium { border-color: var(--gold); color: var(--gold); }
+      .pill-hard { border-color: var(--red); color: var(--red); }
+
+      input[type="range"] {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 100%;
+        height: 5px;
+        border-radius: 3px;
+        background: var(--accent);
+        outline: none;
+        cursor: pointer;
+        margin-top: 4px;
+        padding: 0;
+        border: none;
+      }
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 14px; height: 14px;
+        border-radius: 50%;
+        background: var(--gold);
+        cursor: pointer;
+        border: 2px solid var(--bg);
+        box-shadow: 0 0 4px rgba(255,208,138,0.5);
+      }
+      input[type="range"]::-moz-range-thumb {
+        width: 14px; height: 14px;
+        border-radius: 50%;
+        background: var(--gold);
+        cursor: pointer;
+        border: 2px solid var(--bg);
+      }
+
+      .collapsible {
+        cursor: pointer;
+        user-select: none;
+      }
+      .collapsible::after {
+        content: '\25BC';
+        font-size: 9px;
+        margin-left: auto;
+        transition: transform 0.2s;
+      }
+      .collapsible.collapsed::after { transform: rotate(-90deg); }
+      .collapse-content {
+        overflow: hidden;
+        max-height: 1000px;
+        transition: max-height 0.3s ease;
+      }
+      .collapse-content.collapsed { max-height: 0; }
+
+      a { color: var(--cyan); text-decoration: none; }
+      a:hover { text-decoration: underline; }
+
+      .optgroup-label {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--gold);
+        padding: 4px 8px;
+        background: rgba(255,208,138,0.1);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div class="panel">
+        <!-- Header -->
+        <div>
+          <h1>Knot<span>Bench</span></h1>
+          <div class="sub">
+            3D Topology VLM Benchmark — 24 knot/link types across 6 families.<br/>
+            Evaluate vision-language models on topological reasoning.
+          </div>
+        </div>
+
+        <!-- Type selector -->
+        <div class="card">
+          <div class="row">
+            <div style="flex: 1">
+              <label>Seed <span>reproducible</span></label>
+              <input id="seed" type="text" value="knot-gallery-v1" />
+            </div>
+          </div>
+          <div style="height: 8px"></div>
+
+          <label>Knot Type <span>24 dataset types / 6 families</span></label>
+          <select id="preset">
+            <optgroup label="--- Single Knots: Unknot Family (5) ---">
+              <option value="unknot">Unknot</option>
+              <option value="twisted_ring">Twisted Ring</option>
+              <option value="spiral_disk">Spiral Loop</option>
+              <option value="kinky_unknot">Kinky Unknot (deceptive)</option>
+              <option value="ring_like_open_rope">Ring-Like Open-Ended Rope</option>
+            </optgroup>
+            <optgroup label="--- Single Knots: Torus Family (10) ---">
+              <option value="trefoil" selected>Trefoil T(2,3) - 3 crossings</option>
+              <option value="loose_open_knot">Loose Trefoil Variant</option>
+              <option value="ring_like_open_knot">Ring-Like Open Knot</option>
+              <option value="occluded_knot">Occluded Trefoil Variant</option>
+              <option value="torus_2_5">Cinquefoil T(2,5) - 5 crossings</option>
+              <option value="loose_cinquefoil">Loose Cinquefoil Variant</option>
+              <option value="torus_2_7">Septafoil T(2,7) - 7 crossings</option>
+              <option value="torus_2_9">T(2,9) - 9 crossings</option>
+              <option value="torus_3_4">T(3,4) - 8 crossings</option>
+              <option value="torus_3_5">T(3,5) - 10 crossings</option>
+            </optgroup>
+            <optgroup label="--- Single Knots: Twist Family (1) ---">
+              <option value="figure8">Figure-Eight - 4 crossings</option>
+            </optgroup>
+            <optgroup label="--- Links (4) ---">
+              <option value="hopf_link">Hopf Link (2 linked rings)</option>
+              <option value="unlinked_rings">Unlinked Rings (2 separate)</option>
+              <option value="chain">Chain (4 linked rings)</option>
+              <option value="borromean">Borromean Rings (3 rings)</option>
+            </optgroup>
+            <optgroup label="--- Link Groups (2) ---">
+              <option value="double_hopf">Double Hopf</option>
+              <option value="link_cluster">Link Cluster</option>
+            </optgroup>
+            <optgroup label="--- Mixed (2) ---">
+              <option value="hopf_plus_free">Hopf + Free Ring</option>
+              <option value="chain_plus_free">Chain + Free Rings</option>
+            </optgroup>
+            <optgroup label="--- Special ---">
+              <option value="all">All Dataset Types (one per row)</option>
+            </optgroup>
+          </select>
+
+          <div style="height: 8px"></div>
+          <div class="row">
+            <div style="flex: 1">
+              <label>Count <span>1-500</span></label>
+              <input id="count" type="text" value="1" />
+            </div>
+            <div style="flex: 1">
+              <label>Grid Columns <span>1-50</span></label>
+              <input id="cols" type="text" value="4" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Render settings -->
+        <div class="card">
+          <div class="section-title collapsible" data-target="renderSettings">Render Settings</div>
+          <div id="renderSettings" class="collapse-content">
+            <div class="row">
+              <div style="flex: 1">
+                <label>Quality <span>polygons</span></label>
+                <select id="quality">
+                  <option value="low">Low (fast)</option>
+                  <option value="mid" selected>Mid</option>
+                  <option value="high">High (detailed)</option>
+                </select>
+              </div>
+              <div style="flex: 1">
+                <label>Layout <span>placement</span></label>
+                <select id="layout">
+                  <option value="grid" selected>Grid</option>
+                  <option value="jitter">Jitter</option>
+                  <option value="field">Scattered</option>
+                </select>
+              </div>
+            </div>
+            <div style="height: 8px"></div>
+            <div class="row">
+              <div style="flex: 1">
+                <label>Global Scale <span>0.3-3</span></label>
+                <input id="scale" type="text" value="1.0" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Benchmark difficulty -->
+        <div class="card card-gold" id="benchmarkBox" style="display: none;">
+          <div class="section-title" style="color: var(--gold)">Benchmark Difficulty Distribution</div>
+          <div class="row">
+            <div style="flex: 1">
+              <label>Easy % <span class="pill pill-easy">Lv.0</span></label>
+              <input id="easyPct" type="text" value="33" />
+            </div>
+            <div style="flex: 1">
+              <label>Medium % <span class="pill pill-medium">Lv.1</span></label>
+              <input id="mediumPct" type="text" value="34" />
+            </div>
+            <div style="flex: 1">
+              <label>Hard % <span class="pill pill-hard">Lv.2</span></label>
+              <input id="hardPct" type="text" value="33" />
+            </div>
+          </div>
+          <div class="sub" style="margin-top: 8px">
+            <b>Easy:</b> unknot / trefoil / figure-8 (&le;4 crossings)<br/>
+            <b>Medium:</b> T(2,5), twisted ring (5-6 crossings)<br/>
+            <b>Hard:</b> &ge;7 crossings, kinky unknot, link groups, mixed scenes
+          </div>
+        </div>
+
+        <!-- Chain parameters -->
+        <div class="card card-gold" id="chainDebugBox" style="display: none;">
+          <div class="section-title" style="color: var(--gold)">Chain Parameters</div>
+          <div class="row">
+            <div style="flex: 1">
+              <label>Ring Radius R: <span id="chainRVal" style="color: var(--cyan);">1.5</span></label>
+              <input id="chainR" type="range" min="0.5" max="3" step="0.1" value="1.5" />
+            </div>
+            <div style="flex: 1">
+              <label>Num Links: <span id="chainNumLinksVal" style="color: var(--cyan);">4</span></label>
+              <input id="chainNumLinks" type="range" min="2" max="8" step="1" value="4" />
+            </div>
+          </div>
+          <div style="height: 6px"></div>
+          <div class="row">
+            <div style="flex: 1">
+              <label>Y Offset: <span id="chainOffsetYVal" style="color: var(--cyan);">-2.00</span></label>
+              <input id="chainOffsetY" type="range" min="-5" max="5" step="0.1" value="-2" />
+            </div>
+            <div style="flex: 1">
+              <label>Chain Spacing: <span id="chainSpacingVal" style="color: var(--cyan);">0.00</span></label>
+              <input id="chainSpacing" type="range" min="0" max="5" step="0.1" value="0" />
+            </div>
+          </div>
+          <input id="chainOffsetX" type="hidden" value="0" />
+          <input id="chainOffsetZ" type="hidden" value="0" />
+        </div>
+
+        <!-- Borromean parameters -->
+        <div class="card" id="borromeanDebugBox" style="display: none; border-color: rgba(138,208,255,0.4);">
+          <div class="section-title" style="color: var(--cyan)">Borromean Rings Parameters</div>
+          <div class="row">
+            <div style="flex: 1">
+              <label>Main Radius R: <span id="borromeanRVal" style="color: var(--gold);">1.50</span></label>
+              <input id="borromeanR" type="range" min="0.5" max="3" step="0.05" value="1.5" />
+            </div>
+            <div style="flex: 1">
+              <label>Ellipse Ratio: <span id="borromeanRatioVal" style="color: var(--gold);">1.60</span></label>
+              <input id="borromeanRatio" type="range" min="1.0" max="2.5" step="0.05" value="1.6" />
+            </div>
+          </div>
+          <div style="margin: 8px 0; padding: 6px; background: rgba(255,220,50,0.1); border-radius: 4px; font-size: 10px;">
+            Yellow Ring Y: <span id="borromeanYellowYVal">0.70</span>
+            <input id="borromeanYellowY" type="range" min="-3" max="3" step="0.05" value="0.70" style="margin-top: 4px;" />
+          </div>
+          <div style="padding: 6px; background: rgba(80,120,255,0.1); border-radius: 4px; font-size: 10px;">
+            Blue Ring Y: <span id="borromeanBlueYVal">0</span>
+            <input id="borromeanBlueY" type="range" min="-3" max="3" step="0.05" value="0" style="margin-top: 4px;" />
+          </div>
+          <input id="borromeanYellowX" type="hidden" value="0" />
+          <input id="borromeanYellowZ" type="hidden" value="0" />
+          <input id="borromeanBlueX" type="hidden" value="0" />
+          <input id="borromeanBlueZ" type="hidden" value="0" />
+        </div>
+
+        <!-- Spiral Loop parameters -->
+        <div class="card" id="spiralLoopBox" style="display: none; border-color: rgba(114,230,255,0.3);">
+          <div class="section-title" style="color: var(--cyan)">Spiral Loop Parameters</div>
+          <div class="row">
+            <div style="flex: 1">
+              <label>Turns: <span id="spiralTurnsVal" style="color: var(--gold);">3</span></label>
+              <input id="spiralTurns" type="range" min="1" max="6" step="1" value="3" />
+            </div>
+            <div style="flex: 1">
+              <label>Pitch: <span id="spiralPitchVal" style="color: var(--gold);">0.15</span></label>
+              <input id="spiralPitch" type="range" min="0.05" max="0.4" step="0.05" value="0.15" />
+            </div>
+          </div>
+          <div style="height: 6px"></div>
+          <div class="row">
+            <div style="flex: 1">
+              <label>Gap: <span id="spiralGapVal" style="color: var(--gold);">0.25</span></label>
+              <input id="spiralGap" type="range" min="0.15" max="0.5" step="0.05" value="0.25" />
+            </div>
+            <div style="flex: 1">
+              <label>Connector <span>complexity</span></label>
+              <select id="spiralConnector">
+                <option value="0">Direct (simple)</option>
+                <option value="1" selected>S-curve (medium)</option>
+                <option value="2">Double-S (complex)</option>
+              </select>
+            </div>
+          </div>
+          <div class="sub" style="margin-top: 6px; color: var(--cyan);">
+            Geometrically complex, but topologically still an Unknot.
+          </div>
+        </div>
+
+        <!-- Kinky Unknot parameters -->
+        <div class="card card-red" id="kinkyBox" style="display: none;">
+          <div class="section-title" style="color: var(--red)">Kinky Unknot Parameters</div>
+          <div class="row">
+            <div style="flex: 1">
+              <label>Kink Count: <span id="kinkCountVal" style="color: var(--cyan);">4</span></label>
+              <input id="kinkCount" type="range" min="2" max="8" step="1" value="4" />
+            </div>
+            <div style="flex: 1">
+              <label>Kink Amplitude: <span id="kinkAmplitudeVal" style="color: var(--cyan);">0.25</span></label>
+              <input id="kinkAmplitude" type="range" min="0.1" max="0.5" step="0.05" value="0.25" />
+            </div>
+          </div>
+          <div class="sub" style="margin-top: 6px; color: var(--red);">
+            Topologically an Unknot, but visually has many apparent crossings
+            &mdash; tests VLM topological reasoning.
+          </div>
+        </div>
+
+        <!-- Deformation controls -->
+        <div class="card" id="datasetBox">
+          <div class="section-title">Deformation Controls</div>
+          <div class="row">
+            <div style="flex: 1">
+              <label>Deform Strength <span id="deformVal">0.30</span></label>
+              <input type="range" id="deformStrength" min="0" max="1" step="0.01" value="0.30"
+                oninput="document.getElementById('deformVal').textContent=parseFloat(this.value).toFixed(2)" />
+            </div>
+            <div style="flex: 1">
+              <label>Slackness <span id="slacknessVal">0.40</span></label>
+              <input type="range" id="slackness" min="0" max="1" step="0.01" value="0.40"
+                oninput="document.getElementById('slacknessVal').textContent=parseFloat(this.value).toFixed(2)" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="row">
+          <button id="btnGenerate" class="btn-primary" style="flex: 2">Generate</button>
+          <button id="btnExport" class="btn-gold" style="flex: 1;">Export JSON</button>
+        </div>
+        <div class="row">
+          <button id="btnCapture" class="btn-gold" style="flex: 1">Capture PNG</button>
+          <button id="btnBatchCapture" class="btn-gold" style="flex: 1">Multi-Angle Export</button>
+        </div>
+        <div class="row">
+          <button id="btnFullDataset" class="btn-gold" style="flex: 1; background: #e67e22; font-weight: bold;">Generate Full Dataset</button>
+        </div>
+        <div id="batchProgress" style="display:none; padding: 6px 8px; font-size: 12px; color: #aaa; border: 1px solid #444; border-radius: 4px; margin-top: 4px;">
+          <div id="batchProgressText">Preparing...</div>
+          <div style="background: #333; border-radius: 2px; height: 6px; margin-top: 4px;">
+            <div id="batchProgressBar" style="background: #e67e22; height: 100%; width: 0%; border-radius: 2px; transition: width 0.3s;"></div>
+          </div>
+        </div>
+
+        <!-- Status -->
+        <div class="card kv" id="status">
+          <div><b>Status</b>: Ready</div>
+          <div><b>Three.js</b>: -</div>
+          <div><b>Preset</b>: -</div>
+          <div><b>Instances</b>: -</div>
+        </div>
+
+        <div class="sub">
+          Serve: <code>python3 -m http.server 8080</code><br/>
+          Open: <code>http://localhost:8080/knot_gallery.html</code>
+        </div>
+      </div>
+
+      <div id="view"></div>
+    </div>
+
+    <script type="module" src="./src/unified-gallery.js?v=12"></script>
+    <script type="module">
+      import { generateFullDataset, buildDatasetMetadata, downloadDatasetAsZip } from './src/batch-dataset-generator.js?v=10';
+
+      window.topoBench = {
+        generateFullDataset,
+        buildDatasetMetadata,
+        downloadDatasetAsZip,
+      };
+
+      const btnFullDataset = document.getElementById('btnFullDataset');
+      const progressDiv = document.getElementById('batchProgress');
+      const progressText = document.getElementById('batchProgressText');
+      const progressBar = document.getElementById('batchProgressBar');
+
+      if (btnFullDataset) {
+        btnFullDataset.addEventListener('click', async () => {
+          if (!confirm('This will generate 200+ images and metadata.\nIt may take a few minutes. Do not close the page.\n\nContinue?')) return;
+
+          btnFullDataset.disabled = true;
+          btnFullDataset.textContent = 'Generating...';
+          progressDiv.style.display = 'block';
+
+          try {
+            const dataset = await generateFullDataset(
+              {
+                seed: document.getElementById('seed')?.value || 'benchmark-v3',
+                variantsPerType: 4,
+                anglesPerVariant: 3,
+                numPairs: 50,
+                renderWidth: 1024,
+                renderHeight: 1024,
+              },
+              (cur, total, msg) => {
+                const pct = Math.round((cur / total) * 100);
+                progressText.textContent = msg;
+                progressBar.style.width = pct + '%';
+              }
+            );
+
+            progressText.textContent = `Done! ${dataset.stats.totalImages} images. Packaging ZIP...`;
+
+            const zipResult = await downloadDatasetAsZip(dataset, (cur, total, msg) => {
+              progressText.textContent = msg;
+              if (total > 0) progressBar.style.width = Math.round((cur / total) * 100) + '%';
+            });
+
+            const sizeMB = (zipResult.zipSize / 1024 / 1024).toFixed(1);
+            progressText.textContent = `Complete! ZIP downloaded (${sizeMB} MB)`;
+            alert(`Dataset ZIP downloaded!\n- Single-rope scenes: ${dataset.stats.singleKnots} groups\n- Multi-component scenes: ${dataset.stats.links} groups\n- Pairs: ${dataset.stats.pairs} pairs\n- Total images: ${dataset.stats.totalImages}\n- ZIP size: ${sizeMB} MB`);
+          } catch (err) {
+            progressText.textContent = `Error: ${err.message}`;
+            console.error('Batch generation error:', err);
+            alert('Generation failed: ' + err.message);
+          } finally {
+            btnFullDataset.disabled = false;
+            btnFullDataset.textContent = 'Generate Full Dataset';
+          }
+        });
+      }
+    </script>
+    <script>
+      (function () {
+        const preset = document.getElementById('preset');
+        const benchmarkBox = document.getElementById('benchmarkBox');
+        const chainDebugBox = document.getElementById('chainDebugBox');
+        const borromeanDebugBox = document.getElementById('borromeanDebugBox');
+        const kinkyBox = document.getElementById('kinkyBox');
+        const spiralLoopBox = document.getElementById('spiralLoopBox');
+        const datasetBox = document.getElementById('datasetBox');
+        const btnExport = document.getElementById('btnExport');
+
+        // Collapsible panels
+        document.querySelectorAll('.collapsible').forEach(el => {
+          el.addEventListener('click', () => {
+            const target = document.getElementById(el.dataset.target);
+            if (target) {
+              el.classList.toggle('collapsed');
+              target.classList.toggle('collapsed');
+            }
+          });
+        });
+
+        // Slider value sync
+        const sliders = [
+          ['deformStrength', 'deformVal', 2],
+          ['slackness', 'slacknessVal', 2],
+          ['chainR', 'chainRVal', 1],
+          ['chainNumLinks', 'chainNumLinksVal', 0],
+          ['chainOffsetY', 'chainOffsetYVal', 2],
+          ['chainSpacing', 'chainSpacingVal', 2],
+          ['borromeanR', 'borromeanRVal', 2],
+          ['borromeanRatio', 'borromeanRatioVal', 2],
+          ['borromeanYellowY', 'borromeanYellowYVal', 2],
+          ['borromeanBlueY', 'borromeanBlueYVal', 2],
+          ['kinkCount', 'kinkCountVal', 0],
+          ['kinkAmplitude', 'kinkAmplitudeVal', 2],
+          ['spiralTurns', 'spiralTurnsVal', 0],
+          ['spiralPitch', 'spiralPitchVal', 2],
+          ['spiralGap', 'spiralGapVal', 2],
+        ];
+
+        sliders.forEach(([sliderId, valId, decimals]) => {
+          const slider = document.getElementById(sliderId);
+          const valEl = document.getElementById(valId);
+          if (slider && valEl) {
+            const update = () => { valEl.textContent = parseFloat(slider.value).toFixed(decimals); };
+            update();
+            slider.addEventListener('input', update);
+          }
+        });
+
+        function syncUI() {
+          const v = preset ? preset.value : 'trefoil';
+          const isBenchmark = v.startsWith('benchmark');
+          if (benchmarkBox) benchmarkBox.style.display = isBenchmark ? 'block' : 'none';
+          if (chainDebugBox) chainDebugBox.style.display = (v === 'chain') ? 'block' : 'none';
+          if (borromeanDebugBox) borromeanDebugBox.style.display = (v === 'borromean') ? 'block' : 'none';
+          if (kinkyBox) kinkyBox.style.display = (v === 'kinky_unknot') ? 'block' : 'none';
+          if (spiralLoopBox) spiralLoopBox.style.display = (v === 'spiral_disk') ? 'block' : 'none';
+        }
+
+        if (preset) preset.addEventListener('change', syncUI);
+        syncUI();
+      })();
+    </script>
+  </body>
+</html>

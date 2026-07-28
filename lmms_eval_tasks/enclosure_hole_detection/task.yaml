@@ -1,0 +1,37 @@
+task: enclosure_hole_detection
+dataset_path: json
+dataset_kwargs:
+  data_files:
+    test: environments/enclosure_hole_detection/output/question.jsonl
+test_split: test
+output_type: generate_until
+
+process_docs:    !function utils.process_docs
+doc_to_visual:   !function utils.doc_to_visual
+doc_to_text:     !function utils.doc_to_text
+doc_to_target:   !function utils.doc_to_target
+process_results: !function utils.process_results
+
+generation_kwargs:
+  max_new_tokens: 2048
+  temperature: 0
+  do_sample: false
+
+lmms_eval_specific_kwargs:
+  default:
+    post_prompt: "Return JSON only using the required answer schema."
+
+metric_list:
+  - metric: topobench_exact_match
+    aggregation: !function utils.aggregate_results
+    higher_is_better: true
+  - metric: json_parse_rate
+    aggregation: !function utils.aggregate_json_parse_rate
+    higher_is_better: true
+  - metric: answer_format_hit_rate
+    aggregation: !function utils.aggregate_answer_format_hit_rate
+    higher_is_better: true  
+
+metadata:
+  version: 0.1
+  category: enclosure

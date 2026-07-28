@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Order Swap 2D Puzzle</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #ffffff;
+      --panel: #ffffff;
+      --card: #ffffff;
+      --text: #203142;
+      --muted: #637487;
+      --accent: #245f88;
+      --border: rgba(55, 92, 125, 0.14);
+      --shadow: 0 20px 38px rgba(36, 58, 79, 0.12);
+      --scene-bg: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      height: 100%;
+      font-family: "Avenir Next", "Trebuchet MS", "Segoe UI", sans-serif;
+      color: var(--text);
+      background: #ffffff;
+    }
+
+    #app {
+      height: 100%;
+      display: grid;
+      grid-template-columns: minmax(460px, 1fr) 390px;
+      gap: 16px;
+      padding: 16px;
+    }
+
+    #scene-container {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: 1fr 1fr;
+      gap: 14px;
+      padding: 16px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--scene-bg);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .scene-card {
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      border-radius: 18px;
+      border: 1px solid rgba(77, 108, 138, 0.14);
+      background: var(--card);
+      box-shadow: none;
+      overflow: hidden;
+    }
+
+    .scene-header {
+      padding: 12px 16px 0;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 0.86rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .scene-subtitle {
+      font-size: 0.78rem;
+      letter-spacing: 0;
+      text-transform: none;
+      color: var(--muted);
+    }
+
+    .board-root {
+      position: relative;
+      flex: 1;
+      min-height: 220px;
+      overflow: hidden;
+    }
+
+    #panel {
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      padding: 18px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(8px);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.18rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .deck {
+      display: grid;
+      gap: 10px;
+    }
+
+    .card {
+      padding: 12px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid rgba(86, 117, 146, 0.14);
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      align-items: start;
+    }
+
+    .controls-wide {
+      grid-template-columns: 1fr;
+    }
+
+    .control-field {
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .control-spacer {
+      min-height: 1px;
+    }
+
+    label {
+      font-size: 0.82rem;
+      color: var(--muted);
+      letter-spacing: 0.02em;
+    }
+
+    input,
+    select,
+    button {
+      width: 100%;
+      border-radius: 8px;
+      border: 1px solid rgba(86, 117, 146, 0.18);
+      padding: 10px 12px;
+      background: #ffffff;
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+
+    button {
+      cursor: pointer;
+      background: #ffffff;
+      transition: transform 120ms ease, box-shadow 120ms ease;
+      box-shadow: 0 10px 18px rgba(36, 95, 136, 0.12);
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 22px rgba(36, 95, 136, 0.18);
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.48;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(86, 117, 146, 0.14);
+      background: #ffffff;
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .status-pill {
+      min-width: 112px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      text-align: center;
+      font-weight: 700;
+      color: #ffffff;
+      background: #245f88;
+    }
+
+    .status-pill[data-status="success"] {
+      background: #2c7a4b;
+    }
+
+    .status-pill[data-status="step_limit"] {
+      background: #9a5a17;
+    }
+
+    #state-json {
+      flex: 1;
+      min-height: 260px;
+      margin: 0;
+      padding: 14px;
+      overflow: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      border-radius: 8px;
+      border: 1px solid rgba(86, 117, 146, 0.14);
+      background: rgba(255, 255, 255, 0.8);
+      font-size: 0.77rem;
+      line-height: 1.45;
+    }
+
+    .footnote {
+      margin: 0;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    code {
+      font-family: "SFMono-Regular", "Menlo", monospace;
+    }
+
+    @media (max-width: 1120px) {
+      #app {
+        grid-template-columns: 1fr;
+        grid-template-rows: minmax(540px, 64vh) minmax(280px, 1fr);
+      }
+    }
+
+    @media (max-width: 760px) {
+      #scene-container {
+        padding: 12px;
+      }
+
+      .controls {
+        grid-template-columns: 1fr;
+      }
+
+      .control-spacer {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div id="scene-container">
+      <section id="current-card" class="scene-card">
+        <div class="scene-header">
+          <span>Current State</span>
+          <span id="current-state-label" class="scene-subtitle">State 0</span>
+        </div>
+        <div id="current-board" class="board-root"></div>
+      </section>
+      <section id="goal-card" class="scene-card">
+        <div class="scene-header">
+          <span>Goal State</span>
+          <span class="scene-subtitle">Target</span>
+        </div>
+        <div id="goal-board" class="board-root"></div>
+      </section>
+    </div>
+    <aside id="panel">
+      <h1>Order Swap 2D Puzzle</h1>
+      <div class="status-bar">
+        <span id="step-status-label">Status</span>
+        <span id="status-pill" class="status-pill" data-status="in_progress">In Progress</span>
+      </div>
+      <div class="deck">
+        <div class="card controls">
+          <div class="control-field">
+            <label for="difficulty-input">Difficulty</label>
+            <select id="difficulty-input">
+              <option value="easy" selected>easy</option>
+              <option value="medium">medium</option>
+              <option value="hard">hard</option>
+              <option value="">custom grid</option>
+            </select>
+          </div>
+          <div class="control-field">
+            <label for="seed-input">Seed</label>
+            <input id="seed-input" type="number" min="1" value="1" />
+          </div>
+          <div class="control-field">
+            <label for="row-input">Rows</label>
+            <input id="row-input" type="number" min="2" max="4" value="3" />
+          </div>
+          <div class="control-field">
+            <label for="col-input">Columns</label>
+            <input id="col-input" type="number" min="2" max="4" value="3" />
+          </div>
+          <div class="control-field">
+            <label for="action-row-input">Action Row</label>
+            <input id="action-row-input" type="number" min="0" value="0" />
+          </div>
+          <div class="control-field">
+            <label for="action-col-input">Action Column</label>
+            <input id="action-col-input" type="number" min="0" value="0" />
+          </div>
+        </div>
+        <div class="card controls controls-wide">
+          <button id="reset-btn">Reset Puzzle</button>
+          <button id="back-btn" disabled>Back</button>
+          <button id="step-btn">Swap Cell Into Blank</button>
+        </div>
+      </div>
+      <pre id="state-json">Loading...</pre>
+      <p class="footnote">
+        Protocol API: <code>window.topoBench.reset/step/getState/getDebugState</code>
+      </p>
+    </aside>
+  </div>
+
+  <script type="module" src="./src/main.ts"></script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "name": "knots_static",
+  "display_name": "Knots Static",
+  "category": "knots",
+  "level": "reasoning",
+  "description": "Evaluate VLM ability to classify topological knot properties (knot type, crossing number, linking, equivalence) from 3D rendered images.",
+  "difficulty_params": {
+    "knot_families": ["unknot", "torus", "twist", "link", "link_group", "mixed"],
+    "num_types": 24,
+    "difficulty_axes": ["topology", "saliency", "trap_type"]
+  },
+  "question_types": [
+    "T01_structure_classification",
+    "T02_component_count",
+    "T03_link_topology",
+    "T04_link_property",
+    "T05_linked_count"
+  ],
+  "status": "validated",
+  "observation_type": "rgb_image"
+}

@@ -1,0 +1,22 @@
+{
+  "name": "order_bead_string",
+  "display_name": "Bead String Order",
+  "category": "order",
+  "level": "reasoning",
+  "description": "Evaluate VLM ability to perceive spatial ordering of colored beads on curved 3D strings, including sequence description and pair relationship classification.",
+  "difficulty_params": {
+    "easy": { "num_beads": [5, 7], "curve_types": ["arc", "s_curve", "helix"], "note": "Moderate open curves, mixed colors, partial occlusion" },
+    "medium": { "num_beads": [8, 10], "curve_types": ["helix", "random_spline"], "note": "Complex open/ring curves, similar colors, heavy occlusion" },
+    "hard": { "num_beads": [6, 8], "curve_types": ["tangled_loop"], "note": "Torus-knot closed loop — multiple over/under xy crossings with bounded z separation; cusp-free, hard for VLMs to trace but human-readable" }
+  },
+  "question_types": [
+    "T_BS01_describe_sequence",
+    "T_BS02_pair_relationship"
+  ],
+  "answer_type": "mixed",
+  "tech_stack": {
+    "frontend": ["three.js", "ES6 modules", "CDN"],
+    "backend": ["openai", "anthropic"]
+  },
+  "status": "validated"
+}

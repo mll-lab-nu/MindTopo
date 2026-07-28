@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Continuity Pipe</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #101625;
+        --panel: #151d2f;
+        --panel-border: rgba(164, 185, 220, 0.18);
+        --text: #eef6ff;
+        --muted: #9fb0c8;
+        --grid: rgba(178, 194, 224, 0.14);
+        --green: #19d955;
+        --blue: #0aa2ff;
+        --cell-bg: #121929;
+        --cell-hover: #1a2640;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Avenir Next", "Trebuchet MS", sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at 15% 8%, rgba(25, 217, 85, 0.18), transparent 32%),
+          radial-gradient(circle at 85% 20%, rgba(10, 162, 255, 0.24), transparent 28%),
+          linear-gradient(180deg, #101625 0%, #0b1020 100%);
+      }
+
+      #app-shell {
+        width: min(1500px, calc(100vw - 32px));
+        margin: 18px auto;
+        display: grid;
+        grid-template-columns: minmax(760px, 2fr) minmax(320px, 1fr);
+        gap: 18px;
+      }
+
+      .panel {
+        background: linear-gradient(180deg, rgba(21, 29, 47, 0.98), rgba(12, 18, 32, 0.98));
+        border: 1px solid var(--panel-border);
+        border-radius: 26px;
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+      }
+
+      #board-card {
+        padding: 18px 18px 12px;
+      }
+
+      #board-header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 0 8px 12px;
+      }
+
+      #board-title {
+        margin: 0;
+        font-size: 34px;
+        font-weight: 800;
+        letter-spacing: 0.01em;
+      }
+
+      #board-subtitle {
+        margin: 0;
+        color: var(--muted);
+        font-size: 16px;
+      }
+
+      #board-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: flex-end;
+      }
+
+      .badge {
+        border-radius: 999px;
+        padding: 7px 14px;
+        background: rgba(10, 162, 255, 0.14);
+        color: #9bd9ff;
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      #scene-container {
+        position: relative;
+        width: 100%;
+        height: 760px;
+        overflow: hidden;
+        border-radius: 24px;
+        background:
+          linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px),
+          linear-gradient(180deg, rgba(255,255,255,0.03) 1px, transparent 1px),
+          #0f1628;
+        background-size: 42px 42px;
+      }
+
+      #board-root {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        padding: 32px;
+      }
+
+      .pipe-board {
+        --grid-size: 3;
+        width: min(650px, 92%);
+        aspect-ratio: 1 / 1;
+        display: grid;
+        grid-template-columns: 58px repeat(var(--grid-size), 1fr);
+        grid-template-rows: 58px repeat(var(--grid-size), 1fr);
+        border-radius: 18px;
+        overflow: hidden;
+        border: 1px solid var(--grid);
+        background: rgba(7, 12, 24, 0.72);
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.025), 0 20px 70px rgba(0,0,0,0.26);
+      }
+
+      .coord-corner,
+      .coord-label {
+        display: grid;
+        place-items: center;
+        border-right: 1px solid var(--grid);
+        border-bottom: 1px solid var(--grid);
+        color: #d8e4f7;
+        font-weight: 800;
+      }
+
+      .coord-corner {
+        color: #7f91ae;
+        font-size: 14px;
+      }
+
+      .coord-x {
+        font-size: 28px;
+      }
+
+      .coord-y {
+        font-size: 28px;
+      }
+
+      .pipe-cell {
+        position: relative;
+        display: grid;
+        place-items: center;
+        padding: 0;
+        border: 0;
+        border-right: 1px solid var(--grid);
+        border-bottom: 1px solid var(--grid);
+        background: var(--cell-bg);
+        cursor: pointer;
+        transition: background 120ms ease, transform 120ms ease;
+      }
+
+      .pipe-cell:hover {
+        background: var(--cell-hover);
+      }
+
+      .pipe-cell:active {
+        transform: scale(0.985);
+      }
+
+      .pipe-cell.empty,
+      .pipe-cell.empty:hover {
+        background:
+          linear-gradient(135deg, transparent 46%, rgba(178, 194, 224, 0.12) 48%, rgba(178, 194, 224, 0.12) 52%, transparent 54%),
+          rgba(255,255,255,0.025);
+        cursor: default;
+      }
+
+      .pipe-cell.empty:active {
+        transform: none;
+      }
+
+      .pipe-svg {
+        width: 82%;
+        height: 82%;
+        overflow: visible;
+      }
+
+      #legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 18px;
+        padding: 14px 8px 4px;
+        color: var(--muted);
+        font-size: 15px;
+      }
+
+      .legend-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+      }
+
+      .legend-swatch {
+        width: 16px;
+        height: 16px;
+        border-radius: 999px;
+      }
+
+      #control-card {
+        padding: 22px;
+        display: grid;
+        gap: 18px;
+        align-content: start;
+      }
+
+      .control-section {
+        display: grid;
+        gap: 10px;
+      }
+
+      .section-label {
+        font-size: 14px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-weight: 800;
+      }
+
+      .field-grid {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      label {
+        display: grid;
+        gap: 6px;
+        font-size: 14px;
+        color: var(--muted);
+      }
+
+      input,
+      select,
+      button {
+        font: inherit;
+      }
+
+      input,
+      select {
+        width: 100%;
+        padding: 11px 13px;
+        border-radius: 14px;
+        border: 1px solid var(--panel-border);
+        background: rgba(255,255,255,0.08);
+        color: var(--text);
+      }
+
+      button {
+        border: 0;
+        border-radius: 14px;
+        padding: 12px 16px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+
+      button:disabled {
+        cursor: not-allowed;
+        opacity: 0.48;
+      }
+
+      .button-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      #reset-btn,
+      #undo-btn {
+        background: #edf6ff;
+        color: #172033;
+      }
+
+      #state-json {
+        min-height: 260px;
+        max-height: 420px;
+        overflow: auto;
+        padding: 16px;
+        border-radius: 18px;
+        background: rgba(2, 7, 16, 0.78);
+        color: #dcecff;
+        font-family: "SFMono-Regular", "Menlo", monospace;
+        font-size: 12px;
+        line-height: 1.48;
+        white-space: pre-wrap;
+      }
+
+      @media (max-width: 1200px) {
+        #app-shell {
+          grid-template-columns: 1fr;
+        }
+
+        #scene-container {
+          height: 680px;
+        }
+      }
+
+      @media (max-width: 820px) {
+        #app-shell {
+          width: min(100vw - 16px, 100%);
+          margin: 8px auto;
+        }
+
+        #scene-container {
+          height: 560px;
+        }
+
+        .field-grid {
+          grid-template-columns: 1fr;
+        }
+
+        #board-title {
+          font-size: 28px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main id="app-shell">
+      <section id="board-card" class="panel">
+        <header id="board-header">
+          <div>
+            <h1 id="board-title">Continuity Pipe</h1>
+            <p id="board-subtitle">Seeded pipe board with source connectivity shown in green.</p>
+          </div>
+          <div id="board-badges">
+            <span id="source-badge" class="badge">Source</span>
+            <span id="status-badge" class="badge">State: active</span>
+          </div>
+        </header>
+        <div id="scene-container">
+          <div id="board-root"></div>
+        </div>
+        <div id="legend">
+          <span class="legend-item"><span class="legend-swatch" style="background: var(--green);"></span> Connected to source</span>
+          <span class="legend-item"><span class="legend-swatch" style="background: var(--blue);"></span> Not connected</span>
+          <span class="legend-item"><span class="legend-swatch" style="background: rgba(178, 194, 224, 0.18);"></span> Empty cell</span>
+        </div>
+      </section>
+
+      <aside id="control-card" class="panel">
+        <section class="control-section">
+          <div class="section-label">Reset</div>
+          <div class="field-grid">
+            <label>
+              Grid size
+              <input id="size-input" type="number" min="3" max="6" step="1" value="4" />
+            </label>
+            <label>
+              Seed
+              <input id="seed-input" type="number" step="1" value="1" />
+            </label>
+            <label>
+              Difficulty
+              <select id="difficulty-input">
+                <option value="easy" selected>easy</option>
+                <option value="medium">medium</option>
+                <option value="hard">hard</option>
+              </select>
+            </label>
+          </div>
+          <div class="button-row">
+            <button id="reset-btn" type="button">Reset Board</button>
+            <button id="undo-btn" type="button" disabled>Back</button>
+          </div>
+        </section>
+
+        <section class="control-section">
+          <div class="section-label">State</div>
+          <pre id="state-json"></pre>
+        </section>
+      </aside>
+    </main>
+
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>

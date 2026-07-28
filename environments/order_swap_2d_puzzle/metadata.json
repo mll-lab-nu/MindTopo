@@ -1,0 +1,21 @@
+{
+  "name": "order_swap_2d_puzzle",
+  "display_name": "Order Swap 2D Puzzle",
+  "category": "order",
+  "level": "planning",
+  "description": "Swap one colored block with the empty grid cell per turn until the 2D grid matches the target arrangement.",
+  "difficulty_params": {
+    "grid_shape": {
+      "easy": "seed-determined 2x2, 2x3, 3x2, or 3x3",
+      "medium": "seed-determined 3x4 or 4x3",
+      "hard": "4x4",
+      "max": "4x4"
+    },
+    "theoretical_min_steps": "Exact shortest-path distance between the initial arrangement and the goal arrangement when any non-empty cell may swap with the blank cell.",
+    "step_budget": "Defaults to ceil(1.2 * theoretical_min_steps) unless overridden."
+  },
+  "status": "ready",
+  "observation_type": "rgb_array",
+  "action_type": "discrete",
+  "success_condition": "The current grid exactly matches the goal grid before the step budget is exhausted."
+}

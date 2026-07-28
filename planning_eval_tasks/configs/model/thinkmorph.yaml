@@ -1,0 +1,11 @@
+id: thinkmorph
+kind: registry_remote
+temperature: 0.0
+max_tokens: 2048
+api_retries: 5
+retry_sleep_seconds: 5.0
+requests_per_minute: 0.0
+request_timeout_seconds: 600.0
+step_deadline_seconds: 3650.0
+keep_message_history: false
+extra_headers: {}

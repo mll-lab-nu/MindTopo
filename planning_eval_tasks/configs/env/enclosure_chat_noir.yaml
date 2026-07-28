@@ -1,0 +1,6 @@
+name: enclosure_chat_noir
+host: 127.0.0.1
+port: 0
+headless: true
+animate: false
+system_prompt_key: enclosure_chat_noir_planning

@@ -1,0 +1,8 @@
+name: separation_one_stroke
+episode_ids_path: data/slices/balanced_105/separation_one_stroke.json
+# Minimal snapshot default: use the retained fixed planning question set.
+source_question_jsonl: environments/separation_one_stroke/output/question.jsonl
+host: 127.0.0.1
+port: 0
+headless: true
+system_prompt_key: separation_one_stroke_interleaved

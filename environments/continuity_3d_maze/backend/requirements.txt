@@ -1,0 +1,5 @@
+ai2thor
+procthor
+pillow
+requests
+tqdm

@@ -1,0 +1,37 @@
+{
+  "name": "enclosure_hole_detection",
+  "display_name": "Hole Detection & Counting",
+  "category": "enclosure",
+  "level": "reasoning",
+  "description": "Render a procedurally generated 3D board from a top-down view and count the visible holes that pass through the board to open space.",
+  "difficulty_params": {
+    "board_size": {
+      "easy": [10, 10],
+      "medium": [10, 10],
+      "hard": [10, 10]
+    },
+    "hole_count": {
+      "easy": [5, 10],
+      "medium": [7, 13],
+      "hard": [9, 17]
+    },
+    "hole_types": {
+      "easy": ["hole", "pit"],
+      "medium": ["hole", "pit", "mixed"],
+      "hard": ["hole", "pit", "mixed", "mixed2"]
+    }
+  },
+  "question_types": {
+    "count_holes_topdown": {
+      "prompt": "How many holes are visible in this top-down view of the board?",
+      "answer_type": "integer",
+      "derive_answer": "metadata.visible_opening_count"
+    }
+  },
+  "status": "ready",
+  "renderer": "threejs",
+  "image_count": {
+    "min": 1,
+    "max": 1
+  }
+}

@@ -1,0 +1,17 @@
+id: gemini_3_1_flash_lite
+kind: registry_remote
+temperature: 0.0
+max_tokens: 2048
+api_retries: 3
+retry_sleep_seconds: 2.0
+requests_per_minute: 0.0
+request_timeout_seconds: 120.0
+# Four 120-second attempts plus 2+4+8 second backoffs need 494 seconds.
+step_deadline_seconds: 510.0
+keep_message_history: true
+extra_body:
+  google:
+    thinking_config:
+      thinking_level: low
+      include_thoughts: true
+extra_headers: {}

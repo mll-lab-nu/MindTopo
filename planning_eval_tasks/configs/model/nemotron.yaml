@@ -1,0 +1,12 @@
+id: nemotron
+kind: registry_remote
+temperature: 0.0
+max_tokens: 2048
+api_retries: 3
+retry_sleep_seconds: 16.0
+requests_per_minute: 3.75
+request_timeout_seconds: 120.0
+# Fits a full retry cycle: 4 x 120s attempts + 16+32+64s backoffs = 592s.
+step_deadline_seconds: 600.0
+keep_message_history: true
+extra_headers: {}

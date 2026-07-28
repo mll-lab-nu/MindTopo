@@ -1,0 +1,14 @@
+name: continuity_pipe
+source_question_jsonl: environments/continuity_pipe/output/question.jsonl
+episode_ids_path: data/slices/balanced_105/continuity_pipe.json
+host: 127.0.0.1
+port: 0
+headless: true
+illegal_reward: -1.0
+move_reward: -0.01
+success_reward: 1.0
+timeout_penalty: -1.0
+viewport_width: 1440
+viewport_height: 1080
+frontend_dir: null
+system_prompt_key: continuity_pipe_vlm_video_e2e

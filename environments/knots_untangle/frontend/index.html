@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Knots Untangle</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #efe7d6;
+      --panel: rgba(255, 251, 242, 0.96);
+      --text: #2c2419;
+      --muted: #6d5b46;
+      --accent: #9c4a22;
+      --border: rgba(112, 78, 46, 0.18);
+      --shadow: 0 20px 40px rgba(66, 45, 26, 0.14);
+      --scene-bg: linear-gradient(180deg, #fffaf1 0%, #f4ebda 100%);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      height: 100%;
+      font-family: "Avenir Next", "Trebuchet MS", "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 14% 12%, rgba(196, 106, 46, 0.16), transparent 24%),
+        radial-gradient(circle at 86% 14%, rgba(109, 72, 38, 0.12), transparent 22%),
+        linear-gradient(180deg, #f7f1e5 0%, #ebe0cb 100%);
+    }
+
+    #app {
+      height: 100%;
+      display: grid;
+      grid-template-columns: minmax(360px, 1fr) 380px;
+      gap: 14px;
+      padding: 14px;
+    }
+
+    #scene-container {
+      min-height: 0;
+      border-radius: 22px;
+      border: 1px solid var(--border);
+      background: var(--scene-bg);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+    }
+
+    #scene-container canvas {
+      touch-action: none;
+      display: block;
+    }
+
+    #panel {
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      padding: 18px;
+      border-radius: 22px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(8px);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.15rem;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .deck {
+      display: grid;
+      gap: 10px;
+    }
+
+    .card {
+      padding: 12px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.62);
+      border: 1px solid rgba(112, 78, 46, 0.12);
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      align-items: center;
+    }
+
+    label {
+      font-size: 0.82rem;
+      color: var(--muted);
+      letter-spacing: 0.02em;
+    }
+
+    input,
+    select,
+    button {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid rgba(112, 78, 46, 0.18);
+      padding: 10px 12px;
+      background: #fffdfa;
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+
+    select {
+      cursor: pointer;
+      appearance: auto;
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid rgba(112, 78, 46, 0.18);
+      padding: 10px 12px;
+      background: #fffdfa;
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+
+    button {
+      cursor: pointer;
+      background: linear-gradient(180deg, #fff7ec 0%, #f3dfc1 100%);
+      transition: transform 120ms ease, box-shadow 120ms ease;
+      box-shadow: 0 8px 18px rgba(132, 91, 42, 0.12);
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 22px rgba(132, 91, 42, 0.16);
+    }
+
+    #state-json {
+      flex: 1;
+      min-height: 260px;
+      margin: 0;
+      padding: 14px;
+      overflow: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      border-radius: 16px;
+      border: 1px solid rgba(112, 78, 46, 0.14);
+      background: rgba(255, 255, 255, 0.7);
+      font-size: 0.77rem;
+      line-height: 1.45;
+    }
+
+    .footnote {
+      margin: 0;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    code {
+      font-family: "SFMono-Regular", "Menlo", monospace;
+    }
+
+    @media (max-width: 960px) {
+      #app {
+        grid-template-columns: 1fr;
+        grid-template-rows: minmax(360px, 58vh) minmax(280px, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div id="scene-container"></div>
+    <aside id="panel">
+      <h1>Knots Untangle</h1>
+      <div class="deck">
+        <div class="card controls">
+          <label for="difficulty-input">Difficulty</label>
+          <select id="difficulty-input">
+            <option value="easy">Easy</option>
+            <option value="medium" selected>Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+          <label for="seed-input">Seed</label>
+          <input id="seed-input" type="number" value="0" />
+          <label for="action-input">Action Index</label>
+          <input id="action-input" type="number" min="0" value="0" />
+        </div>
+        <div class="card controls">
+          <button id="reset-btn">Reset</button>
+          <button id="step-btn">Step</button>
+        </div>
+      </div>
+      <pre id="state-json">Loading...</pre>
+      <p class="footnote">
+        Protocol API: <code>window.topoBench.reset/step/getState/getDebugState</code>
+      </p>
+    </aside>
+  </div>
+
+  <script type="module" src="./src/main.ts"></script>
+</body>
+</html>

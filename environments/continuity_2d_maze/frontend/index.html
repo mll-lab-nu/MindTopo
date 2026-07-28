@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Continuity 2D Maze</title>
+  <style>
+    :root {
+      --bg-primary: #1a1a1f;
+      --bg-secondary: #23232a;
+      --bg-section: #2a2a33;
+      --border: #3a3a44;
+      --text-primary: #e8e8ec;
+      --text-muted: #9a9aa4;
+      --accent: #7aa2f7;
+      --accent-hover: #96b6ff;
+      --secondary-btn: #3a3a44;
+      --secondary-btn-hover: #4a4a55;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      min-height: 100vh;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 13px;
+    }
+    #app {
+      display: flex;
+      flex-direction: row;
+      min-height: 100vh;
+    }
+    #controls {
+      flex: 0 0 320px;
+      width: 320px;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border);
+      padding: 20px 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    #controls h1 {
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: var(--text-primary);
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    #tabs.tab-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    button.tab {
+      padding: 8px 10px;
+      background: var(--bg-section);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-weight: 500;
+      cursor: pointer;
+    }
+    button.tab:hover {
+      background: var(--secondary-btn);
+      color: var(--text-primary);
+    }
+    button.tab.active {
+      background: var(--accent);
+      color: #0f1016;
+      border-color: var(--accent);
+      font-weight: 600;
+    }
+    .tab-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    #controls section {
+      background: var(--bg-section);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    #controls section > h2 {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+    details.advanced {
+      background: var(--bg-section);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 12px;
+    }
+    details.advanced > summary {
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      list-style: revert;
+    }
+    details.advanced[open] > summary {
+      margin-bottom: 10px;
+    }
+    details.advanced .field + .field {
+      margin-top: 8px;
+    }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .field label {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .field input {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 6px 8px;
+      font: inherit;
+      font-variant-numeric: tabular-nums;
+    }
+    .field input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    button {
+      cursor: pointer;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 10px;
+      font: inherit;
+      font-weight: 500;
+      color: var(--text-primary);
+      background: var(--secondary-btn);
+      transition: background 0.1s;
+    }
+    button:hover { background: var(--secondary-btn-hover); }
+    button.primary {
+      background: var(--accent);
+      color: #0f1016;
+      font-weight: 600;
+    }
+    button.primary:hover { background: var(--accent-hover); }
+    button.subtle {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+    button.subtle:hover {
+      background: var(--secondary-btn);
+      color: var(--text-primary);
+    }
+    .pair-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      max-height: 240px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--bg-primary);
+    }
+    .pair-list li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 10px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      cursor: pointer;
+      border-left: 3px solid transparent;
+      border-bottom: 1px solid var(--border);
+    }
+    .pair-list li:last-child { border-bottom: none; }
+    .pair-list li:hover { background: var(--bg-section); }
+    .pair-list li.selected {
+      border-left-color: #ffcc00;
+      background: rgba(255, 204, 0, 0.08);
+    }
+    .pair-list .names { color: var(--text-primary); }
+    .pair-list .verdict {
+      padding: 1px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .pair-list .verdict.yes {
+      background: rgba(34, 197, 94, 0.18);
+      color: #22c55e;
+    }
+    .pair-list .verdict.no {
+      background: rgba(239, 68, 68, 0.18);
+      color: #ef4444;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 4px 12px;
+      font-variant-numeric: tabular-nums;
+    }
+    .stats-grid > span:nth-child(odd) { color: var(--text-muted); }
+    .stats-grid > span:nth-child(even) {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 11px;
+      word-break: break-all;
+    }
+    .btn-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .btn-col {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    #main-area {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      min-width: 0;
+    }
+    #canvas-container {
+      width: min(1024px, calc(100vw - 320px - 300px - 48px), calc(100vh - 48px));
+      height: min(1024px, calc(100vw - 320px - 300px - 48px), calc(100vh - 48px));
+      background: #ffffff;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    }
+    #canvas-container canvas {
+      display: block;
+      width: 100% !important;
+      height: 100% !important;
+    }
+    #preview {
+      flex: 0 0 300px;
+      width: 300px;
+      background: var(--bg-secondary);
+      border-left: 1px solid var(--border);
+      padding: 20px 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    #preview h1 {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: var(--text-primary);
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    #preview section {
+      background: var(--bg-section);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    #preview section > h2 {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+    #preview .question-text {
+      font-size: 12.5px;
+      line-height: 1.5;
+      color: var(--text-primary);
+      white-space: pre-wrap;
+    }
+    #preview .gt-answer {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent-hover);
+      word-break: break-all;
+    }
+    #preview pre {
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 8px 10px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 11px;
+      line-height: 1.45;
+      color: var(--text-primary);
+      overflow: auto;
+      max-height: 300px;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    #preview details > summary {
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      list-style: revert;
+    }
+    #preview details[open] > summary {
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <aside id="controls">
+      <h1>Continuity 2D Maze</h1>
+
+      <nav id="tabs" class="tab-row">
+        <button id="tab-q1" class="tab active" data-tab="q1">Q1 Reachability</button>
+        <button id="tab-q2" class="tab" data-tab="q2">Q2 Bar Removal</button>
+      </nav>
+
+      <!-- Shared: paste a sample (from samples.json) and re-render it. -->
+      <details>
+        <summary><strong>Load Sample</strong></summary>
+        <div class="field">
+          <label for="load-sample-json">Paste sample JSON (an element from samples.json, or its meta_info / metadata block).</label>
+          <textarea id="load-sample-json" rows="4" style="width:100%;font-family:monospace;font-size:11px;" placeholder='{"question_type":"bar_removal","difficulty":"medium","metadata":{"seed":12351,"grid_size":5,"wall_density":0.42,...}}'></textarea>
+        </div>
+        <div class="btn-row">
+          <button id="load-sample-btn" class="primary">Load &amp; Render</button>
+        </div>
+        <p id="load-sample-status" style="font-size:11px;color:#888;margin:4px 0 0 0;"></p>
+      </details>
+
+      <!-- =============== Q1 Tab =============== -->
+      <div class="tab-panel" data-tab="q1">
+        <section>
+          <h2>Parameters</h2>
+          <div class="field">
+            <label for="q1-seed">seed</label>
+            <input id="q1-seed" type="number" step="1" value="12345">
+          </div>
+          <div class="field">
+            <label for="q1-grid_size">grid_size (integer &ge; 2; 4 / 5 / 6 recommended)</label>
+            <input id="q1-grid_size" type="number" step="1" min="2" value="4" list="q1-grid-options">
+            <datalist id="q1-grid-options">
+              <option value="4"></option>
+              <option value="5"></option>
+              <option value="6"></option>
+            </datalist>
+          </div>
+          <div class="field">
+            <label for="q1-point_count">point_count (2 - 26)</label>
+            <input id="q1-point_count" type="number" step="1" min="2" max="26" value="4">
+          </div>
+        </section>
+
+        <details class="advanced" data-tab="q1">
+          <summary>Advanced parameters</summary>
+          <div class="field">
+            <label for="q1-wall_density">wall_density (0.00 - 1.00)</label>
+            <input id="q1-wall_density" type="number" step="0.01" min="0" max="1" value="0.45">
+          </div>
+          <div class="field">
+            <label for="q1-diagonal_ratio">diagonal_ratio (0.00 - 1.00)</label>
+            <input id="q1-diagonal_ratio" type="number" step="0.05" min="0" max="1" value="0.15">
+          </div>
+          <div class="field">
+            <label for="q1-partial_ratio">partial_ratio (0.00 - 1.00)</label>
+            <input id="q1-partial_ratio" type="number" step="0.05" min="0" max="1" value="0.2">
+          </div>
+          <div class="field">
+            <label for="q1-partial_bc_split">partial_bc_split (0 = all half-wall, 1 = all centered)</label>
+            <input id="q1-partial_bc_split" type="number" step="0.05" min="0" max="1" value="0.5">
+          </div>
+        </details>
+
+        <section>
+          <h2>Actions</h2>
+          <div class="btn-row">
+            <button id="q1-btn-generate" class="primary">Generate</button>
+            <button id="q1-btn-randomize" title="Increment seed by 1">Next Seed (+1)</button>
+          </div>
+        </section>
+
+        <section>
+          <h2>Difficulty Tier</h2>
+          <div class="btn-col">
+            <button id="q1-btn-gen-easy">Generate Easy</button>
+            <button id="q1-btn-gen-medium">Generate Medium</button>
+            <button id="q1-btn-gen-hard">Generate Hard</button>
+          </div>
+        </section>
+
+        <section>
+          <h2>Presets</h2>
+          <div class="btn-col">
+            <button id="q1-btn-preset-easy">Easy &mdash; 4x4, wd=0.44</button>
+            <button id="q1-btn-preset-medium">Medium &mdash; 5x5, wd=0.44</button>
+            <button id="q1-btn-preset-hard">Hard &mdash; 6x6, wd=0.45</button>
+          </div>
+        </section>
+
+        <section>
+          <h2>Export</h2>
+          <button id="q1-btn-export">Export PNG</button>
+        </section>
+
+        <section>
+          <h2>Stats</h2>
+          <div class="stats-grid">
+            <span>pairs</span><span id="q1-stat-total">-</span>
+            <span>yes</span><span id="q1-stat-yes">-</span>
+            <span>no</span><span id="q1-stat-no">-</span>
+            <span>yes_ratio</span><span id="q1-stat-ratio">-</span>
+            <span>tier</span><span id="q1-stat-tier">-</span>
+          </div>
+        </section>
+
+        <section>
+          <h2>Pairs</h2>
+          <ol id="q1-pair-list" class="pair-list"></ol>
+          <button id="q1-btn-clear-highlight" class="subtle">Clear selection</button>
+        </section>
+
+        <section>
+          <h2>Scene</h2>
+          <div class="stats-grid">
+            <span>id</span><span id="q1-scene-id">-</span>
+            <span>generated</span><span id="q1-scene-ms">-</span>
+          </div>
+        </section>
+      </div>
+
+      <!-- =============== Q2 Tab =============== -->
+      <div class="tab-panel" data-tab="q2" style="display:none">
+        <section>
+          <h2>Parameters</h2>
+          <div class="field">
+            <label for="q2-seed">seed</label>
+            <input id="q2-seed" type="number" step="1" value="12345">
+          </div>
+          <div class="field">
+            <label for="q2-grid_size">grid_size (integer &ge; 5; 5–8 recommended)</label>
+            <input id="q2-grid_size" type="number" step="1" min="3" value="6" list="q2-grid-options">
+            <datalist id="q2-grid-options">
+              <option value="5"></option>
+              <option value="6"></option>
+              <option value="7"></option>
+              <option value="8"></option>
+            </datalist>
+          </div>
+          <div class="field">
+            <label for="q2-bar_count">bar_count (1 - 6)</label>
+            <input id="q2-bar_count" type="number" step="1" min="1" max="6" value="4">
+          </div>
+        </section>
+
+        <details class="advanced" data-tab="q2">
+          <summary>Advanced parameters</summary>
+          <div class="field">
+            <label for="q2-wall_density">wall_density (0.00 - 1.00)</label>
+            <input id="q2-wall_density" type="number" step="0.01" min="0" max="1" value="0.45">
+          </div>
+          <div class="field">
+            <label for="q2-diagonal_ratio">diagonal_ratio (0.00 - 1.00)</label>
+            <input id="q2-diagonal_ratio" type="number" step="0.05" min="0" max="1" value="0.15">
+          </div>
+          <div class="field">
+            <label for="q2-partial_ratio">partial_ratio (0.00 - 1.00)</label>
+            <input id="q2-partial_ratio" type="number" step="0.05" min="0" max="1" value="0.2">
+          </div>
+          <div class="field">
+            <label for="q2-partial_bc_split">partial_bc_split (0 = all half-wall, 1 = all centered)</label>
+            <input id="q2-partial_bc_split" type="number" step="0.05" min="0" max="1" value="0.5">
+          </div>
+        </details>
+
+        <section>
+          <h2>Actions</h2>
+          <div class="btn-row">
+            <button id="q2-btn-generate" class="primary">Generate</button>
+            <button id="q2-btn-randomize" title="Increment seed by 1">Next Seed (+1)</button>
+          </div>
+        </section>
+
+        <section>
+          <h2>Difficulty Tier</h2>
+          <div class="btn-col">
+            <button id="q2-btn-gen-easy">Generate Easy</button>
+            <button id="q2-btn-gen-medium">Generate Medium</button>
+            <button id="q2-btn-gen-hard">Generate Hard</button>
+          </div>
+        </section>
+
+        <section>
+          <h2>Export</h2>
+          <button id="q2-btn-export">Export PNG</button>
+        </section>
+
+        <section>
+          <h2>Stats</h2>
+          <div class="stats-grid">
+            <span>tier</span><span id="q2-stat-tier">-</span>
+            <span>min_path</span><span id="q2-stat-min-path">-</span>
+            <span>min_area</span><span id="q2-stat-min-area">-</span>
+            <span>area_a / area_b</span><span id="q2-stat-areas">-</span>
+            <span>target_pair</span><span id="q2-stat-target-pair">-</span>
+            <span>correct_removals</span><span id="q2-stat-correct-removals">-</span>
+            <span>bar_count</span><span id="q2-stat-bar-count">-</span>
+          </div>
+        </section>
+
+        <section>
+          <h2>Pair</h2>
+          <ol id="q2-pair-list" class="pair-list"></ol>
+          <button id="q2-btn-clear-highlight" class="subtle">Clear selection</button>
+        </section>
+
+        <section>
+          <h2>Scene</h2>
+          <div class="stats-grid">
+            <span>id</span><span id="q2-scene-id">-</span>
+            <span>generated</span><span id="q2-scene-ms">-</span>
+          </div>
+        </section>
+      </div>
+    </aside>
+
+    <main id="main-area">
+      <div id="canvas-container"></div>
+    </main>
+
+    <aside id="preview">
+      <h1>Preview</h1>
+      <section>
+        <h2>Question</h2>
+        <div id="prev-question-text" class="question-text">-</div>
+      </section>
+      <section>
+        <h2>Expected Answer</h2>
+        <div id="prev-gt-answer" class="gt-answer">-</div>
+      </section>
+      <section>
+        <h2>Sample metadata</h2>
+        <pre id="prev-metadata-json">-</pre>
+      </section>
+      <section>
+        <details>
+          <summary>Full prompt template</summary>
+          <pre id="prev-full-prompt">-</pre>
+        </details>
+      </section>
+    </aside>
+  </div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

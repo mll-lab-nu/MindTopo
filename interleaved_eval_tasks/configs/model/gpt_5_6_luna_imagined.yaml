@@ -1,0 +1,38 @@
+id: gpt_5_6_luna_imagined
+kind: interleaved
+provider: openai
+keep_message_history: true
+
+text:
+  text_model_id: gpt_5_6_luna
+  max_tokens: 4096
+  api_retries: 3
+  retry_sleep_seconds: 2.0
+  requests_per_minute: 0.0
+  service_tier: flex
+  request_timeout_seconds: 900.0
+  step_deadline_seconds: 1200.0
+  extra_headers: {}
+  reasoning:
+    effort: medium
+    summary: auto
+
+image_gen:
+  upstream_model_name: gpt-image-2
+  base_url: https://api.openai.com/v1
+  base_url_env: ""
+  api_key_env: OPENAI_PAID_API_KEYS
+  mode: edits
+  size: match_input
+  response_format: ""
+  api_retries: 3
+  retry_sleep_seconds: 2.0
+  requests_per_minute: 0.0
+  request_timeout_seconds: 240.0
+  extra_headers: {}
+  extra_payload:
+    quality: low
+  enforce_image_call: false
+  enforce_against_decline: false
+  max_image_gen_calls: 0
+  max_image_gen_calls_fraction: 0.5

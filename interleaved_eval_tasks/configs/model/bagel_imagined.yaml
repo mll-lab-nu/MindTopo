@@ -1,0 +1,33 @@
+id: bagel_imagined
+kind: interleaved
+provider: bagel
+keep_message_history: false
+
+text:
+  text_model_id: bagel
+  temperature: 0.0
+  max_tokens: 4096
+  api_retries: 5
+  retry_sleep_seconds: 5.0
+  requests_per_minute: 0.0
+  request_timeout_seconds: 180.0
+  extra_headers: {}
+
+image_gen:
+  upstream_model_name: bagel
+  base_url_env: BAGEL_BASE_URL
+  base_url: ""
+  api_key_env: BAGEL_API_KEYS
+  size: "1024x1024"
+  response_format: b64_json
+  api_retries: 5
+  retry_sleep_seconds: 5.0
+  requests_per_minute: 0.0
+  request_timeout_seconds: 240.0
+  extra_headers: {}
+  extra_payload: {}
+  # Force an image-gen call every cycle even when phase 1 omits the
+  # <image_prompt> tag — falls back to phase-1 text/reasoning_content.
+  enforce_image_call: true
+  # Hard cap on image-gen calls per episode (regardless of step_budget).
+  max_image_gen_calls: 10

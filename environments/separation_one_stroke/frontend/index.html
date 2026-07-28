@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TopoBench - One Stroke Partition</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
+      background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #21262d 100%);
+      min-height: 100vh;
+      overflow: hidden;
+      color: #c9d1d9;
+    }
+    
+    #app {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    
+    header {
+      padding: 16px 24px;
+      background: rgba(22, 27, 34, 0.8);
+      border-bottom: 1px solid #30363d;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      backdrop-filter: blur(10px);
+    }
+    
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #58a6ff, #a371f7, #f778ba);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.5px;
+    }
+    
+    .controls {
+      display: flex;
+      gap: 12px;
+    }
+    
+    button {
+      padding: 8px 16px;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      background: #21262d;
+      color: #c9d1d9;
+      font-family: inherit;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    button:hover {
+      background: #30363d;
+      border-color: #484f58;
+    }
+    
+    button:active {
+      transform: scale(0.98);
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #238636, #2ea043);
+      border-color: #238636;
+    }
+    
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #2ea043, #3fb950);
+    }
+    
+    main {
+      flex: 1;
+      display: flex;
+      position: relative;
+    }
+    
+    #game-container {
+      flex: 1;
+      position: relative;
+    }
+    
+    canvas {
+      display: block;
+    }
+    
+    #sidebar {
+      width: 280px;
+      background: rgba(22, 27, 34, 0.9);
+      border-left: 1px solid #30363d;
+      padding: 20px;
+      overflow-y: auto;
+      backdrop-filter: blur(10px);
+    }
+    
+    .panel {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .panel-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #8b949e;
+      margin-bottom: 12px;
+    }
+    
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #21262d;
+      font-size: 0.875rem;
+    }
+    
+    .status-row:last-child {
+      border-bottom: none;
+    }
+    
+    .status-label {
+      color: #8b949e;
+    }
+    
+    .status-value {
+      font-weight: 500;
+    }
+    
+    .status-success {
+      color: #3fb950;
+    }
+    
+    .status-error {
+      color: #f85149;
+    }
+    
+    .status-pending {
+      color: #d29922;
+    }
+    
+    .keybinds {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    
+    .keybinds .spacer {
+      visibility: hidden;
+    }
+    
+    .key {
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #21262d;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 1rem;
+      margin: 0 auto;
+      transition: all 0.15s ease;
+    }
+    
+    .key:hover {
+      background: #30363d;
+      border-color: #58a6ff;
+      color: #58a6ff;
+      cursor: pointer;
+    }
+    
+    .key:active, .key.active {
+      transform: scale(0.95);
+      background: #58a6ff;
+      color: #0d1117;
+    }
+    
+    #message-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(13, 17, 23, 0.95);
+      border: 2px solid #30363d;
+      border-radius: 12px;
+      padding: 32px 48px;
+      text-align: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      z-index: 100;
+    }
+    
+    #message-overlay.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    
+    #message-overlay.success {
+      border-color: #3fb950;
+      box-shadow: 0 0 40px rgba(63, 185, 80, 0.3);
+    }
+    
+    #message-overlay.error {
+      border-color: #f85149;
+      box-shadow: 0 0 40px rgba(248, 81, 73, 0.3);
+    }
+    
+    #message-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    
+    #message-detail {
+      color: #8b949e;
+      font-size: 0.875rem;
+    }
+    
+    .setup-controls {
+      display: grid;
+      gap: 12px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field label {
+      font-size: 0.75rem;
+      color: #8b949e;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    select,
+    input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      background: #161b22;
+      color: #c9d1d9;
+      font-family: inherit;
+      font-size: 0.875rem;
+    }
+
+    select:focus,
+    input:focus {
+      outline: none;
+      border-color: #58a6ff;
+      box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.18);
+    }
+
+    .setup-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <header>
+      <div class="logo">TopoBench</div>
+      <div class="controls">
+        <button id="btn-reset">Reset (R)</button>
+        <button id="btn-undo">Undo (Z)</button>
+      </div>
+    </header>
+    <main>
+      <div id="game-container"></div>
+      <div id="sidebar">
+        <div class="panel">
+          <div class="panel-title">Setup</div>
+          <div class="setup-controls">
+            <div class="field">
+              <label for="board-size">Board Size</label>
+              <select id="board-size">
+                <option value="4">4x4</option>
+                <option value="5">5x5</option>
+                <option value="6">6x6</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="seed-input">Seed</label>
+              <input id="seed-input" type="number" min="1" step="1" value="1" />
+            </div>
+            <div class="setup-actions">
+              <button class="btn-primary" id="btn-generate">Generate</button>
+              <button id="btn-next-seed">Next Seed</button>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Status</div>
+          <div class="status-row">
+            <span class="status-label">Board</span>
+            <span class="status-value" id="status-board">4x4</span>
+          </div>
+          <div class="status-row">
+            <span class="status-label">Seed</span>
+            <span class="status-value" id="status-seed">1</span>
+          </div>
+          <div class="status-row">
+            <span class="status-label">Difficulty</span>
+            <span class="status-value" id="status-difficulty">easy</span>
+          </div>
+          <div class="status-row">
+            <span class="status-label">Position</span>
+            <span class="status-value" id="status-pos">(0, 0)</span>
+          </div>
+          <div class="status-row">
+            <span class="status-label">Steps</span>
+            <span class="status-value" id="status-steps">0</span>
+          </div>
+          <div class="status-row">
+            <span class="status-label">State</span>
+            <span class="status-value status-pending" id="status-state">Drawing</span>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Controls</div>
+          <div class="keybinds">
+            <div class="spacer"></div>
+            <div class="key" id="key-up" data-dir="U">↑</div>
+            <div class="spacer"></div>
+            <div class="key" id="key-left" data-dir="L">←</div>
+            <div class="key" id="key-down" data-dir="D">↓</div>
+            <div class="key" id="key-right" data-dir="R">→</div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Legend</div>
+          <div id="legend-content"></div>
+        </div>
+      </div>
+      <div id="message-overlay">
+        <div id="message-title"></div>
+        <div id="message-detail"></div>
+      </div>
+    </main>
+  </div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

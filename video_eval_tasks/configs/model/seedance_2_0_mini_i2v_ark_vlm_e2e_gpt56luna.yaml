@@ -1,0 +1,38 @@
+id: seedance_2_0_mini_i2v_ark_vlm_e2e_gpt56luna
+kind: vlm_video
+provider: vlm_video
+keep_message_history: true
+
+text:
+  text_model_id: gpt_5_6_luna
+  max_tokens: 4096
+  api_retries: 3
+  retry_sleep_seconds: 2.0
+  requests_per_minute: 60.0
+  service_tier: flex
+  request_timeout_seconds: 900.0
+  step_deadline_seconds: 1200.0
+  extra_headers: {}
+  reasoning:
+    effort: medium
+    summary: auto
+
+video_gen:
+  backend: ark
+  upstream_model_name: doubao-seedance-2-0-mini-260615
+  base_url: https://ark.cn-beijing.volces.com/api/v3
+  base_url_env: ""
+  api_key_env: VOLCENGINE_API_KEY
+  requests_per_minute: 0.0
+  mode: i2v
+  num_frames: 0
+  fps: 24
+  api_retries: 2
+  retry_sleep_seconds: 5.0
+  request_timeout_seconds: 600.0
+  queue_poll_interval_seconds: 5.0
+  extra_headers: {}
+  extra_payload:
+    ratio: "16:9"
+    duration: 5
+    generate_audio: false

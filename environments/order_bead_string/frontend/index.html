@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bead String Gallery & Dataset Generator</title>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.168.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.168.0/examples/jsm/"
+        }
+      }
+    </script>
+    <style>
+      :root {
+        --bg: #0f1220;
+        --panel: #151a2e;
+        --accent: #2a335a;
+        --cyan: #72e6ff;
+        --gold: #ffd08a;
+        --red: #ff6b6b;
+        --green: #6bcb77;
+        --text: #e6e6e6;
+        --muted: #9aa3c7;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        background: var(--bg);
+        color: var(--text);
+        height: 100vh;
+        overflow: hidden;
+      }
+      #app { display: flex; height: 100vh; }
+
+      .panel {
+        width: 360px;
+        background: var(--panel);
+        border-right: 1px solid var(--accent);
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+      .panel::-webkit-scrollbar { width: 6px; }
+      .panel::-webkit-scrollbar-track { background: var(--bg); }
+      .panel::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
+
+      h1 { font-size: 18px; font-weight: 700; color: var(--cyan); }
+      h1 span { color: var(--gold); }
+      .sub { font-size: 11px; color: var(--muted); line-height: 1.5; }
+      .row { display: flex; gap: 8px; }
+      label { font-size: 11px; color: var(--muted); display: flex; justify-content: space-between; }
+
+      input, select {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid var(--accent);
+        border-radius: 6px;
+        background: var(--bg);
+        color: var(--text);
+        font-family: inherit;
+        font-size: 12px;
+      }
+      input:focus, select:focus { outline: none; border-color: var(--cyan); }
+
+      button {
+        padding: 10px;
+        border: none;
+        border-radius: 6px;
+        background: var(--accent);
+        color: var(--text);
+        font-family: inherit;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+      button:hover { background: #36417a; transform: translateY(-1px); }
+      button:active { transform: translateY(0); }
+      .btn-primary { background: var(--cyan); color: #0f1220; font-weight: 700; }
+      .btn-primary:hover { background: #5ad4f0; }
+      .btn-gold { background: var(--gold); color: #0f1220; font-weight: 700; }
+      .btn-gold:hover { background: #ffbc60; }
+
+      .card {
+        border: 1px solid rgba(114,230,255,0.18);
+        background: rgba(114,230,255,0.04);
+        border-radius: 8px;
+        padding: 10px;
+      }
+      .card-gold {
+        border-color: rgba(255,208,138,0.35);
+        background: rgba(255,208,138,0.06);
+      }
+
+      .section-title {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--gold);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .section-title::before {
+        content: '';
+        flex: 0 0 3px;
+        height: 12px;
+        background: var(--gold);
+        border-radius: 2px;
+      }
+
+      .kv { font-size: 11px; color: var(--muted); line-height: 1.8; }
+      .kv b { color: var(--text); font-weight: 700; }
+
+      #view { flex: 1; position: relative; }
+
+      .pill {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 999px;
+        border: 1px solid rgba(255,255,255,0.12);
+        background: rgba(0,0,0,0.22);
+        font-size: 10px;
+        color: var(--muted);
+      }
+      .pill-easy { border-color: var(--green); color: var(--green); }
+      .pill-medium { border-color: var(--gold); color: var(--gold); }
+      .pill-hard { border-color: var(--red); color: var(--red); }
+
+      /* Slider styles */
+      input[type="range"] {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 100%;
+        height: 5px;
+        border-radius: 3px;
+        background: var(--accent);
+        outline: none;
+        cursor: pointer;
+        margin-top: 4px;
+        padding: 0;
+        border: none;
+      }
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--gold);
+        cursor: pointer;
+        border: 2px solid var(--bg);
+        box-shadow: 0 0 4px rgba(255,208,138,0.5);
+      }
+      input[type="range"]::-moz-range-thumb {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--gold);
+        cursor: pointer;
+        border: 2px solid var(--bg);
+      }
+
+      .collapsible {
+        cursor: pointer;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      .collapsible::after {
+        content: '\25BC';
+        font-size: 9px;
+        margin-left: auto;
+        transition: transform 0.2s;
+      }
+      .collapsible.collapsed::after {
+        transform: rotate(-90deg);
+      }
+      .collapse-content {
+        overflow: hidden;
+        max-height: 1000px;
+        transition: max-height 0.3s ease;
+      }
+      .collapse-content.collapsed {
+        max-height: 0;
+      }
+
+      /* Checkbox styles */
+      input[type="checkbox"] {
+        width: auto;
+        margin-right: 6px;
+        accent-color: var(--cyan);
+      }
+      .checkbox-row {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 12px;
+        color: var(--text);
+        margin-top: 4px;
+      }
+
+      /* Color preview */
+      .color-swatch {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 2px;
+        border: 1px solid rgba(255,255,255,0.2);
+        vertical-align: middle;
+      }
+
+      /* Utility classes (replace inline styles) */
+      .flex-1 { flex: 1; }
+      .flex-2 { flex: 2; }
+      .spacer-8 { height: 8px; }
+      .hidden { display: none; }
+      .val-cyan { color: var(--cyan); }
+      .checkbox-row label {
+        font-size: 12px;
+        color: var(--text);
+        display: inline;
+        justify-content: initial;
+      }
+      .btn-dataset { background: #e67e22; font-weight: bold; }
+      .btn-dataset:hover { background: #d35400; }
+      .batch-progress {
+        padding: 6px 8px;
+        font-size: 12px;
+        color: #aaa;
+        border: 1px solid #444;
+        border-radius: 4px;
+        margin-top: 4px;
+      }
+      .progress-track {
+        background: #333;
+        border-radius: 2px;
+        height: 6px;
+        margin-top: 4px;
+      }
+      .progress-bar-fill {
+        background: #e67e22;
+        height: 100%;
+        width: 0%;
+        border-radius: 2px;
+        transition: width 0.3s;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div class="panel">
+        <!-- Header -->
+        <div>
+          <h1>Bead String <span>Gallery</span></h1>
+          <div class="sub">
+            3D 珠串可视化与数据集生成工具。支持多种曲线类型、难度分级、批量导出。
+          </div>
+        </div>
+
+        <!-- === Basic Settings === -->
+        <div class="card">
+          <div class="row">
+            <div class="flex-1">
+              <label for="seed">Seed <span>可复现</span></label>
+              <input id="seed" type="text" value="bead-gallery-v1" />
+            </div>
+          </div>
+          <div class="spacer-8"></div>
+          <div class="row">
+            <div class="flex-1">
+              <label for="count">数量 N <span>1-200</span></label>
+              <input id="count" type="text" value="1" />
+            </div>
+            <div class="flex-1">
+              <label for="cols">网格列数 <span>1-20</span></label>
+              <input id="cols" type="text" value="4" />
+            </div>
+          </div>
+        </div>
+
+        <!-- === Bead String Parameters === -->
+        <div class="card card-gold">
+          <div class="section-title">Bead String 参数</div>
+
+          <label for="numBeads">珠子数量: <span id="numBeadsVal" class="val-cyan">5</span></label>
+          <input id="numBeads" type="range" min="3" max="10" step="1" value="5" />
+          <div class="spacer-8"></div>
+
+          <label for="curveType">曲线类型</label>
+          <select id="curveType">
+            <optgroup label="=== 开放曲线 (Linear) ===">
+              <option value="straight">— Straight (直线)</option>
+              <option value="arc" selected>&#x2312; Arc (弧线)</option>
+              <option value="s_curve">&#x223F; S-Curve (S 形)</option>
+              <option value="helix">&#x1F9EC; Helix (螺旋)</option>
+              <option value="random_spline">&#x1F3B2; Random Spline (随机曲线)</option>
+            </optgroup>
+            <optgroup label="=== 闭环曲线 (Ring) ===">
+              <option value="ring">&#x25CB; Ring (圆环)</option>
+              <option value="wavy_ring">&#x3030; Wavy Ring (波浪环)</option>
+              <option value="tangled_loop">&#x1F300; Tangled Loop (缠绕环)</option>
+            </optgroup>
+          </select>
+          <div class="spacer-8"></div>
+
+          <label for="curveComplexity">曲线复杂度: <span id="curveComplexityVal" class="val-cyan">0.30</span></label>
+          <input id="curveComplexity" type="range" min="0" max="1" step="0.05" value="0.30" />
+          <div class="spacer-8"></div>
+
+          <label for="beadSize">珠子大小: <span id="beadSizeVal" class="val-cyan">0.35</span></label>
+          <input id="beadSize" type="range" min="0.15" max="0.80" step="0.05" value="0.35" />
+          <div class="spacer-8"></div>
+
+          <label for="ropeThickness">绳子粗细: <span id="ropeThicknessVal" class="val-cyan">0.08</span></label>
+          <input id="ropeThickness" type="range" min="0.03" max="0.20" step="0.01" value="0.08" />
+          <div class="spacer-8"></div>
+
+          <label for="colorMode">颜色模式</label>
+          <select id="colorMode">
+            <option value="distinct" selected>Distinct (高对比)</option>
+            <option value="mixed">Mixed (混合)</option>
+            <option value="similar">Similar (相近色)</option>
+            <option value="palindrome">Palindrome (回文)</option>
+            <option value="periodic">Periodic (周期)</option>
+            <option value="palindrome_periodic">Palindrome+Periodic (回文且周期)</option>
+          </select>
+          <div class="spacer-8"></div>
+
+          <div class="checkbox-row">
+            <input type="checkbox" id="isRing" />
+            <label for="isRing">环形模式 (Ring / Cyclic)</label>
+          </div>
+          <div class="checkbox-row">
+            <input type="checkbox" id="showStartMarker" checked />
+            <label for="showStartMarker">显示起始标记 (Start Marker)</label>
+          </div>
+        </div>
+
+        <!-- === Rendering Settings === -->
+        <div class="card">
+          <div class="section-title collapsible" data-target="renderSettings">渲染 & 视角设置</div>
+          <div id="renderSettings" class="collapse-content">
+            <label for="cameraAngle">视角 (Camera Angle)</label>
+            <select id="cameraAngle">
+              <option value="iso_fr" selected>Isometric Front</option>
+              <option value="front">Front</option>
+              <option value="oblique">Oblique</option>
+              <option value="top">Top</option>
+              <option value="back">Back</option>
+              <option value="left">Left</option>
+              <option value="right">Right</option>
+              <option value="iso_bk">Isometric Back</option>
+            </select>
+            <div class="spacer-8"></div>
+
+            <label for="occlusionLevel">遮挡等级</label>
+            <select id="occlusionLevel">
+              <option value="none" selected>None (无遮挡)</option>
+              <option value="partial">Partial (部分遮挡)</option>
+              <option value="heavy">Heavy (严重遮挡)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- === Action Buttons === -->
+        <div class="row">
+          <button id="btnGenerate" class="btn-primary flex-2">生成 / 刷新</button>
+          <button id="btnExport" class="btn-gold flex-1">导出 JSON</button>
+        </div>
+        <div class="row">
+          <button id="btnCapture" class="btn-gold flex-1">截图 PNG</button>
+          <button id="btnBatchCapture" class="btn-gold flex-1">8 视角批量导出</button>
+        </div>
+        <div class="row">
+          <button id="btnFullDataset" class="btn-gold flex-1 btn-dataset">一键生成完整数据集</button>
+        </div>
+        <div id="batchProgress" class="batch-progress hidden">
+          <div id="batchProgressText">准备中...</div>
+          <div class="progress-track">
+            <div id="batchProgressBar" class="progress-bar-fill"></div>
+          </div>
+        </div>
+
+        <!-- === Status === -->
+        <div class="card kv" id="status">
+          <div><b>状态</b>: 待初始化</div>
+        </div>
+
+        <div class="sub">
+          运行：<code>python3 -m http.server 8080</code><br/>
+          打开：<code>http://localhost:8080/bead_gallery.html</code>
+        </div>
+      </div>
+
+      <div id="view"></div>
+    </div>
+
+    <script type="module" src="./src/bead-gallery.js"></script>
+    <script type="module">
+      // === Full dataset generation ===
+      import {
+        generateFullDataset,
+        generateBaseSamplesShard,
+        generateCyclicPairs,
+        generatePairVariants,
+        downloadDatasetAsZip,
+      } from './src/bead-gallery.js';
+
+      window.topoBench = {
+        generateFullDataset,
+        generateBaseSamplesShard,
+        generateCyclicPairs,
+        generatePairVariants,
+        downloadDatasetAsZip,
+      };
+
+      const btnFullDataset = document.getElementById('btnFullDataset');
+      const progressDiv = document.getElementById('batchProgress');
+      const progressText = document.getElementById('batchProgressText');
+      const progressBar = document.getElementById('batchProgressBar');
+
+      if (btnFullDataset) {
+        btnFullDataset.addEventListener('click', async () => {
+          if (!confirm('将生成约 150+ 张图片和对应 metadata。\n这会花费几分钟，期间请勿关闭页面。\n\n继续？')) return;
+
+          btnFullDataset.disabled = true;
+          btnFullDataset.textContent = '生成中...';
+          progressDiv.style.display = 'block';
+
+          try {
+            const dataset = await generateFullDataset(
+              {
+                seed: document.getElementById('seed')?.value || 'bead-dataset-v1',
+                samplesPerDifficulty: 50,
+                renderWidth: 1024,
+                renderHeight: 1024,
+              },
+              (cur, total, msg) => {
+                const pct = Math.round((cur / total) * 100);
+                progressText.textContent = msg;
+                progressBar.style.width = pct + '%';
+              }
+            );
+
+            progressText.textContent = `完成！共 ${dataset.stats.total} 张图片。正在打包为 ZIP...`;
+
+            const zipResult = await downloadDatasetAsZip(dataset, (cur, total, msg) => {
+              progressText.textContent = msg;
+              if (total > 0) progressBar.style.width = Math.round((cur / total) * 100) + '%';
+            });
+
+            const sizeMB = (zipResult.zipSize / 1024 / 1024).toFixed(1);
+            progressText.textContent = `全部完成！ZIP 已下载 (${sizeMB} MB)`;
+            alert(`数据集 ZIP 已下载！\n- Easy: ${dataset.stats.easy}\n- Medium: ${dataset.stats.medium}\n- Hard: ${dataset.stats.hard}\n- 总图片: ${dataset.stats.total} 张\n- ZIP 大小: ${sizeMB} MB`);
+          } catch (err) {
+            progressText.textContent = `错误: ${err.message}`;
+            console.error('Batch generation error:', err);
+            alert('生成失败: ' + err.message);
+          } finally {
+            btnFullDataset.disabled = false;
+            btnFullDataset.textContent = '一键生成完整数据集';
+          }
+        });
+      }
+    </script>
+    <script>
+      // === UI sync ===
+      (function () {
+        // Collapsible panels
+        document.querySelectorAll('.collapsible').forEach(el => {
+          el.addEventListener('click', () => {
+            const target = document.getElementById(el.dataset.target);
+            if (target) {
+              el.classList.toggle('collapsed');
+              target.classList.toggle('collapsed');
+            }
+          });
+        });
+
+        // Slider value sync
+        const sliders = [
+          ['numBeads', 'numBeadsVal', 0],
+          ['curveComplexity', 'curveComplexityVal', 2],
+          ['beadSize', 'beadSizeVal', 2],
+          ['ropeThickness', 'ropeThicknessVal', 2],
+        ];
+
+        sliders.forEach(([sliderId, valId, decimals]) => {
+          const slider = document.getElementById(sliderId);
+          const valEl = document.getElementById(valId);
+          if (slider && valEl) {
+            const update = () => {
+              valEl.textContent = parseFloat(slider.value).toFixed(decimals);
+            };
+            update();
+            slider.addEventListener('input', update);
+          }
+        });
+
+        // Auto-switch to ring curve types when ring checkbox is toggled
+        const isRingCheckbox = document.getElementById('isRing');
+        const curveTypeSelect = document.getElementById('curveType');
+        if (isRingCheckbox && curveTypeSelect) {
+          isRingCheckbox.addEventListener('change', () => {
+            if (isRingCheckbox.checked) {
+              const val = curveTypeSelect.value;
+              if (val !== 'ring' && val !== 'wavy_ring') {
+                curveTypeSelect.value = 'ring';
+              }
+            }
+          });
+          curveTypeSelect.addEventListener('change', () => {
+            const val = curveTypeSelect.value;
+            isRingCheckbox.checked = (val === 'ring' || val === 'wavy_ring');
+          });
+        }
+      })();
+    </script>
+  </body>
+</html>

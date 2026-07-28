@@ -1,0 +1,74 @@
+# local workspace
+.claude/
+todolist.md
+notes.md
+# Agent-facing memory / docs that should not land on main.
+AGENTS.md
+CLAUDE.md
+
+# Environment / secrets (keep .env.example)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.development
+.env.test
+.env.production
+environments/api.json
+environments/continuity_2d_maze/backend/internvl3_local_config.json
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+# Self-hosted model extras get their own venvs (see pyproject optional deps).
+.venv-bagel/
+.venv-thinkmorph/
+
+# Node / frontend
+**/node_modules/
+**/frontend/dist/
+**/frontend/.vite/
+# bun.lock IS a checked-in lockfile (like package-lock.json) — do NOT ignore it.
+.bun/
+
+# Self-hosted model setup scratch (clones, downloaded checkpoints)
+/.deps/
+/models/
+
+# IDE / editor junk
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Evaluation outputs, logs, and caches
+logs/
+lmms_eval_tasks/cache/
+lmms_eval_tasks/logs/
+topobench_eval/*.egg-info/
+topobench_eval/build/
+topobench_eval/dist/
+
+# Generated environment assets and benchmark outputs.
+# Keep the fixed question.jsonl under each environments/<task>/output/;
+# ignore the regenerated images and any other generated artifacts beside it.
+environments/*/output/*
+!environments/*/output/
+!environments/*/output/question.jsonl
+environments/*/output_*/
+environments/*/output/*.zip
+environments/*/*.zip
+
+# ai2thor runtime cache for continuity_3d_maze
+environments/*/.thor_runtime/

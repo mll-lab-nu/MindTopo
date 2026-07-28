@@ -1,0 +1,17 @@
+id: gpt_5_5
+kind: registry_remote
+temperature: 0.0
+max_tokens: 2048
+api_retries: 3
+retry_sleep_seconds: 2.0
+requests_per_minute: 0.0
+request_timeout_seconds: 900.0
+# Four 900-second attempts plus the configured retry backoffs need slightly
+# more than one hour; a 900-second deadline prevented every retry from firing.
+step_deadline_seconds: 3700.0
+service_tier: flex
+keep_message_history: true
+reasoning:
+  effort: low
+  summary: auto
+extra_headers: {}

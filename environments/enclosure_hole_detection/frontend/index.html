@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hole Scene Generator</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #12121a;
+      --accent: #00d4aa;
+      --accent-dim: #00a888;
+      --text-primary: #e8e8ec;
+      --text-secondary: #8888a0;
+      --border: #2a2a3a;
+    }
+    
+    body {
+      font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+    }
+    
+    #app {
+      display: flex;
+      width: 100%;
+      height: 100vh;
+    }
+    
+    #canvas-container {
+      flex: 1;
+      position: relative;
+      background: 
+        radial-gradient(circle at 20% 80%, rgba(0, 212, 170, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(100, 100, 200, 0.03) 0%, transparent 50%),
+        var(--bg-primary);
+    }
+    
+    #canvas-container canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: grab;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    #canvas-container canvas.dragging {
+      cursor: grabbing;
+    }
+    
+    #controls {
+      width: 360px;
+      background: var(--bg-secondary);
+      border-left: 1px solid var(--border);
+      padding: 24px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    
+    .control-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .control-header h1 {
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    
+    .control-header .badge {
+      background: var(--accent);
+      color: var(--bg-primary);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    
+    .section {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      margin-bottom: 14px;
+    }
+    
+    .control-group {
+      margin-bottom: 12px;
+    }
+    
+    .control-group:last-child {
+      margin-bottom: 0;
+    }
+    
+    .control-group label {
+      display: block;
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+    
+    .control-group input[type="number"],
+    .control-group input[type="text"],
+    .control-group select {
+      width: 100%;
+      padding: 10px 12px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 13px;
+      transition: border-color 0.2s;
+    }
+    
+    .control-group input:focus,
+    .control-group select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    
+    .control-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    
+    .control-row-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+    }
+    
+    .btn {
+      width: 100%;
+      padding: 14px 20px;
+      border: none;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.5px;
+    }
+    
+    .btn-primary {
+      background: var(--accent);
+      color: var(--bg-primary);
+    }
+    
+    .btn-primary:hover {
+      background: var(--accent-dim);
+      transform: translateY(-1px);
+    }
+    
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+    
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: var(--text-secondary);
+    }
+    
+    .btn-group {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .btn-group .btn {
+      flex: 1;
+    }
+    
+    .stats {
+      font-size: 11px;
+      color: var(--text-secondary);
+      padding: 12px;
+      background: var(--bg-primary);
+      border-radius: 6px;
+      line-height: 1.8;
+    }
+    
+    .stats-value {
+      color: var(--accent);
+      font-weight: 600;
+    }
+    
+    input[type="color"] {
+      width: 100%;
+      height: 36px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      background: var(--bg-primary);
+    }
+    
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .checkbox-group input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent);
+    }
+    
+    #batch-progress {
+      display: none;
+      padding: 12px;
+      background: var(--bg-primary);
+      border-radius: 6px;
+      text-align: center;
+    }
+    
+    #batch-progress .progress-bar {
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+    
+    #batch-progress .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      width: 0%;
+      transition: width 0.3s;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div id="canvas-container"></div>
+    <div id="controls">
+      <div class="control-header">
+        <h1>Hole Generator</h1>
+        <span class="badge">v2.0</span>
+      </div>
+      
+      <div class="section">
+        <div class="section-title">Seed Control</div>
+        <div class="control-group">
+          <label>Difficulty Preset</label>
+          <select id="difficulty">
+            <option value="">Custom</option>
+            <option value="1">Easy</option>
+            <option value="2" selected>Medium</option>
+            <option value="3">Hard</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label>Global Seed</label>
+          <input type="number" id="seed" value="12345">
+        </div>
+      </div>
+      
+      <div class="section">
+        <div class="section-title">Board Geometry</div>
+        <div class="control-group">
+          <label>Shape</label>
+          <select id="boardShape">
+            <option value="rect">Rectangle</option>
+            <option value="circle">Circle</option>
+            <option value="polygon">Polygon</option>
+            <!--
+            <option value="rounded_rect">Rounded Rectangle</option>
+            <option value="ellipse">Ellipse</option>
+            <option value="star">Star</option>
+            <option value="cross">Cross</option>
+            <option value="l_shape">L-Shape</option>
+            <option value="irregular">Irregular Blob</option>
+            -->
+          </select>
+        </div>
+        <div class="control-row">
+          <div class="control-group">
+            <label>Width</label>
+            <input type="number" id="boardWidth" value="10" step="0.5">
+          </div>
+          <div class="control-group">
+            <label>Height</label>
+            <input type="number" id="boardHeight" value="10" step="0.5">
+          </div>
+        </div>
+        <div class="control-group">
+          <label>Thickness</label>
+          <input type="number" id="boardThickness" value="0.5" step="0.1">
+        </div>
+      </div>
+      
+      <div class="section">
+        <div class="section-title">Holes Configuration</div>
+        <div class="control-row">
+          <div class="control-group">
+            <label>Min Count</label>
+            <input type="number" id="holesMin" value="5" min="0">
+          </div>
+          <div class="control-group">
+            <label>Max Count</label>
+            <input type="number" id="holesMax" value="13" min="1">
+          </div>
+        </div>
+        <div class="control-row">
+          <div class="control-group">
+            <label>Min Distance</label>
+            <input type="number" id="minDistance" value="0.45" step="0.05">
+          </div>
+          <div class="control-group">
+            <label>Edge Buffer</label>
+            <input type="number" id="edgeBuffer" value="0.85" step="0.05">
+          </div>
+        </div>
+        <div class="control-group">
+          <label>Hole Types</label>
+          <select id="holeTypes" multiple style="height: 80px;">
+            <option value="hole" selected>Hole (Through)</option>
+            <option value="pit" selected>Pit (Depression)</option>
+            <option value="mixed" selected>Mixed</option>
+            <option value="mixed2" selected>Mixed2</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label>Shape Variant</label>
+          <select id="shapeVariant">
+            <option value="vertical">Vertical (Clean)</option>
+            <option value="distorted">Tapered (Frustum)</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="section">
+        <div class="section-title">Under Board</div>
+        <div class="control-group checkbox-group">
+          <input type="checkbox" id="underBoardEnable" checked>
+          <label style="margin: 0;">Enable Under Board</label>
+        </div>
+        <div class="control-row">
+          <div class="control-group">
+            <label>Offset X</label>
+            <input type="number" id="underBoardOffsetX" value="0.2" step="0.1">
+          </div>
+          <div class="control-group">
+            <label>Offset Y</label>
+            <input type="number" id="underBoardOffsetY" value="0.1" step="0.1">
+          </div>
+        </div>
+        <div class="control-group">
+          <label>Coverage</label>
+          <select id="underBoardCoverage">
+            <option value="full">Full</option>
+            <option value="partial" selected>Partial</option>
+            <option value="random">Random</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="section">
+        <div class="section-title">Camera</div>
+        <div class="control-row">
+          <div class="control-group">
+            <label>Pitch (°)</label>
+            <input type="number" id="cameraPitch" value="85" min="80" max="90">
+          </div>
+          <div class="control-group">
+            <label>Yaw (°)</label>
+            <input type="number" id="cameraYaw" value="75" min="60" max="90">
+          </div>
+        </div>
+        <div class="control-row">
+          <div class="control-group">
+            <label>Distance</label>
+            <input type="number" id="cameraDistance" value="18" step="1">
+          </div>
+          <div class="control-group">
+            <label>FOV</label>
+            <input type="number" id="cameraFov" value="45" min="10" max="120">
+          </div>
+        </div>
+      </div>
+      
+      <div class="section">
+        <div class="section-title">Appearance</div>
+        <div class="control-row">
+          <div class="control-group">
+            <label>Board Color</label>
+            <input type="color" id="boardColor" value="#FF5733">
+          </div>
+          <div class="control-group">
+            <label>Under Board Color</label>
+            <input type="color" id="underBoardColor" value="#78d6ff">
+          </div>
+        </div>
+        <div class="control-group">
+          <label>Material Type</label>
+          <select id="materialType">
+            <option value="phong">Phong</option>
+            <option value="standard" selected>Standard (PBR)</option>
+            <option value="wood">Wood (Texture)</option>
+            <option value="rock">Rock (Texture)</option>
+            <option value="metal">Metal (Texture)</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="section">
+        <div class="section-title">Lighting</div>
+        <div class="control-group">
+          <label>Ambient Intensity</label>
+          <input type="number" id="ambientIntensity" value="0.5" step="0.1" min="0" max="2">
+        </div>
+        <div class="control-row-3">
+          <div class="control-group">
+            <label>Light X</label>
+            <input type="number" id="lightX" value="10">
+          </div>
+          <div class="control-group">
+            <label>Light Y</label>
+            <input type="number" id="lightY" value="20">
+          </div>
+          <div class="control-group">
+            <label>Light Z</label>
+            <input type="number" id="lightZ" value="10">
+          </div>
+        </div>
+      </div>
+      
+      <button class="btn btn-primary" id="generateBtn">Generate Scene</button>
+      
+      <div class="btn-group">
+        <button class="btn btn-secondary" id="randomizeBtn">Randomize</button>
+        <button class="btn btn-secondary" id="exportBtn">Export JPG</button>
+      </div>
+      
+      <div class="section">
+        <div class="section-title">Batch Generation</div>
+        <div class="control-row">
+          <div class="control-group">
+            <label>Count</label>
+            <input type="number" id="batchCount" value="10" min="1" max="100">
+          </div>
+          <div class="control-group">
+            <label>Mode</label>
+            <select id="batchMode">
+              <option value="static">Static Reasoning</option>
+              <option value="invariance">Invariance</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-secondary" id="batchBtn">Generate Batch</button>
+        <div id="batch-progress">
+          <span id="batch-status">Generating...</span>
+          <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="stats" id="stats">
+        Holes: <span class="stats-value" id="stat-holes">0</span><br>
+        Vertices: <span class="stats-value" id="stat-vertices">0</span><br>
+        Render Time: <span class="stats-value" id="stat-time">0</span>ms
+      </div>
+    </div>
+  </div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

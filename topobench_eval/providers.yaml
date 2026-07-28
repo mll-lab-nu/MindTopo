@@ -1,0 +1,268 @@
+# TopoBench remote model registry.
+#
+# Keys under `models` are internal IDs used by Hydra/CLI/logging.
+# `upstream_model_name` is the actual model string sent to the provider API.
+# `api_key_env` names a *plural* env var (e.g. OPENAI_API_KEYS=sk-a,sk-b).
+# The loader also accepts the singular form (OPENAI_API_KEY) as fallback.
+# Secrets live in the repo-root `.env` and are not committed.
+
+models:
+  # ── existing ──────────────────────────────────────────────────────────────
+  internvl:
+    upstream_model_name: internvl3.5-241b-a28b
+    adapter: openai
+    provider: internvl
+    base_url: https://chat.intern-ai.org.cn/api/v1
+    api_key_env: INTERNVL_API_KEYS
+
+  glm_4_1v:
+    upstream_model_name: glm-4.1v-thinking-flashx
+    adapter: openai
+    provider: zhipu
+    base_url: https://open.bigmodel.cn/api/paas/v4
+    api_key_env: ZHIPU_API_KEYS
+
+  qwen2_5_vl_72b_dashscope:
+    upstream_model_name: qwen2.5-vl-72b-instruct
+    adapter: openai
+    provider: dashscope
+    base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
+    api_key_env: DASHSCOPE_API_KEYS
+
+  qwen:
+    upstream_model_name: qwen/qwen3.5-397b-a17b
+    adapter: openai
+    provider: openrouter
+    base_url: https://openrouter.ai/api/v1
+    api_key_env: OPENROUTER_API_KEYS
+
+  qwen3_5_plus_proxy:
+    upstream_model_name: qwen3.5-plus
+    adapter: openai
+    provider: qwen_paid_proxy
+    base_url: http://14.103.68.46/v1
+    api_key_env: QWEN_PROXY_API_KEYS
+
+  claude_sonnet_4_openrouter:
+    upstream_model_name: anthropic/claude-sonnet-4
+    adapter: openai
+    provider: openrouter
+    base_url: https://openrouter.ai/api/v1
+    api_key_env: OPENROUTER_API_KEYS
+
+  # ── DashScope / Alibaba Bailian ───────────────────────────────────────────
+
+  qwen_vl_max:
+    upstream_model_name: qwen-vl-max
+    adapter: openai
+    provider: dashscope
+    base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
+    api_key_env: DASHSCOPE_API_KEYS
+
+  # ── OpenRouter vision-language models ────────────────────────────────
+
+  nemotron:
+    upstream_model_name: nvidia/nemotron-nano-12b-v2-vl
+    adapter: openai
+    provider: nvidia_nim
+    base_url: https://integrate.api.nvidia.com/v1
+    api_key_env: NVIDIA_NIM_API_KEYS
+
+  llama:
+    upstream_model_name: meta-llama/llama-4-maverick
+    adapter: openai
+    provider: openrouter
+    base_url: https://openrouter.ai/api/v1
+    api_key_env: OPENROUTER_API_KEYS
+
+  mistral_14b:
+    upstream_model_name: mistralai/ministral-14b-2512
+    adapter: openai
+    provider: openrouter
+    base_url: https://openrouter.ai/api/v1
+    api_key_env: OPENROUTER_API_KEYS
+
+  # ── Gemma private API ────────────────────────────────────────────────────
+
+  gemma:
+    upstream_model_name: google/gemma-4-31b-it
+    adapter: openai
+    provider: gemma_api
+    base_url: https://gemma-gpuc03.taildfb774.ts.net/v1
+    base_url_env: GEMMA_4_31B_IT_BASE_URL
+    api_key_env: GEMMA_4_31B_IT_API_KEYS
+
+  # ── Zhipu BigModel ────────────────────────────────────────────────────────
+
+  glm_4v_flash:
+    upstream_model_name: glm-4v-flash
+    adapter: openai
+    provider: zhipu
+    base_url: https://open.bigmodel.cn/api/paas/v4
+    api_key_env: ZHIPU_API_KEYS
+
+  # ── Google AI Studio — free tier ──────────────────────────────────────────
+  # gemini_3_flash: 10 RPM / 250 RPD → configs/model sets requests_per_minute: 10
+
+  gemini_3_flash:
+    upstream_model_name: gemini-3-flash-preview
+    adapter: openai
+    provider: google
+    base_url: https://generativelanguage.googleapis.com/v1beta/openai/
+    api_key_env: GOOGLE_FREE_API_KEYS
+
+  # ── Google AI Studio — paid tier ─────────────────────────────────────────
+
+  gemini_3_1_pro:
+    upstream_model_name: gemini-3.1-pro-preview
+    adapter: openai
+    provider: google
+    base_url: https://generativelanguage.googleapis.com/v1beta/openai/
+    api_key_env: GOOGLE_PAID_API_KEYS
+
+  gemini_3_1_flash_lite:
+    upstream_model_name: gemini-3.1-flash-lite-preview
+    adapter: openai
+    provider: google
+    base_url: https://generativelanguage.googleapis.com/v1beta/openai/
+    api_key_env: GOOGLE_PAID_API_KEYS
+
+  # ── ModelScope (2000 RPD, no per-minute cap) ──────────────────────────────
+
+  qvq:
+    upstream_model_name: Qwen/QVQ-72B-Preview
+    adapter: openai
+    provider: modelscope
+    base_url: https://api-inference.modelscope.cn/v1/
+    api_key_env: MODELSCOPE_API_KEYS
+
+  # ── OpenRouter free tier (20 RPM / 200 RPD per key) ──────────────────────
+
+  gemma_3_27b:
+    upstream_model_name: google/gemma-3-27b-it:free
+    adapter: openai
+    provider: openrouter
+    base_url: https://openrouter.ai/api/v1
+    api_key_env: OPENROUTER_API_KEYS
+
+  gemma_3_11b_it:
+    upstream_model_name: google/gemma-3-11b-it:free
+    adapter: openai
+    provider: openrouter
+    base_url: https://openrouter.ai/api/v1
+    api_key_env: OPENROUTER_API_KEYS
+
+  llama_4_maverick:
+    upstream_model_name: meta/llama-4-maverick:free
+    adapter: openai
+    provider: openrouter
+    base_url: https://openrouter.ai/api/v1
+    api_key_env: OPENROUTER_API_KEYS
+
+  nemotron_nano_12b_openrouter:
+    upstream_model_name: nvidia/nemotron-nano-12b-v2-vl:free
+    adapter: openai
+    provider: openrouter
+    base_url: https://openrouter.ai/api/v1
+    api_key_env: OPENROUTER_API_KEYS
+
+  nemotron_3_nano_omni_30b_openrouter:
+    upstream_model_name: nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free
+    adapter: openai
+    provider: openrouter
+    base_url: https://openrouter.ai/api/v1
+    api_key_env: OPENROUTER_API_KEYS
+
+  kimi_latest_openrouter:
+    upstream_model_name: moonshotai/kimi-latest
+    adapter: openai
+    provider: openrouter
+    base_url: https://openrouter.ai/api/v1
+    api_key_env: OPENROUTER_API_KEYS
+
+  qwen3_6_flash_openrouter:
+    upstream_model_name: qwen/qwen3.6-flash
+    adapter: openai
+    provider: openrouter
+    base_url: https://openrouter.ai/api/v1
+    api_key_env: OPENROUTER_API_KEYS
+
+  ling_2_6_1t_openrouter:
+    upstream_model_name: inclusionai/ling-2.6-1t:free
+    adapter: openai
+    provider: openrouter
+    base_url: https://openrouter.ai/api/v1
+    api_key_env: OPENROUTER_API_KEYS
+
+  gpt_5_4_nano_openrouter:
+    upstream_model_name: openai/gpt-5.4-nano
+    adapter: openai
+    provider: openrouter
+    base_url: https://openrouter.ai/api/v1
+    api_key_env: OPENROUTER_API_KEYS
+
+  # ── GPT (OpenAI-compatible, paid) ──────────────────
+
+  gpt_5_5:
+    upstream_model_name: gpt-5.5
+    adapter: openai
+    provider: openai
+    base_url: https://yunwu.ai/v1
+    api_key_env: OPENAI_PAID_API_KEYS
+
+  gpt_5_4:
+    upstream_model_name: gpt-5.4-2026-03-05
+    adapter: openai
+    provider: openai
+    base_url: https://yunwu.ai/v1
+    api_key_env: OPENAI_PAID_API_KEYS
+
+  gpt_5_4_mini:
+    upstream_model_name: gpt-5.4-mini-2026-03-17
+    adapter: openai
+    provider: openai
+    base_url: https://yunwu.ai/v1
+    api_key_env: OPENAI_PAID_API_KEYS
+
+  gpt_5_6_luna:
+    upstream_model_name: gpt-5.6-luna
+    adapter: openai
+    provider: openai
+    base_url: https://api.openai.com/v1
+    api_key_env: OPENAI_PAID_API_KEYS
+
+
+  # ── Self-hosted open-weight models (GPU required) ────────────────────────
+  # Each model entry expects its own OpenAI-compatible server on the listed port.
+  # Override the URL at runtime via the *_BASE_URL env vars (see .env).
+
+  cosmos:
+    upstream_model_name: nvidia/Cosmos-Reason2-8B
+    adapter: openai
+    provider: self_hosted
+    base_url: http://127.0.0.1:8000/v1
+    base_url_env: COSMOS_REASON2_BASE_URL
+    api_key_env: COSMOS_REASON2_API_KEYS
+
+  bagel:
+    upstream_model_name: ByteDance-Seed/BAGEL-7B-MoT
+    adapter: openai
+    provider: self_hosted
+    base_url: http://127.0.0.1:8011/v1
+    base_url_env: BAGEL_BASE_URL
+    api_key_env: BAGEL_API_KEYS
+
+  thinkmorph:
+    upstream_model_name: ThinkMorph/ThinkMorph-7B
+    adapter: openai
+    provider: self_hosted
+    base_url: http://127.0.0.1:8002/v1
+    base_url_env: THINKMORPH_BASE_URL
+    api_key_env: THINKMORPH_API_KEYS
+
+  minicpm:
+    upstream_model_name: openbmb/MiniCPM-V-4_5
+    adapter: openai
+    provider: nvidia_nim
+    base_url: https://integrate.api.nvidia.com/v1
+    api_key_env: MINICPM_V_4_5_NIM_API_KEYS

@@ -1,0 +1,45 @@
+id: nemotron_imagined
+kind: interleaved
+provider: openrouter
+keep_message_history: false
+
+# Inner text VLM: NVIDIA Nemotron-3 Nano Omni 30B (free OpenRouter tier).
+# Reasoning-style — most output lands in `reasoning_content`, so the
+# interleaved_client's `_extract_image_prompt` checks both fields and
+# `_fallback_image_prompt` uses reasoning_content as a fallback when the
+# model omits the <image_prompt> tag.
+text:
+  text_model_id: nemotron_3_nano_omni_30b_openrouter
+  temperature: 0.7   # break Nemotron's deterministic repetition loops
+  max_tokens: 32768  # reasoning_content burns 10K+ tokens before visible content
+  api_retries: 3
+  retry_sleep_seconds: 2.0
+  requests_per_minute: 20.0   # OpenRouter free tier ~20 RPM/key
+  request_timeout_seconds: 240.0
+  extra_headers: {}
+
+image_gen:
+  upstream_model_name: gpt-image-2
+  base_url: https://api.openai.com/v1
+  base_url_env: ""
+  api_key_env: OPENAI_API_KEYS
+  # mode=edits → conditions on the env's current observation PNG, so the
+  # imagined image stays anchored to the current state.
+  mode: edits
+  size: "1024x1024"
+  # gpt-image-* always returns b64_json and rejects an explicit `response_format`.
+  response_format: ""
+  api_retries: 3
+  retry_sleep_seconds: 2.0
+  requests_per_minute: 0.0
+  request_timeout_seconds: 240.0
+  extra_headers: {}
+  extra_payload:
+    # "low" tier ≈ $0.011 per 1024×1024 image.
+    quality: low
+  # Force an image-gen call every cycle even when phase 1 omits the
+  # <image_prompt> tag — falls back to phase-1 text/reasoning_content.
+  enforce_image_call: true
+  # Hard cap on image-gen calls per episode (regardless of step_budget).
+  # At ~$0.011/call (low quality), 10 calls is ~$0.11 worst-case per episode.
+  max_image_gen_calls: 10

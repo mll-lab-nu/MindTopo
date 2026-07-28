@@ -1,0 +1,9 @@
+name: separation_one_stroke
+source_question_jsonl: environments/separation_one_stroke/output/question.jsonl
+episode_ids_path: data/slices/balanced_105/separation_one_stroke.json
+host: 127.0.0.1
+port: 0
+headless: true
+viewport_width: 1920
+viewport_height: 1080
+system_prompt_key: separation_one_stroke_vlm_video_e2e

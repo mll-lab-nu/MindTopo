@@ -1,0 +1,32 @@
+defaults:
+  - env: knots_untangle
+  - model: bagel_imagined
+  - _self_
+
+run:
+  manifest_offset: 0
+  manifest_limit: null
+  parallel_sessions: 0  # when 0: depends on api key numbers
+  step_budget: null
+  include_legal_moves_in_prompt: false
+  write_jsonl: true
+  write_prompt_artifacts: true
+  write_step_images: true
+  history_mode: conversation
+  fallback_on_invalid: false
+  # When true (and `model.keep_message_history` is false), step 0 sends the full
+  # initial prompt and steps k≥1 send [cached_initial, current_followup] with no
+  # assistant turns retained. Saves tokens vs rebuilding the full task framing
+  # every step. Has no effect when `keep_message_history` is true.
+  cache_task_prompt: false
+  protocol_prompt_key: interleaved_default
+  output_dir: logs/interleaved_eval/${env.name}/${now:%Y%m%d_%H%M%S}_${model.id}
+  output_json: ${run.output_dir}/summary.json
+  output_config: ${run.output_dir}/resolved_config.yaml
+
+hydra:
+  run:
+    dir: logs/hydra/${now:%Y%m%d_%H%M%S}
+  output_subdir: null
+  job:
+    chdir: false

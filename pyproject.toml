@@ -1,0 +1,66 @@
+[project]
+name = "topobench"
+version = "0.0.1"
+description = "TopoBench — multi-modal benchmark for topology-aware visual reasoning"
+requires-python = ">=3.10,<3.13"   # Hydra 1.3.x is not stable on >=3.14
+
+# Shared runtime for the planning/interleaved harnesses, env adapters,
+# and Playwright-driven gym envs. Single source of truth — no separate
+# requirements.txt.
+dependencies = [
+  "hydra-core>=1.3,<2",
+  "requests>=2,<3",
+  "PyYAML>=6,<7",
+  "python-dotenv>=1,<2",
+  "tqdm>=4.66,<5",
+  "numpy>=1.24,<3",
+  "Pillow>=10,<12",
+  "gymnasium>=0.29,<2",
+  "playwright>=1.40,<2",
+]
+
+[project.optional-dependencies]
+# Orthogonal extras (compose freely with each other and with backends):
+openai       = ["openai>=1.0,<3"]
+anthropic    = ["anthropic>=0.40,<1"]  # legacy standalone env benchmarks only
+lmms-eval    = ["lmms-eval"]
+dev          = ["pytest>=7,<10"]
+# Self-hosted multimodal LLM proxies. Each gets its own .venv-<name> because
+# their torch/CUDA pinnings diverge. The setup_<name>.sh scripts handle this
+# via UV_PROJECT_ENVIRONMENT redirection.
+bagel = [
+  "vllm",
+  "vllm-omni",
+]
+thinkmorph = [
+  "torch",
+  "torchvision",
+  "transformers",
+  "accelerate",
+  "safetensors",
+]
+# cosmos_reason2 runs in a NIM Docker container — no Python ML deps needed
+# beyond the base; the canary just hits an HTTP endpoint. We expose `cosmos`
+# as a no-op alias to keep the setup script symmetric.
+cosmos = []
+
+[tool.pytest.ini_options]
+# The repo test suite lives in tests/. Per-environment gym tests under
+# environments/*/gym/ are env-local and are run from within each environment.
+testpaths = ["tests"]
+
+[tool.uv]
+# This repo is not a buildable Python package — uv treats it as a "project"
+# only for dependency management. No wheel is ever built.
+package = false
+
+# The heavy backends pin incompatible torch/CUDA stacks.
+# Declaring them as conflicts means `uv lock` produces a separate resolution
+# per backend, and `uv sync --extra <name>` populates the right combination
+# without trying to merge the torch versions.
+conflicts = [
+  [
+    { extra = "bagel" },
+    { extra = "thinkmorph" },
+  ],
+]

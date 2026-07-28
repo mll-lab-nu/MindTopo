@@ -1,0 +1,56 @@
+{
+  "seed": 12345,
+  "geometry": {
+    "board": {
+      "shape": "rect",
+      "size": {
+        "width": 10,
+        "height": 10
+      },
+      "thickness": 0.5
+    },
+    "holes": {
+      "count": {
+        "min": 5,
+        "max": 13
+      },
+      "minDistance": 0.45,
+      "edgeBuffer": 0.85,
+      "types": [
+        "hole",
+        "pit"
+      ],
+      "shapeVariant": "vertical",
+      "sizeRange": { "min": 0.35, "max": 0.9 }
+    },
+    "underBoard": {
+      "enable": true,
+      "offset": {
+        "x": 0.2,
+        "y": 0.1
+      },
+      "coverage": "partial"
+    }
+  },
+  "render": {
+    "camera": {
+      "pitch": 85,
+      "yaw": 75,
+      "distance": 18,
+      "fov": 45
+    },
+    "appearance": {
+      "boardColor": "#FF5733",
+      "materialType": "standard",
+      "underBoardColor": "#78d6ff"
+    },
+    "lighting": {
+      "ambientIntensity": 0.5,
+      "dirLightPosition": [
+        10,
+        20,
+        10
+      ]
+    }
+  }
+}

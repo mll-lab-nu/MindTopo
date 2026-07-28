@@ -1,0 +1,9 @@
+name: order_swap_2d_puzzle
+budget_multiplier: 1.5
+host: 127.0.0.1
+port: 0
+headless: true
+animate: false
+viewport_width: 1440
+viewport_height: 980
+system_prompt_key: order_swap_2d_puzzle_planning

@@ -1,0 +1,23 @@
+{
+  "name": "hole-scene-generator",
+  "version": "1.0.0",
+  "description": "Three.js procedural scene generator for board images with hole structures",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "jszip": "^3.10.1",
+    "three": "^0.160.0",
+    "three-bvh-csg": "^0.0.16",
+    "seedrandom": "^3.0.5"
+  },
+  "devDependencies": {
+    "@types/three": "^0.160.0",
+    "@types/seedrandom": "^3.0.8",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.10"
+  }
+}

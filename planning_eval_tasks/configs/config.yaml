@@ -1,0 +1,27 @@
+defaults:
+  - env: knots_untangle
+  - model: oracle
+  - _self_
+
+run:
+  sample_offset: 0
+  sample_limit: null
+  parallel_sessions: 0  # when 0: depends on api key numbers
+  step_budget: null
+  include_legal_moves_in_prompt: false
+  write_prompt_artifacts: true
+  write_step_images: true
+  history_mode: conversation
+  history_window: 5  # conversation messages incl. current: 3 user prompts + 2 assistant replies; system is separate
+  compact_assistant_history: true  # store parsed answers in prompt history, not verbose model reasoning
+  fallback_on_invalid: false
+  output_dir: logs/planning_eval/${model.id}/${env.name}/${now:%Y%m%d_%H%M%S}
+  output_json: ${run.output_dir}/summary.json
+  output_config: ${run.output_dir}/resolved_config.yaml
+
+hydra:
+  run:
+    dir: logs/hydra/${now:%Y%m%d_%H%M%S}
+  output_subdir: null
+  job:
+    chdir: false

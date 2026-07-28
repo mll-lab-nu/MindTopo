@@ -1,0 +1,6 @@
+requests
+tqdm
+playwright
+Pillow
+numpy
+gymnasium

@@ -1,0 +1,30 @@
+defaults:
+  - env: continuity_pipe
+  - model: seedance_2_0_mini_i2v_ark_vlm_e2e_gpt56luna
+  - _self_
+
+run:
+  manifest_offset: 0
+  manifest_limit: null
+  only_episode_id: null
+  parallel_sessions: 1
+  step_budget: null
+  include_legal_moves_in_prompt: false
+  write_jsonl: true
+  write_prompt_artifacts: true
+  write_step_images: true
+  history_mode: conversation
+  history_window: 5
+  compact_assistant_history: true
+  fallback_on_invalid: false
+  num_extracted_frames: 8
+  output_dir: logs/video_eval/${env.name}/${now:%Y%m%d_%H%M%S}_${model.id}
+  output_json: ${run.output_dir}/summary.json
+  output_config: ${run.output_dir}/resolved_config.yaml
+
+hydra:
+  run:
+    dir: logs/hydra/${now:%Y%m%d_%H%M%S}
+  output_subdir: null
+  job:
+    chdir: false

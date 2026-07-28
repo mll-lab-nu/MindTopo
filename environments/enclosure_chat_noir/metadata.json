@@ -1,0 +1,28 @@
+{
+  "name": "enclosure_chat_noir",
+  "display_name": "Chat Noir / Encircle the Cat",
+  "category": "enclosure",
+  "level": "planning",
+  "description": "Block one hex cell per turn to surround the cat before it reaches the boundary.",
+  "difficulty_params": {
+    "difficulty": "Official generation and benchmark difficulty is the cat policy: easy policy = easy, medium policy = medium, hard policy = hard.",
+    "board_radius": {
+      "min": 3,
+      "max": 4,
+      "role": "Setup parameter; default generation samples 3 or 4 from the seed; does not define difficulty."
+    },
+    "initial_block_count": "Setup parameter for the number of cells blocked before the first player action; default generation samples a policy- and radius-dependent count from the seed: radius 3 uses easy=8-10, medium=10-12, hard=12-14; radius 4 uses easy=10-13, medium=13-16, hard=16-19. Blocker positions are sampled uniformly at random from non-cat cells; initial_block_count does not define difficulty.",
+    "min_winning_first_actions": "Default generation keeps only setups where the bounded solver finds at least 5 distinct first block moves that can still lead to trapping the cat for easy, medium, and hard. By default at least 3 of those winning first block moves must be adjacent to the cat's starting cell. Passing concrete --min-winning-first-actions or --min-adjacent-winning-first-actions values overrides these defaults.",
+    "cat_intelligence": {
+      "easy": "Cat that uses shortest-path greedy movement with 50% probability and otherwise chooses a legal adjacent move uniformly at random.",
+      "medium": "Greedy shortest-path cat with simple tie-breaks.",
+      "hard": "Connectivity-aware greedy cat that avoids immediate one-move traps when possible and preserves more escape connectivity."
+    },
+    "seed": "Generation starts at seed_start and consumes one integer seed per generated setup.",
+    "difficulty_score": "The benchmark records cat_policy_level directly: easy=1, medium=2, hard=3."
+  },
+  "status": "draft",
+  "observation_type": "rgb_array",
+  "action_type": "discrete",
+  "success_condition": "The cat no longer has any path from its current cell to the board boundary before it reaches a boundary cell."
+}

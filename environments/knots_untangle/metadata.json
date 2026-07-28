@@ -1,0 +1,19 @@
+{
+  "name": "knots_untangle",
+  "display_name": "Knots Untangle",
+  "category": "knots",
+  "level": "planning",
+  "description": "Untangle the ropes by moving one endpoint at a time so no two ropes cross.",
+  "difficulty_params": {
+    "difficulty": {
+      "easy": "3x3 grid, 3 ropes, 3-5 endpoint shuffles",
+      "medium": "4x4 grid, 4 ropes, 6-8 endpoint shuffles",
+      "hard": "5x5 grid, 5 ropes, 10-15 endpoint shuffles"
+    },
+    "seed": "Integer seed controlling deterministic level generation."
+  },
+  "status": "ready",
+  "observation_type": "rgb_array",
+  "action_type": "discrete",
+  "success_condition": "Zero rope-rope crossings in the top-down 2D projection."
+}

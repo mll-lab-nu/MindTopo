@@ -1,0 +1,35 @@
+{
+  "name": "continuity_3d_maze",
+  "display_name": "3D Maze Reachability",
+  "category": "continuity",
+  "level": "reasoning",
+  "description": "Render furnished ProcTHOR houses as 3D mazes with labeled navigation points and ask either which candidate point-list is fully mutually connected, or which other labeled points are connected to a target point, under the shown door states.",
+  "question_types": {
+    "connected_subset_choice": {
+      "prompt": "Which option lists two or more labeled points that are all mutually connected under the shown door states?",
+      "answer_type": "multiple_choice",
+      "example_answer": "1",
+      "derive_answer": "metadata.question_payload.correct_option"
+    },
+    "connected_point_list": {
+      "prompt": "List all other labeled points connected to point {source_name} under the shown door states.",
+      "answer_type": "list",
+      "example_answer": "[\"B\", \"D\"]",
+      "derive_answer": "lex-sorted list of all other labeled points connected to the target point"
+    }
+  },
+  "difficulty_params": {
+    "difficulty": "Defined by setup tuple, or sampled by --difficulty in generation modes: easy uses (room_count 3, door_count 2, point_count 4); medium uses (4,3,4) or (5,4,4); hard uses (6,5,5) or (7,6,5).",
+    "room_count": "ProcTHOR room-count setup parameter controlled by --room-counts.",
+    "door_count": "Exact openable-door-count setup parameter controlled by --door-counts.",
+    "point_count": "Number of labeled navigation points controlled by --point-counts before question rows are emitted.",
+    "door_state_mode": "generated, open, closed, or random door states."
+  },
+  "status": "ready",
+  "renderer": "ai2thor_procthor",
+  "image_count": {
+    "min": 5,
+    "max": 5
+  },
+  "answer_evaluation": "connected_subset_choice uses exact option matching; connected_point_list uses set-equality over parsed point-name lists."
+}

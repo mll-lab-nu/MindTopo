@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Separation Objects</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg:
+        radial-gradient(circle at 10% 10%, rgba(224, 164, 99, 0.18), transparent 20%),
+        radial-gradient(circle at 85% 14%, rgba(94, 140, 176, 0.12), transparent 22%),
+        linear-gradient(180deg, #f7f3ea 0%, #ece6db 100%);
+      --panel: rgba(251, 247, 240, 0.94);
+      --card: rgba(255, 255, 255, 0.88);
+      --border: rgba(70, 81, 92, 0.14);
+      --text: #27333f;
+      --muted: #6b7682;
+      --accent: #c76b22;
+      --shadow: 0 20px 42px rgba(32, 38, 45, 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      font-family: "Avenir Next", "Trebuchet MS", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    body {
+      padding: 14px;
+    }
+
+    #app {
+      width: min(1500px, 100%);
+      margin: 0 auto;
+      display: grid;
+      gap: 16px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid rgba(219, 210, 193, 0.96);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+    }
+
+    #hero {
+      padding: 22px 24px 18px;
+      display: grid;
+      gap: 18px;
+    }
+
+    #hero-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    #title {
+      margin: 0;
+      font-size: 34px;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+    }
+
+    #subtitle {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 17px;
+      max-width: 840px;
+    }
+
+    #badges {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      border-radius: 999px;
+      padding: 8px 14px;
+      background: rgba(199, 107, 34, 0.12);
+      color: #8c4b15;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    #controls {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    select,
+    input,
+    button {
+      width: 100%;
+      font: inherit;
+      padding: 11px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(94, 103, 112, 0.16);
+      background: #ffffff;
+      color: var(--text);
+    }
+
+    button {
+      cursor: pointer;
+      font-weight: 700;
+      background: linear-gradient(180deg, #fffdf8 0%, #f3e5d1 100%);
+    }
+
+    #status {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    #layout {
+      display: grid;
+      gap: 16px;
+    }
+
+    #top-row {
+      display: grid;
+      grid-template-columns: minmax(0, 7fr) minmax(260px, 2.3fr);
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    #options-panel {
+      padding: 18px;
+      display: grid;
+      gap: 16px;
+      align-content: start;
+      background:
+        radial-gradient(circle at center, rgba(255, 255, 255, 0.4), transparent 50%),
+        linear-gradient(180deg, #f8f3ea 0%, #efe8dc 100%);
+    }
+
+    #view-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      max-height: 820px;
+      overflow: auto;
+      padding-right: 2px;
+    }
+
+    #interactive-card {
+      padding: 14px;
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid var(--border);
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      gap: 12px;
+      height: 100%;
+    }
+
+    #interactive-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    #interactive-viewer {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto auto;
+      align-content: start;
+      gap: 12px;
+    }
+
+    .main-preview-block {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      gap: 8px;
+    }
+
+    .main-preview-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: baseline;
+      flex-wrap: wrap;
+    }
+
+    .main-preview-head h3 {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .main-preview-head p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .main-preview-frame {
+      min-height: 0;
+      height: 100%;
+      border-radius: 18px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at center, rgba(255, 255, 255, 0.98) 0%, rgba(238, 232, 220, 0.96) 100%);
+      border: 1px solid rgba(60, 72, 82, 0.08);
+      display: grid;
+      place-items: center;
+    }
+
+    #complete-viewer {
+      height: 430px;
+      padding: 8px;
+    }
+
+    #complete-viewer .view-image {
+      width: auto;
+      max-width: 100%;
+      height: auto;
+      max-height: 410px;
+    }
+
+    .option-preview-block {
+      gap: 0;
+      grid-template-rows: auto;
+    }
+
+    .option-preview-block .main-preview-head {
+      display: none;
+    }
+
+    #option-viewer {
+      display: block;
+      height: auto;
+      padding: 0;
+      line-height: 0;
+    }
+
+    #option-viewer .view-image {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+    }
+
+    .view-card {
+      display: grid;
+      gap: 10px;
+      padding: 10px;
+      border-radius: 16px;
+      background: var(--card);
+      border: 1px solid var(--border);
+    }
+
+    .thumbnail-card {
+      width: 100%;
+      padding: 10px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.88);
+      cursor: pointer;
+      display: grid;
+      gap: 8px;
+      text-align: left;
+      box-shadow: none;
+    }
+
+    .thumbnail-card.is-selected {
+      border-color: rgba(199, 107, 34, 0.72);
+      box-shadow: 0 0 0 2px rgba(199, 107, 34, 0.16);
+    }
+
+    .thumbnail-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .thumbnail-frame {
+      border-radius: 12px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at center, rgba(255, 255, 255, 0.98) 0%, rgba(238, 232, 220, 0.96) 100%);
+      border: 1px solid rgba(60, 72, 82, 0.08);
+      display: grid;
+      place-items: center;
+      min-height: 112px;
+    }
+
+    .thumbnail-frame img {
+      width: 100%;
+      height: 112px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .view-card h2 {
+      margin: 0;
+      font-size: 14px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .view-subtitle {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .view-frame {
+      border-radius: 18px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at center, rgba(255, 255, 255, 0.98) 0%, rgba(238, 232, 220, 0.96) 100%);
+      border: 1px solid rgba(60, 72, 82, 0.08);
+      display: grid;
+      place-items: center;
+    }
+
+    #view-grid .view-frame {
+      min-height: 150px;
+      height: auto;
+      padding: 6px;
+    }
+
+    .option-composite {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(60, 72, 82, 0.08);
+      background:
+        radial-gradient(circle at center, rgba(255, 255, 255, 0.98) 0%, rgba(238, 232, 220, 0.96) 100%);
+    }
+
+    .option-subframe {
+      min-height: 240px;
+      display: grid;
+      grid-template-rows: 1fr auto;
+      background:
+        radial-gradient(circle at center, rgba(255, 255, 255, 0.98) 0%, rgba(238, 232, 220, 0.96) 100%);
+    }
+
+    .option-subframe + .option-subframe {
+      border-left: 1px solid rgba(60, 72, 82, 0.08);
+    }
+
+    .option-subframe .view-image {
+      height: 220px;
+    }
+
+    .option-subtitle {
+      padding: 8px 10px 10px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.86);
+    }
+
+    .view-image {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    #view-grid .view-image {
+      height: auto;
+      max-height: none;
+    }
+
+    .empty {
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    #question-panel,
+    #metadata-panel {
+      display: grid;
+      gap: 14px;
+      padding: 18px;
+      align-content: start;
+    }
+
+    #question-panel {
+      height: auto;
+    }
+
+    #question-panel .stack-card {
+      height: auto;
+    }
+
+    .stack-card {
+      padding: 14px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.76);
+      border: 1px solid var(--border);
+      display: grid;
+      gap: 10px;
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .section-copy {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    #question-text {
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    #options-list {
+      display: none;
+      gap: 8px;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+
+    .option-pill {
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(249, 243, 232, 0.94);
+      border: 1px solid rgba(198, 169, 128, 0.22);
+      font-weight: 700;
+    }
+
+    #metadata {
+      display: grid;
+      gap: 10px;
+    }
+
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 14px;
+    }
+
+    .meta-key {
+      color: var(--muted);
+    }
+
+    #selector-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    #selector-count {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .selector-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .selector-button {
+      padding: 7px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      width: auto;
+    }
+
+    #part-selector {
+      display: grid;
+      gap: 8px;
+      max-height: 360px;
+      overflow: auto;
+      padding-right: 2px;
+    }
+
+    .part-option {
+      display: grid;
+      grid-template-columns: auto auto minmax(0, 1fr);
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(36, 48, 59, 0.08);
+    }
+
+    .part-option.is-off {
+      opacity: 0.5;
+    }
+
+    .part-option input {
+      margin: 0;
+    }
+
+    .part-swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(36, 48, 59, 0.14);
+    }
+
+    .part-meta {
+      min-width: 0;
+      display: grid;
+      gap: 2px;
+    }
+
+    .part-name {
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .part-file-small {
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    code {
+      font-family: "SFMono-Regular", "Menlo", monospace;
+    }
+
+    @media (max-width: 1220px) {
+      #top-row {
+        grid-template-columns: 1fr;
+      }
+
+      #view-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        max-height: none;
+      }
+    }
+
+    @media (max-width: 980px) {
+      #controls {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 720px) {
+      body {
+        padding: 8px;
+      }
+
+      #controls,
+      #view-grid {
+        grid-template-columns: 1fr;
+      }
+
+      #view-grid .view-frame {
+        min-height: 320px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <section id="hero" class="panel">
+      <div id="hero-head">
+        <div>
+          <h1 id="title">Separation Objects</h1>
+          <p id="subtitle">Each scene shows one complete IKEA object and five candidate decompositions.</p>
+        </div>
+        <div id="badges">
+          <span id="badge-category" class="badge">Task: Separation</span>
+          <span id="badge-object" class="badge">Object: -</span>
+          <span id="badge-parts" class="badge">Parts: -</span>
+        </div>
+      </div>
+      <div id="controls">
+        <label>
+          Category
+          <select id="category-select"></select>
+        </label>
+        <label>
+          Object
+          <select id="object-select"></select>
+        </label>
+        <label>
+          Seed
+          <input id="seed-input" type="number" value="12345" />
+        </label>
+        <label>
+          Option Mode
+          <select id="option-mode-select" disabled>
+            <option value="revised" selected>Revised</option>
+          </select>
+        </label>
+        <label>
+          Generate
+          <button id="generate-btn" type="button">Generate Option Task</button>
+        </label>
+      </div>
+      <div id="status">Loading renderer...</div>
+    </section>
+
+    <section id="layout">
+      <aside id="question-panel" class="panel">
+        <section class="stack-card">
+          <h2 class="section-title">Question Preview</h2>
+          <p id="question-text">Loading question...</p>
+          <ol id="options-list"></ol>
+        </section>
+      </aside>
+
+      <section id="top-row">
+        <section id="interactive-card" class="panel">
+          <div id="interactive-head">
+            <div>
+              <h2 class="section-title">Complete Object / Selected Option</h2>
+              <p class="section-copy">The complete object stays fixed while the selected option changes below.</p>
+            </div>
+          </div>
+          <div id="interactive-viewer">
+            <section class="main-preview-block complete-preview-block">
+              <div class="main-preview-head">
+                <h3>Complete Object</h3>
+                <p>Target object</p>
+              </div>
+              <div id="complete-viewer" class="main-preview-frame">
+                <div class="empty">Loading complete object...</div>
+              </div>
+            </section>
+            <section class="main-preview-block option-preview-block">
+              <div class="main-preview-head">
+                <h3 id="main-preview-title">Selected Option</h3>
+                <p id="main-preview-copy">Click an option thumbnail to inspect it here.</p>
+              </div>
+              <div id="option-viewer" class="main-preview-frame">
+                <div class="empty">Loading selected option...</div>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section id="options-panel" class="panel">
+          <h2 class="section-title">Options</h2>
+          <div id="view-grid">
+            <button class="thumbnail-card" type="button">
+              <span class="thumbnail-title">Loading...</span>
+              <span class="thumbnail-frame"><span class="empty">Loading...</span></span>
+            </button>
+          </div>
+        </section>
+      </section>
+
+      <section id="metadata-panel" class="panel">
+        <section class="stack-card">
+          <h2 class="section-title">Scene Metadata</h2>
+          <p class="section-copy">Current option benchmark sample metadata.</p>
+          <div id="metadata"></div>
+        </section>
+      </section>
+    </section>
+  </div>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.161.0/build/three.module.js"
+      }
+    }
+  </script>
+  <script type="module" src="./src/main.ts?v=20260501-revised-3parts"></script>
+</body>
+</html>

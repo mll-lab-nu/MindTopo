@@ -1,0 +1,42 @@
+id: gpt_5_4_mini_imagined
+kind: interleaved
+provider: openai
+keep_message_history: false
+
+text:
+  text_model_id: gpt_5_4_mini
+  temperature: 0.1
+  # max_tokens omitted → adapter sends no `max_output_tokens` cap; model uses
+  # its own default up to the natural 128k output ceiling.
+  api_retries: 3
+  retry_sleep_seconds: 2.0
+  requests_per_minute: 0.0
+  request_timeout_seconds: 120.0
+  extra_headers: {}
+  # Switches the adapter from chat.completions to OpenAI Responses API so that
+  # gpt-5.4-mini's reasoning summary is surfaced into response_debug.reasoning_summary.
+  # effort=medium is the OpenAI default; summary=auto lets the model pick concise/detailed.
+  reasoning:
+    effort: medium
+    summary: auto
+
+image_gen:
+  upstream_model_name: gpt-image-2
+  base_url: https://api.openai.com/v1
+  base_url_env: ""
+  api_key_env: OPENAI_API_KEYS
+  mode: edits
+  size: "1024x1024"
+  response_format: ""
+  api_retries: 3
+  retry_sleep_seconds: 2.0
+  requests_per_minute: 0.0
+  request_timeout_seconds: 240.0
+  extra_headers: {}
+  extra_payload:
+    quality: low
+  # Force an image-gen call every cycle even when phase 1 omits the
+  # <image_prompt> tag — falls back to phase-1 text/reasoning_content.
+  enforce_image_call: true
+  # Hard cap on image-gen calls per episode (regardless of step_budget).
+  max_image_gen_calls: 10

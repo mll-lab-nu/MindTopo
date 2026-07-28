@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sheep Task — 3D Topology Benchmark (Enclosure)</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: #0f0f1a; color: #e0e0e0; overflow-x: hidden;
+  }
+  .header {
+    background: linear-gradient(135deg, #1a1a3e, #2a1a4e);
+    padding: 16px 24px; display: flex; align-items: center; gap: 16px;
+    border-bottom: 1px solid #333;
+  }
+  .header h1 { font-size: 20px; font-weight: 600; color: #fff; }
+  .header .subtitle { font-size: 12px; color: #88a; }
+  .header .badge {
+    background: #4a3; color: #fff; padding: 2px 10px;
+    border-radius: 10px; font-size: 11px; font-weight: 600;
+  }
+  .tab-bar {
+    display: flex; background: #1a1a2e; border-bottom: 1px solid #333;
+  }
+  .tab-bar button {
+    padding: 12px 24px; background: none; border: none; color: #888;
+    font-size: 14px; font-weight: 500; cursor: pointer;
+    border-bottom: 2px solid transparent; transition: all 0.2s;
+  }
+  .tab-bar button:hover { color: #bbb; background: #222; }
+  .tab-bar button.active { color: #7af; border-bottom-color: #7af; background: #1e1e38; }
+  .main { display: flex; height: calc(100vh - 100px); }
+  .sidebar {
+    width: 320px; min-width: 320px; background: #16162a;
+    border-right: 1px solid #333; overflow-y: auto; padding: 16px;
+  }
+  .sidebar h3 {
+    font-size: 13px; font-weight: 600; color: #7af;
+    text-transform: uppercase; letter-spacing: 1px; margin: 16px 0 8px 0;
+  }
+  .sidebar h3:first-child { margin-top: 0; }
+  .control-group { margin-bottom: 12px; }
+  .control-group label { display: block; font-size: 12px; color: #999; margin-bottom: 4px; }
+  .control-group select, .control-group input[type="number"],
+  .control-group input[type="range"] {
+    width: 100%; padding: 6px 10px; background: #222240;
+    border: 1px solid #444; border-radius: 4px; color: #ddd; font-size: 13px;
+  }
+  .control-group input[type="range"] { padding: 0; height: 24px; }
+  .control-group .range-value { font-size: 11px; color: #7af; float: right; }
+  .btn {
+    padding: 8px 16px; border: none; border-radius: 6px;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: all 0.15s; margin: 4px 4px 4px 0;
+  }
+  .btn-primary { background: linear-gradient(135deg, #4466ff, #6644ee); color: white; }
+  .btn-primary:hover { background: linear-gradient(135deg, #5577ff, #7755ff); }
+  .btn-secondary { background: #333; color: #ddd; }
+  .btn-secondary:hover { background: #444; }
+  .btn-success { background: linear-gradient(135deg, #33aa55, #22884a); color: white; }
+  .btn-success:hover { background: linear-gradient(135deg, #44bb66, #33995b); }
+  .btn-danger { background: #a33; color: white; }
+  .btn-danger:hover { background: #c44; }
+  .btn-group { display: flex; flex-wrap: wrap; gap: 4px; margin: 8px 0; }
+  .btn-group .btn { flex: 1; min-width: 80px; text-align: center; }
+  .viewport { flex: 1; display: flex; flex-direction: column; background: #111; position: relative; }
+  .viewport-canvas { flex: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .viewport-canvas canvas { max-width: 100%; max-height: 100%; }
+  .metadata-panel {
+    background: #16162a; border-top: 1px solid #333;
+    padding: 12px 16px; max-height: 250px; overflow-y: auto;
+    font-size: 12px; font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+  .metadata-panel h4 { font-size: 12px; color: #7af; margin-bottom: 6px; }
+  .metadata-panel pre { color: #8a8; white-space: pre-wrap; word-break: break-all; line-height: 1.5; }
+  .metadata-panel .gt-key { color: #aaa; }
+  .metadata-panel .gt-val { color: #5d5; }
+  .metadata-panel .gt-bool-true { color: #5d5; }
+  .metadata-panel .gt-bool-false { color: #d55; }
+  .batch-panel {
+    display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.85); z-index: 100; justify-content: center; align-items: center;
+  }
+  .batch-panel.active { display: flex; }
+  .batch-content {
+    background: #1e1e38; border-radius: 12px; padding: 32px;
+    min-width: 500px; max-width: 700px;
+  }
+  .batch-content h2 { margin-bottom: 16px; color: #fff; }
+  .progress-bar { height: 8px; background: #333; border-radius: 4px; overflow: hidden; margin: 16px 0; }
+  .progress-bar .fill {
+    height: 100%; background: linear-gradient(90deg, #4466ff, #44ddff);
+    border-radius: 4px; transition: width 0.3s;
+  }
+  .progress-text { font-size: 13px; color: #888; text-align: center; }
+  .diff-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .diff-easy { background: #2a5a2a; color: #6d6; }
+  .diff-medium { background: #5a4a1a; color: #dc3; }
+  .diff-hard { background: #5a1a1a; color: #d66; }
+  .scene-panel { display: none; }
+  .scene-panel.active { display: block; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #111; }
+  ::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+
+  /* Utility classes (replace inline styles) */
+  fieldset.control-group { border: 0; padding: 0; margin-bottom: 12px; }
+  fieldset.control-group legend { font-size: 12px; color: #999; margin-bottom: 4px; padding: 0; }
+  .hidden { display: none; }
+  .mt-12 { margin-top: 12px; }
+  .mt-16 { margin-top: 16px; }
+  .text-center { text-align: center; }
+  .flex-2 { flex: 2; }
+  .check-row { display: flex; gap: 12px; margin-top: 4px; }
+  .check-row.wrap { flex-wrap: wrap; }
+  .batch-estimate { margin-top: 12px; padding: 10px; background: #222240; border-radius: 6px; }
+  .batch-estimate-label { font-size: 12px; color: #999; }
+  .batch-estimate-count { font-size: 20px; font-weight: 700; color: #7af; }
+  .batch-estimate-detail { font-size: 11px; color: #666; }
+  .batch-stats { display: flex; gap: 24px; margin: 12px 0; }
+  .batch-stat { text-align: center; }
+  .batch-stat-label { font-size: 11px; color: #888; }
+  .batch-stat-value { font-size: 24px; font-weight: 700; }
+  .batch-stat-current { color: #7af; }
+  .batch-stat-total { color: #fff; }
+  .batch-stat-size { color: #5d5; }
+  .batch-eta { font-size: 11px; color: #666; margin-top: 4px; text-align: center; }
+  .btn-group.centered { justify-content: center; }
+  .progress-fill-init { width: 0%; }
+  .error-overlay {
+    display: none; position: fixed; top: 10px; right: 10px; z-index: 9999;
+    background: rgba(200,0,0,0.95); color: #fff; padding: 16px; border-radius: 8px;
+    max-width: 600px; font-size: 13px; font-family: monospace; white-space: pre-wrap;
+    word-break: break-all; max-height: 300px; overflow: auto;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🐑 Sheep Task — 3D Topology Benchmark</h1>
+  <span class="badge">Enclosure</span>
+  <span class="subtitle">Piaget Ch. 1 & 4 — Inside/Outside, Holes, Nesting</span>
+</div>
+
+<div class="tab-bar" id="tabBar">
+  <button class="active" data-tab="fence">🏗️ Fence & Sheep</button>
+  <button data-tab="batch">📦 Batch Generate</button>
+</div>
+
+<div class="main">
+  <div class="sidebar" id="sidebar">
+
+    <!-- Fence Scene Controls -->
+    <div class="scene-panel active" id="panel-fence">
+      <h3>Fence Parameters</h3>
+      <div class="control-group">
+        <label for="fenceShape">Fence Shape</label>
+        <select id="fenceShape">
+          <option value="convex">Convex</option>
+          <option value="concave">Concave (L/U shape)</option>
+          <option value="irregular">Irregular</option>
+          <option value="partitioned">Partitioned (Multi-cell)</option>
+        </select>
+      </div>
+
+      <!-- Standard fence controls -->
+      <div id="standardFenceControls">
+      <div class="control-group">
+        <label for="fenceSegments">Fence Segments <span class="range-value" id="fenceSegmentsVal">8</span></label>
+        <input type="range" id="fenceSegments" min="4" max="30" value="8">
+      </div>
+      <div class="control-group">
+        <label for="fenceRadius">Fence Radius <span class="range-value" id="fenceRadiusVal">7</span></label>
+        <input type="range" id="fenceRadius" min="6" max="18" value="7" step="0.5">
+      </div>
+      <div class="control-group">
+        <label for="nestingDepth">Nesting Depth <span class="range-value" id="nestingDepthVal">2</span></label>
+        <input type="range" id="nestingDepth" min="2" max="5" value="2">
+      </div>
+
+      <h3>Gap & Gate</h3>
+      <div class="control-group">
+        <label for="numGaps">Number of Gaps <span class="range-value" id="numGapsVal">0</span></label>
+        <input type="range" id="numGaps" min="0" max="6" value="0">
+      </div>
+      <div class="control-group">
+        <label for="gapSize">Gap Size <span class="range-value" id="gapSizeVal">0.5</span></label>
+        <input type="range" id="gapSize" min="0.05" max="0.8" value="0.5" step="0.05">
+      </div>
+      <div class="control-group">
+        <label for="numGates">Number of Gates <span class="range-value" id="numGatesVal">0</span></label>
+        <input type="range" id="numGates" min="0" max="6" value="0">
+      </div>
+      </div>
+
+      <!-- Partition-specific controls -->
+      <div id="partitionControls" class="hidden">
+      <div class="control-group">
+        <label for="partLayout">Layout</label>
+        <select id="partLayout">
+          <option value="grid">Grid (Rectangular)</option>
+          <option value="hex_cross">Hex Cross (2 long diagonals → 4 cells)</option>
+          <option value="nested_polygon">Nested Polygon (inner + ring → N+1 cells)</option>
+          <option value="polygon_star">Polygon Star (N triangular sectors)</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label for="partRadius">Partition Radius <span class="range-value" id="partRadiusVal">6</span></label>
+        <input type="range" id="partRadius" min="4" max="16" value="6" step="0.5">
+      </div>
+      <div id="gridControls">
+      <div class="control-group">
+        <label for="partCols">Columns <span class="range-value" id="partColsVal">2</span></label>
+        <input type="range" id="partCols" min="1" max="5" value="2">
+      </div>
+      <div class="control-group">
+        <label for="partRows">Rows <span class="range-value" id="partRowsVal">2</span></label>
+        <input type="range" id="partRows" min="1" max="4" value="2">
+      </div>
+      </div>
+      </div>
+
+      <h3>Sheep</h3>
+      <div class="control-group">
+        <label for="numSheep">Number of Sheep <span class="range-value" id="numSheepVal">5</span></label>
+        <input type="range" id="numSheep" min="1" max="20" value="5">
+      </div>
+      <div class="control-group hidden">
+        <label for="insideRatio">Inside Ratio <span class="range-value" id="insideRatioVal">0.6</span></label>
+        <input type="range" id="insideRatio" min="0" max="1" value="0.6" step="0.1">
+      </div>
+
+      <h3>Camera & Ground</h3>
+      <div class="control-group">
+        <label for="cameraAngle">Camera Angle</label>
+        <select id="cameraAngle">
+          <option value="top_down">Top Down</option>
+          <option value="tilt_15">Tilt 15°</option>
+          <option value="tilt_30">Tilt 30°</option>
+          <option value="tilt_45">Tilt 45°</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label for="groundTexture">Ground Texture</label>
+        <select id="groundTexture">
+          <option value="grass">Grass</option>
+          <option value="dirt">Dirt</option>
+          <option value="snow">Snow</option>
+        </select>
+      </div>
+
+      <h3>Quick Presets — Nested</h3>
+      <div class="btn-group">
+        <button class="btn btn-secondary" onclick="applyPreset('easy')"><span class="diff-badge diff-easy">Easy</span></button>
+        <button class="btn btn-secondary" onclick="applyPreset('medium')"><span class="diff-badge diff-medium">Medium</span></button>
+        <button class="btn btn-secondary" onclick="applyPreset('hard')"><span class="diff-badge diff-hard">Hard</span></button>
+      </div>
+      <h3>Quick Presets — Partitioned</h3>
+      <div class="btn-group">
+        <button class="btn btn-secondary" onclick="applyPartPreset('easy')"><span class="diff-badge diff-easy">Easy</span></button>
+        <button class="btn btn-secondary" onclick="applyPartPreset('medium')"><span class="diff-badge diff-medium">Medium</span></button>
+        <button class="btn btn-secondary" onclick="applyPartPreset('hard')"><span class="diff-badge diff-hard">Hard</span></button>
+      </div>
+      <div class="btn-group mt-12">
+        <button class="btn btn-primary flex-2" onclick="generateScene()">▶ Generate Scene</button>
+        <button class="btn btn-success" onclick="captureScene()">📷 Save</button>
+      </div>
+    </div>
+
+    <!-- Batch Mode Controls -->
+    <div class="scene-panel" id="panel-batch">
+      <h3>Batch Generation</h3>
+      <div class="control-group">
+        <label for="batchCount">Samples per Difficulty <span class="range-value" id="batchCountVal">30</span></label>
+        <input type="range" id="batchCount" min="5" max="200" value="30" step="5">
+      </div>
+      <fieldset class="control-group">
+        <legend>Difficulties</legend>
+        <div class="check-row">
+          <label><input type="checkbox" id="batchEasy" checked> Easy</label>
+          <label><input type="checkbox" id="batchMedium" checked> Medium</label>
+          <label><input type="checkbox" id="batchHard" checked> Hard</label>
+        </div>
+      </fieldset>
+      <fieldset class="control-group">
+        <legend>Scene Types</legend>
+        <div class="check-row wrap">
+          <label><input type="checkbox" id="batchFence" checked> Nested Fence</label>
+          <label><input type="checkbox" id="batchPartitioned" checked> Partitioned</label>
+        </div>
+      </fieldset>
+      <div class="control-group">
+        <label for="batchImageSize">Image Size</label>
+        <select id="batchImageSize">
+          <option value="1024">1024×1024</option>
+          <option value="512">512×512</option>
+          <option value="768">768×768</option>
+        </select>
+      </div>
+      <div class="control-group batch-estimate">
+        <div class="batch-estimate-label">Estimated total samples</div>
+        <div class="batch-estimate-count" id="batchEstimateCount">90</div>
+        <div class="batch-estimate-detail" id="batchEstimateDetail">30 × 3 difficulties</div>
+      </div>
+      <div class="btn-group mt-16">
+        <button class="btn btn-primary flex-2" onclick="startBatchGeneration()">🚀 Start Batch Generation (ZIP)</button>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-secondary" onclick="downloadCurrentMetadata()">📋 Download Metadata Only</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Viewport -->
+  <div class="viewport">
+    <div class="viewport-canvas" id="viewportCanvas"></div>
+    <div class="metadata-panel" id="metadataPanel">
+      <h4>Ground Truth & Metadata</h4>
+      <pre id="metadataContent">Generate a scene to see metadata here.</pre>
+    </div>
+  </div>
+</div>
+
+<!-- Batch Progress Modal -->
+<div class="batch-panel" id="batchPanel">
+  <div class="batch-content">
+    <h2>Batch Generation</h2>
+    <div class="batch-stats">
+      <div class="batch-stat">
+        <div class="batch-stat-label">Current</div>
+        <div class="batch-stat-value batch-stat-current" id="batchCurrent">0</div>
+      </div>
+      <div class="batch-stat">
+        <div class="batch-stat-label">Total</div>
+        <div class="batch-stat-value batch-stat-total" id="batchTotal">0</div>
+      </div>
+      <div class="batch-stat">
+        <div class="batch-stat-label">ZIP Size</div>
+        <div class="batch-stat-value batch-stat-size" id="batchZipSize">0 MB</div>
+      </div>
+    </div>
+    <div class="progress-bar"><div class="fill progress-fill-init" id="batchProgress"></div></div>
+    <div class="progress-text" id="batchProgressText">Preparing...</div>
+    <div class="batch-eta" id="batchETA"></div>
+    <div class="btn-group mt-16 centered">
+      <button class="btn btn-danger" onclick="cancelBatch()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- JSZip -->
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+
+<!-- Three.js -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.163.0/examples/jsm/"
+  }
+}
+</script>
+
+<!-- Error overlay for debugging -->
+<div id="errorOverlay" class="error-overlay"></div>
+<script>
+window.onerror = function(msg, url, line, col, err) {
+  var el = document.getElementById('errorOverlay');
+  el.style.display = 'block';
+  el.textContent += '[onerror] ' + msg + '\n  at ' + url + ':' + line + ':' + col + '\n';
+  if (err && err.stack) el.textContent += err.stack + '\n';
+};
+window.addEventListener('unhandledrejection', function(e) {
+  var el = document.getElementById('errorOverlay');
+  el.style.display = 'block';
+  el.textContent += '[unhandledrejection] ' + (e.reason && e.reason.stack || e.reason) + '\n';
+});
+</script>
+
+<script type="module">
+import { FenceSceneRenderer } from './src/fence-scene-renderer.js';
+import { DifficultyController } from './src/difficulty-controller.js';
+import { DatasetGenerator } from './src/dataset-generator.js';
+
+// ── State ──
+let activeTab = 'fence';
+let renderer = null;
+let currentMetadata = null;
+let allMetadata = [];
+let batchCancelled = false;
+const DEFAULT_BATCH_IMAGE_SIZE = 1024;
+
+function getRenderer() {
+  if (!renderer) {
+    renderer = new FenceSceneRenderer(document.getElementById('viewportCanvas'));
+  }
+  return renderer;
+}
+
+// ── Tab Switching ──
+document.getElementById('tabBar').addEventListener('click', (e) => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+  const tab = btn.dataset.tab;
+  document.querySelectorAll('.tab-bar button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.scene-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(`panel-${tab}`).classList.add('active');
+  activeTab = tab;
+});
+
+// ── Range value display ──
+const rangeBindings = [
+  ['fenceSegments','fenceSegmentsVal'], ['fenceRadius','fenceRadiusVal'],
+  ['nestingDepth','nestingDepthVal'], ['numGaps','numGapsVal'],
+  ['gapSize','gapSizeVal'], ['numGates','numGatesVal'],
+  ['numSheep','numSheepVal'], ['insideRatio','insideRatioVal'],
+  ['batchCount','batchCountVal'],
+  ['partCols','partColsVal'], ['partRows','partRowsVal'],
+  ['partRadius','partRadiusVal']
+];
+for (const [inputId, displayId] of rangeBindings) {
+  const input = document.getElementById(inputId);
+  const display = document.getElementById(displayId);
+  if (input && display) input.addEventListener('input', () => { display.textContent = input.value; });
+}
+
+// Toggle standard vs partition controls
+document.getElementById('fenceShape').addEventListener('change', (e) => {
+  const isPartitioned = e.target.value === 'partitioned';
+  document.getElementById('standardFenceControls').style.display = isPartitioned ? 'none' : 'block';
+  document.getElementById('partitionControls').style.display = isPartitioned ? 'block' : 'none';
+});
+
+// ── Get fence params from UI ──
+function getFenceParams() {
+  const shape = document.getElementById('fenceShape').value;
+  const base = {
+    fenceShape: shape,
+    numSheep: parseInt(document.getElementById('numSheep').value),
+    insideRatio: parseFloat(document.getElementById('insideRatio').value),
+    cameraAngle: document.getElementById('cameraAngle').value,
+    groundTexture: document.getElementById('groundTexture').value,
+    sheepColors: ['RED', 'BLUE', 'GREEN', 'YELLOW', 'WHITE']
+  };
+  if (shape === 'partitioned') {
+    const layout = document.getElementById('partLayout').value;
+    return {
+      ...base,
+      fenceRadius: parseFloat(document.getElementById('partRadius').value),
+      partitionLayout: layout,
+      numPartitionCols: parseInt(document.getElementById('partCols').value),
+      numPartitionRows: parseInt(document.getElementById('partRows').value),
+      partitionSeparated: false
+    };
+  }
+  return {
+    ...base,
+    fenceSegments: parseInt(document.getElementById('fenceSegments').value),
+    fenceRadius: parseFloat(document.getElementById('fenceRadius').value),
+    nestingDepth: parseInt(document.getElementById('nestingDepth').value),
+    numGaps: parseInt(document.getElementById('numGaps').value),
+    gapSize: parseFloat(document.getElementById('gapSize').value),
+    numGates: parseInt(document.getElementById('numGates').value)
+  };
+}
+
+function normalizeBatchDifficulties(rawDifficulties) {
+  const allowed = ['easy', 'medium', 'hard'];
+  const values = Array.isArray(rawDifficulties)
+    ? rawDifficulties
+    : String(rawDifficulties || '').split(',');
+  return Array.from(new Set(values.map(v => String(v).trim().toLowerCase()).filter(v => allowed.includes(v))));
+}
+
+function normalizeBatchSceneTypes(rawSceneTypes) {
+  const allowed = ['fence', 'partitioned'];
+  const values = Array.isArray(rawSceneTypes)
+    ? rawSceneTypes
+    : String(rawSceneTypes || '').split(',');
+  return Array.from(new Set(values.map(v => String(v).trim().toLowerCase()).filter(v => allowed.includes(v))));
+}
+
+function normalizeBatchImageSize(rawImageSize) {
+  const parsed = parseInt(rawImageSize, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_BATCH_IMAGE_SIZE;
+}
+
+function normalizeBatchOptions(options = {}) {
+  const count = Math.max(1, parseInt(options.count ?? 30, 10) || 30);
+  const difficulties = normalizeBatchDifficulties(options.difficulties ?? ['easy', 'medium', 'hard']);
+  const sceneTypes = normalizeBatchSceneTypes(options.sceneTypes ?? ['fence', 'partitioned']);
+  const imageSize = normalizeBatchImageSize(options.imageSize);
+
+  if (difficulties.length === 0) {
+    throw new Error('At least one difficulty is required.');
+  }
+  if (sceneTypes.length === 0) {
+    throw new Error('At least one scene type is required.');
+  }
+
+  return { count, difficulties, sceneTypes, imageSize };
+}
+
+function getBatchOptionsFromUI() {
+  const difficulties = [];
+  if (document.getElementById('batchEasy').checked) difficulties.push('easy');
+  if (document.getElementById('batchMedium').checked) difficulties.push('medium');
+  if (document.getElementById('batchHard').checked) difficulties.push('hard');
+
+  const sceneTypes = [];
+  if (document.getElementById('batchFence').checked) sceneTypes.push('fence');
+  if (document.getElementById('batchPartitioned').checked) sceneTypes.push('partitioned');
+
+  return normalizeBatchOptions({
+    count: document.getElementById('batchCount').value,
+    difficulties,
+    sceneTypes,
+    imageSize: document.getElementById('batchImageSize').value
+  });
+}
+
+function buildBatchConfigs(options = {}) {
+  const normalized = normalizeBatchOptions(options);
+  let configs = [];
+  if (normalized.sceneTypes.includes('fence')) {
+    configs = configs.concat(DatasetGenerator.generateBatch({
+      sceneType: 'fence',
+      count: normalized.count,
+      difficulties: normalized.difficulties
+    }));
+  }
+  if (normalized.sceneTypes.includes('partitioned')) {
+    configs = configs.concat(DatasetGenerator.generateBatch({
+      sceneType: 'partitioned',
+      count: normalized.count,
+      difficulties: normalized.difficulties
+    }));
+  }
+  return { ...normalized, configs };
+}
+
+function createDatasetSummary(metadataEntries, options = {}) {
+  const normalized = normalizeBatchOptions(options);
+  return {
+    totalSamples: metadataEntries.length,
+    sceneTypes: normalized.sceneTypes,
+    difficulties: normalized.difficulties,
+    samplesPerDifficulty: normalized.count,
+    imageSize: normalized.imageSize,
+    generatedAt: new Date().toISOString(),
+    breakdown: Object.fromEntries(
+      normalized.difficulties.map(d => [d, metadataEntries.filter(m => m.difficulty === d).length])
+    ),
+    byType: Object.fromEntries(
+      normalized.sceneTypes.map(t => [t, metadataEntries.filter(m => m.sceneType === t).length])
+    )
+  };
+}
+
+function renderSceneWithParams(params = {}, options = {}) {
+  const r = getRenderer();
+  const imageSize = normalizeBatchImageSize(options.imageSize);
+  r.setSize(imageSize, imageSize);
+  const meta = r.generateScene(params);
+  currentMetadata = meta;
+  updateMetadataPanel(meta);
+  return meta;
+}
+
+function renderDatasetConfig(config, options = {}) {
+  const renderMeta = renderSceneWithParams(config.params, options);
+  return DatasetGenerator.createMetadataEntry(config.id, renderMeta, config);
+}
+
+function generateDatasetSample(config, options = {}) {
+  const metadata = renderDatasetConfig(config, options);
+  return {
+    metadata,
+    imageDataUrl: getRenderer().captureImage()
+  };
+}
+
+// ── Generate / Capture ──
+window.generateScene = function() {
+  renderSceneWithParams(getFenceParams());
+};
+
+window.captureScene = function() {
+  const r = getRenderer();
+  const dataUrl = r.captureImage();
+  download(dataUrl, `sheep_fence_${Date.now()}.png`);
+  if (currentMetadata) {
+    const blob = new Blob([JSON.stringify(currentMetadata, null, 2)], { type: 'application/json' });
+    download(URL.createObjectURL(blob), `sheep_fence_${Date.now()}_meta.json`);
+  }
+};
+
+function download(url, filename) {
+  const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
+}
+
+// ── Presets ──
+window.applyPreset = function(difficulty) {
+  const preset = DifficultyController.getPreset('fence', difficulty);
+  if (!preset) return;
+  document.getElementById('fenceShape').value = preset.fenceShape || 'convex';
+  document.getElementById('fenceShape').dispatchEvent(new Event('change'));
+  setRange('fenceSegments', preset.fenceSegments || 8);
+  setRange('fenceRadius', preset.fenceRadius || 5);
+  setRange('nestingDepth', preset.nestingDepth || 1);
+  setRange('numGaps', preset.numGaps || 0);
+  setRange('gapSize', preset.gapSize || 0.5);
+  setRange('numGates', preset.numGates || 0);
+  setRange('numSheep', preset.numSheep || 5);
+  setRange('insideRatio', preset.insideRatio || 0.5);
+  document.getElementById('cameraAngle').value = preset.cameraAngle || 'tilt_15';
+  generateScene();
+};
+
+window.applyPartPreset = function(difficulty) {
+  const preset = DifficultyController.getPreset('partitioned', difficulty);
+  if (!preset) return;
+  document.getElementById('fenceShape').value = 'partitioned';
+  document.getElementById('fenceShape').dispatchEvent(new Event('change'));
+  // Set layout controls
+  const layout = preset.partitionLayout || 'grid';
+  document.getElementById('partLayout').value = layout;
+  setRange('partCols', preset.numPartitionCols || 2);
+  setRange('partRows', preset.numPartitionRows || 2);
+  setRange('partRadius', preset.fenceRadius || 6);
+  setRange('numSheep', preset.numSheep || 8);
+  setRange('insideRatio', preset.insideRatio || 0.65);
+  document.getElementById('cameraAngle').value = preset.cameraAngle || 'tilt_15';
+  generateScene();
+};
+
+function setRange(id, value) {
+  const el = document.getElementById(id);
+  if (el) { el.value = value; el.dispatchEvent(new Event('input')); }
+}
+
+// ── Metadata Panel ──
+function updateMetadataPanel(metadata) {
+  const panel = document.getElementById('metadataContent');
+  if (!metadata?.groundTruth) { panel.textContent = 'No metadata available.'; return; }
+  let html = '';
+  const format = (obj, indent = 0) => {
+    const pad = '  '.repeat(indent);
+    for (const [key, val] of Object.entries(obj)) {
+      if (val == null) continue;
+      if (typeof val === 'object' && !Array.isArray(val)) {
+        html += `${pad}<span class="gt-key">${key}</span>:\n`;
+        format(val, indent + 1);
+      } else if (Array.isArray(val)) {
+        if (val.length > 0 && typeof val[0] === 'object') {
+          html += `${pad}<span class="gt-key">${key}</span>: [\n`;
+          for (const item of val) {
+            html += `${pad}  { `;
+            html += Object.entries(item).map(([k, v]) => {
+              const cls = typeof v === 'boolean' ? (v ? 'gt-bool-true' : 'gt-bool-false') : 'gt-val';
+              return `<span class="gt-key">${k}</span>: <span class="${cls}">${JSON.stringify(v)}</span>`;
+            }).join(', ');
+            html += ` }\n`;
+          }
+          html += `${pad}]\n`;
+        } else {
+          html += `${pad}<span class="gt-key">${key}</span>: <span class="gt-val">[${val.join(', ')}]</span>\n`;
+        }
+      } else {
+        const cls = typeof val === 'boolean' ? (val ? 'gt-bool-true' : 'gt-bool-false') : 'gt-val';
+        html += `${pad}<span class="gt-key">${key}</span>: <span class="${cls}">${JSON.stringify(val)}</span>\n`;
+      }
+    }
+  };
+  format(metadata.groundTruth);
+  panel.innerHTML = html;
+}
+
+// ── Batch Estimate ──
+function updateBatchEstimate() {
+  const count = parseInt(document.getElementById('batchCount').value);
+  let diffs = 0;
+  if (document.getElementById('batchEasy').checked) diffs++;
+  if (document.getElementById('batchMedium').checked) diffs++;
+  if (document.getElementById('batchHard').checked) diffs++;
+  let types = 0;
+  if (document.getElementById('batchFence').checked) types++;
+  if (document.getElementById('batchPartitioned').checked) types++;
+  const total = count * diffs * types;
+  document.getElementById('batchEstimateCount').textContent = total;
+  document.getElementById('batchEstimateDetail').textContent = `${count} × ${diffs} difficulties × ${types} types`;
+}
+for (const id of ['batchCount', 'batchEasy', 'batchMedium', 'batchHard', 'batchFence', 'batchPartitioned']) {
+  document.getElementById(id).addEventListener('change', updateBatchEstimate);
+  document.getElementById(id).addEventListener('input', updateBatchEstimate);
+}
+updateBatchEstimate();
+
+// ── Batch Generation ──
+window.startBatchGeneration = async function() {
+  let batchOptions;
+  try {
+    batchOptions = getBatchOptionsFromUI();
+  } catch (err) {
+    alert(err.message);
+    return;
+  }
+
+  const { configs, count, difficulties, sceneTypes, imageSize } = buildBatchConfigs(batchOptions);
+  const total = configs.length;
+
+  document.getElementById('batchPanel').classList.add('active');
+  batchCancelled = false;
+  document.getElementById('batchTotal').textContent = total;
+  document.getElementById('batchCurrent').textContent = '0';
+  document.getElementById('batchZipSize').textContent = '0 MB';
+  document.getElementById('batchETA').textContent = '';
+
+  const zip = new JSZip();
+  const imgFolder = zip.folder('images');
+  allMetadata = [];
+  let totalBlobSize = 0;
+  const startTime = Date.now();
+  for (let i = 0; i < total; i++) {
+    if (batchCancelled) break;
+
+    const config = configs[i];
+    const pct = ((i + 1) / total * 100).toFixed(1);
+    document.getElementById('batchProgress').style.width = `${pct}%`;
+    document.getElementById('batchCurrent').textContent = i + 1;
+    document.getElementById('batchProgressText').textContent =
+      `${config.id} (${config.difficulty})`;
+
+    if (i > 2) {
+      const elapsed = Date.now() - startTime;
+      const remaining = (elapsed / (i + 1)) * (total - i - 1);
+      const mins = Math.floor(remaining / 60000);
+      const secs = Math.floor((remaining % 60000) / 1000);
+      document.getElementById('batchETA').textContent = `ETA: ${mins}m ${secs}s`;
+    }
+
+    const metadata = renderDatasetConfig(config, { imageSize });
+    const imageBlob = await getRenderer().captureBlob();
+    totalBlobSize += imageBlob.size;
+    document.getElementById('batchZipSize').textContent = `~${(totalBlobSize / 1024 / 1024).toFixed(1)} MB`;
+
+    imgFolder.file(`${config.id}.png`, imageBlob);
+    allMetadata.push(metadata);
+
+    await new Promise(resolve => requestAnimationFrame(resolve));
+  }
+
+  if (!batchCancelled) {
+    document.getElementById('batchProgressText').textContent = 'Compressing ZIP...';
+    document.getElementById('batchETA').textContent = '';
+
+    zip.file('dataset_metadata.json', JSON.stringify(allMetadata, null, 2));
+    zip.file('summary.json', JSON.stringify(
+      createDatasetSummary(allMetadata, { count, difficulties, sceneTypes, imageSize }),
+      null,
+      2
+    ));
+
+    try {
+      const content = await zip.generateAsync(
+        { type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } },
+        (update) => {
+          document.getElementById('batchProgress').style.width = `${update.percent.toFixed(0)}%`;
+          document.getElementById('batchProgressText').textContent = `Compressing... ${update.percent.toFixed(0)}%`;
+        }
+      );
+      const sizeMB = (content.size / 1024 / 1024).toFixed(1);
+      document.getElementById('batchProgressText').textContent =
+        `Done! ${allMetadata.length} samples, ${sizeMB} MB. Downloading...`;
+
+      const url = URL.createObjectURL(content);
+      download(url, `sheep_fence_dataset_${allMetadata.length}samples.zip`);
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+      setTimeout(() => document.getElementById('batchPanel').classList.remove('active'), 3000);
+    } catch (err) {
+      document.getElementById('batchProgressText').textContent = `ZIP error: ${err.message}`;
+      DatasetGenerator.downloadMetadata(allMetadata, 'sheep_fence_metadata.json');
+      setTimeout(() => document.getElementById('batchPanel').classList.remove('active'), 3000);
+    }
+  } else {
+    if (allMetadata.length > 0) {
+      zip.file('dataset_metadata.json', JSON.stringify(allMetadata, null, 2));
+      const content = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
+      const url = URL.createObjectURL(content);
+      download(url, `sheep_fence_partial_${allMetadata.length}samples.zip`);
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+    }
+    document.getElementById('batchPanel').classList.remove('active');
+  }
+};
+
+window.cancelBatch = function() { batchCancelled = true; };
+
+window.downloadCurrentMetadata = function() {
+  if (allMetadata.length > 0) DatasetGenerator.downloadMetadata(allMetadata);
+  else if (currentMetadata) DatasetGenerator.downloadMetadata([currentMetadata]);
+  else alert('No metadata. Generate scenes first.');
+};
+
+async function generateBaseSamplesShard(shardConfig = {}, progressCb, sampleCb) {
+  // Sharded batch entry point: every worker (re-)builds the same config list
+  // from the shared seed, then renders only the indices where
+  // `i % numWorkers === workerIdx`. Samples stream back through sampleCb.
+  const seed = String(shardConfig.seed || '');
+  const numWorkers = Math.max(1, Number(shardConfig.numWorkers || 1));
+  const workerIdx = Math.max(0, Math.min(numWorkers - 1, Number(shardConfig.workerIdx || 0)));
+  const imageSize = normalizeBatchImageSize(shardConfig.imageSize);
+  const startIndexRaw = Number(shardConfig.startIndex);
+  const endIndexRaw = Number(shardConfig.endIndex);
+  const startIndex = Number.isFinite(startIndexRaw) ? Math.max(0, Math.floor(startIndexRaw)) : 0;
+
+  // Seed Math.random with the dataset seed before config enumeration so all
+  // workers see the same allConfigs list. (__topobenchSeedMathRandom is
+  // injected from the Python side before evaluate().)
+  if (seed && typeof window.__topobenchSeedMathRandom === 'function') {
+    window.__topobenchSeedMathRandom(seed);
+  }
+  const { configs: allConfigs } = buildBatchConfigs({
+    count: shardConfig.count,
+    difficulties: shardConfig.difficulties,
+    sceneTypes: shardConfig.sceneTypes,
+    imageSize
+  });
+  const endIndex = Number.isFinite(endIndexRaw)
+    ? Math.max(startIndex, Math.min(allConfigs.length, Math.floor(endIndexRaw)))
+    : allConfigs.length;
+
+  const myConfigs = [];
+  for (let i = 0; i < allConfigs.length; i++) {
+    if (i < startIndex || i >= endIndex) continue;
+    if (i % numWorkers === workerIdx) myConfigs.push({ originalIndex: i, config: allConfigs[i] });
+  }
+  const shardTotal = myConfigs.length;
+
+  if (typeof progressCb === 'function') {
+    await progressCb(0, shardTotal, `worker ${workerIdx + 1}/${numWorkers} starting (${shardTotal} of ${endIndex - startIndex}; global ${startIndex}-${endIndex})`);
+  }
+
+  let rendered = 0;
+  const summaries = [];
+  const byScene = {};
+  const byDifficulty = {};
+
+  for (const { originalIndex, config } of myConfigs) {
+    if (seed && typeof window.__topobenchSeedMathRandom === 'function') {
+      window.__topobenchSeedMathRandom(`${seed}:${config.id}:${originalIndex}`);
+    }
+    const sample = generateDatasetSample(config, { imageSize });
+    const filename = `${config.id}.png`;
+    const payload = {
+      ...sample.metadata,
+      seed,
+      repeatIndex: originalIndex,
+      image_data_url: sample.imageDataUrl,
+      filename
+    };
+    if (typeof sampleCb === 'function') {
+      await sampleCb(payload);
+    }
+    summaries.push({ id: config.id, sceneType: config.sceneType, difficulty: config.difficulty });
+    byScene[config.sceneType] = (byScene[config.sceneType] || 0) + 1;
+    byDifficulty[config.difficulty] = (byDifficulty[config.difficulty] || 0) + 1;
+
+    rendered += 1;
+    if (typeof progressCb === 'function' && (rendered === 1 || rendered % 10 === 0 || rendered === shardTotal)) {
+      await progressCb(rendered, shardTotal, `worker ${workerIdx + 1}/${numWorkers}: ${rendered}/${shardTotal} rendered`);
+    }
+  }
+
+  return {
+    sampleSummaries: summaries,
+    stats: {
+      total: allConfigs.length,
+      shardTotal,
+      rendered,
+      byScene,
+      byDifficulty
+    }
+  };
+}
+
+window.topoBench = {
+  generate: (config = {}) => renderSceneWithParams(config),
+  screenshot: () => getRenderer().captureImage(),
+  generateBatchConfigs: (options = {}) => buildBatchConfigs(options).configs,
+  createDatasetSummary: (metadataEntries = [], options = {}) => createDatasetSummary(metadataEntries, options),
+  generateDatasetSample: (config, options = {}) => generateDatasetSample(config, options),
+  generateBaseSamplesShard
+};
+
+// ── Init ──
+window.addEventListener('load', () => {
+  const r = getRenderer();
+  const meta = renderSceneWithParams({
+    fenceShape: 'convex', fenceSegments: 8, fenceRadius: 5,
+    nestingDepth: 1, numGaps: 0, numSheep: 5, insideRatio: 0.5,
+    cameraAngle: 'tilt_15', sheepColors: ['RED', 'BLUE', 'WHITE']
+  });
+  currentMetadata = meta || r.metadata;
+});
+</script>
+</body>
+</html>

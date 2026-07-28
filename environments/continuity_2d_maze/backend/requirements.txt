@@ -1,0 +1,4 @@
+playwright
+pillow
+requests
+tqdm

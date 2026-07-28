@@ -1,0 +1,11 @@
+name: enclosure_sheep
+eval_kind: reasoning
+data_root: environments/enclosure_sheep/output
+question_jsonl: ${env.data_root}/question.jsonl
+image_root: ${env.data_root}
+system_prompt_key: enclosure_sheep_interleaved
+# Force exactly one image-gen call per sample even when the model declines
+# via <image_prompt>none</image_prompt>. agent_runner.py reads this flag and
+# overrides model.image_gen.{enforce_image_call, enforce_against_decline,
+# max_image_gen_calls=1}.
+require_image_gen: true

@@ -1,0 +1,21 @@
+{
+  "name": "continuity_pipe",
+  "display_name": "Continuity Pipe",
+  "category": "continuity",
+  "level": "planning",
+  "description": "Rotate pipe pieces 90 degrees clockwise per turn until every pipe connects back to the green source.",
+  "difficulty_params": {
+    "grid_size": {
+      "supported": "3x3 through 6x6 grids; benchmark presets use 4x4 for easy and 5x5 for medium/hard."
+    },
+    "active_pipe_count": "Benchmark presets: easy=10-13 active pipes, medium=13-17 active pipes, hard=17-23 active pipes.",
+    "junction_count": "Benchmark presets keep tree topology with no loops and no four-way junctions while requiring three-way branch junctions: easy=2-3, medium=3-5, hard=5-7.",
+    "solution_steps": "The benchmark difficulty presets are determined by oracle solution length plus structure: easy=13-17 rotations, medium=17-23 rotations, hard=23-27 rotations.",
+    "seed": "The first per-sample seed defaults to 1 and increments by 1 for each generated row. Each per-sample seed controls active pipe count, pipe positions, source position, and initial rotations; grid_size is controlled by CLI/UI args.",
+    "generation": "A connected sparse pipe network is generated over a subset of grid cells, then each non-empty pipe is rotated by random ticks to create a solvable scrambled board."
+  },
+  "status": "draft",
+  "observation_type": "rgb_array",
+  "action_type": "grid_coordinate",
+  "success_condition": "All non-empty pipe cells are connected to the source through matching pipe openings."
+}

@@ -1,0 +1,5 @@
+name: separation_one_stroke
+host: 127.0.0.1
+port: 0
+headless: true
+system_prompt_key: separation_one_stroke_planning

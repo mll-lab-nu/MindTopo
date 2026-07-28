@@ -1,0 +1,35 @@
+{
+  "name": "separation_objects",
+  "display_name": "Separation Objects",
+  "category": "separation",
+  "level": "reasoning",
+  "description": "Render a complete object and five candidate decompositions, then ask which option correctly reconstructs the complete object.",
+  "difficulty_params": {
+    "difficulty": "Catalog object primitive part_count defines difficulty: 3-5 parts = easy, 6-10 parts = medium, 11+ parts = hard. part_count is fixed by the selected complete object and is not a generation option.",
+    "part_count": {
+      "min": 3,
+      "max": 19,
+      "source": "frontend/catalog.json entry for the selected complete object"
+    },
+    "object_category": "Dataset category such as Bench, Chair, Desk, Misc, Shelf, or Table.",
+    "complete_object_visibility_filter": "The active object pool excludes objects where any primitive part has less than min(5 pixels, 5% of that part's solo rendered area) visible across the two fixed complete-object views.",
+    "option_visibility_filter": "Generate and direct benchmark modes reject scenes where any primitive part shown in an option subassembly has less than min(13 pixels, 13% of that part's solo rendered area) visible in the option view.",
+    "candidate_option_count": 5,
+    "subassembly_count": "2 for the active revised option mode.",
+    "split_balance_gap": "Difference between the largest and smallest subassembly sizes for the correct decomposition.",
+    "connection_relation_count": "Number of part-part connections in the complete object graph."
+  },
+  "question_types": {
+    "subassembly_option_mcq": {
+      "prompt": "Which option shows the correct decomposition of the complete object?",
+      "answer_type": "multiple_choice",
+      "derive_answer": "metadata.correct_option_letter"
+    }
+  },
+  "status": "ready",
+  "renderer": "threejs",
+  "image_count": {
+    "min": 6,
+    "max": 6
+  }
+}

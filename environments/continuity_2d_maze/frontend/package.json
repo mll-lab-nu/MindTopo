@@ -1,0 +1,22 @@
+{
+  "name": "continuity-2d-maze-frontend",
+  "version": "0.1.0",
+  "description": "Three.js 2D maze scene generator for TopoBench continuity_2d_maze.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "seedrandom": "^3.0.5",
+    "three": "^0.160.0"
+  },
+  "devDependencies": {
+    "@types/seedrandom": "^3.0.8",
+    "@types/three": "^0.160.0",
+    "typescript": "^5.3.3",
+    "vite": "^8.1.3"
+  }
+}

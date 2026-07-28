@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# One-line launcher for lmms-eval on topobench tasks.
+#   topobench-eval <model-id> <task> [extra lmms-eval args...]
+#   topobench-eval --dry-run --limit 1 <model-id> <task>  # preview one-sample canary
+#
+# Prereq: `uv sync --extra openai --extra lmms-eval --extra dev` (installs
+# lmms-eval into .venv). Override the interpreter with PYTHON=/path/to/python.
+set -euo pipefail
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT="$(cd "$HERE/.." && pwd)"
+PYTHON_BIN="${PYTHON:-$ROOT/.venv/bin/python}"
+[ -x "$PYTHON_BIN" ] || PYTHON_BIN="$(command -v python3 || command -v python)"
+exec "$PYTHON_BIN" "$ROOT/lmms_eval_tasks/run.py" "$@"

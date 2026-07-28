@@ -1,0 +1,24 @@
+{
+  "name": "enclosure_sheep",
+  "display_name": "Sheep Fence Enclosure",
+  "category": "enclosure",
+  "level": "reasoning",
+  "description": "Evaluate VLM ability to reason about spatial enclosure in procedurally generated 3D fence-and-sheep scenes by counting sheep that cannot escape, detecting escape routes, finding the most populated partition cell, and estimating fence repairs.",
+  "difficulty_params": {
+    "easy": { "note": "Simple single fences, few sheep, clear separation" },
+    "medium": { "note": "Nested fences, gaps/gates, moderate sheep count" },
+    "hard": { "note": "Complex multi-fence partitions, many sheep, subtle gaps" }
+  },
+  "question_types": [
+    "Q1_count_inside",
+    "Q2_escape_possibility",
+    "Q3_max_cell_count",
+    "Q4_fence_repair"
+  ],
+  "answer_type": "mixed",
+  "tech_stack": {
+    "frontend": ["three.js", "ES6 modules", "CDN"],
+    "backend": ["openai", "puppeteer"]
+  },
+  "status": "validated"
+}
