@@ -647,6 +647,10 @@ class SeparationAdapter(_BenchmarkAdapterBase, PlanningEnvAdapter):
                 "difficulty": str(setup.difficulty),
                 "solution_length": int(setup.solution_length),
                 "setup_id": str(setup.setup_id),
+                "reference_solution": [
+                    str(direction)
+                    for direction in ((setup.level_json or {}).get("solution") or [])
+                ],
             }
             if setup.question_max_steps is not None:
                 metadata["max_steps"] = int(setup.question_max_steps)
@@ -775,8 +779,19 @@ class SeparationAdapter(_BenchmarkAdapterBase, PlanningEnvAdapter):
         if policy_name != "oracle":
             return None
         bench = self._load_benchmark()
-        info = {"state": turn.context.planner_state, "maxSteps": int(turn.context.step_budget or 0), "episode_steps": int(turn.context.step_index)}
-        parsed = bench.build_oracle_direction(info)
+        info = {
+            "state": turn.context.planner_state,
+            "maxSteps": int(turn.context.step_budget or 0),
+            "episode_steps": int(turn.context.step_index),
+            "legalDirections": [
+                str(action["direction"])
+                for action in turn.context.legal_actions
+                if isinstance(action, dict) and action.get("direction")
+            ],
+        }
+        parsed = bench.build_oracle_direction(
+            info, reference_solution=turn.spec.metadata.get("reference_solution") or None
+        )
         return ParsedActionResult(parsed_action=parsed, raw_response_text=json.dumps({"answer": parsed}, separators=(",", ":")) if parsed else "<no-solution>", response_debug={"mode": "oracle"}, invalid_response=parsed is None)
 
     def to_env_action(self, parsed_action: Any, turn: TurnInput) -> Any:
