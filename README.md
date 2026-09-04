@@ -85,7 +85,7 @@ uv run python video_eval_tasks/agent_runner.py \
   env=<env_name> \
   model=<video_model_id> \
   run.manifest_limit=1 \
-  run.output_dir=logs/video_smoke/<run_label>
+  run.output_dir=logs/video_eval/<env_name>/<run_label>
 ```
 
 ## Models
@@ -142,7 +142,11 @@ Interleaved outputs include the planning-style `model_answer.jsonl`,
 `logs/interleaved_eval/` unless `run.output_dir` is overridden.
 
 Cached-video E2E outputs use the same planning-style summaries and store the
-generated clip and extracted frames beside the episode screenshots.
+generated clip and extracted frames beside the episode screenshots. The same
+run directory is the direct input to the video-metrics evaluator
+(`uv run python -m video_eval_tasks.video_metrics evaluate --run-dir <dir>`),
+which writes its report to `<dir>/reports/video_metrics/` — see
+`video_eval_tasks/README.md`.
 
 ## Repository Layout
 
@@ -153,6 +157,8 @@ topobench-minimal/
 ├── planning_eval_tasks/    # Hydra + Playwright planning rollout runner
 ├── interleaved_eval_tasks/ # image-generation-in-the-loop runner
 ├── video_eval_tasks/       # one cached video per planning episode
+│   ├── video_metrics/      #   CV-based scoring of completed video runs
+│   └── cv_backend/         #   internal task-specific CV detectors
 ├── topobench_eval/         # shared provider registry, parsing, and scoring
 ├── bin/                    # public command wrappers
 ├── pyproject.toml          # Python dependency source of truth

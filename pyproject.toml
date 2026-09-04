@@ -25,6 +25,14 @@ openai       = ["openai>=1.0,<3"]
 anthropic    = ["anthropic>=0.40,<1"]  # legacy standalone env benchmarks only
 lmms-eval    = ["lmms-eval"]
 dev          = ["pytest>=7,<10"]
+# CV-based video metrics (`python -m video_eval_tasks.video_metrics`).
+video-metrics = [
+  "opencv-python-headless>=4.8,<5",
+  "scikit-image>=0.21,<1",
+  "scipy>=1.10,<2",
+  "imageio>=2.31,<3",
+  "imageio-ffmpeg>=0.4,<1",
+]
 # Self-hosted multimodal LLM proxies. Each gets its own .venv-<name> because
 # their torch/CUDA pinnings diverge. The setup_<name>.sh scripts handle this
 # via UV_PROJECT_ENVIRONMENT redirection.

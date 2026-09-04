@@ -14,6 +14,11 @@ import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
 
+# Repo root first so `video_eval_tasks.video_metrics` (a real package) imports
+# regardless of how pytest was invoked; then the path-injected runner dirs.
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 for _sub in ("topobench_eval", "planning_eval_tasks"):
     _path = str(ROOT / _sub)
     if _path not in sys.path:
