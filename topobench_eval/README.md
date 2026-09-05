@@ -7,7 +7,8 @@ and scoring utilities used by the retained benchmark pipelines:
 | --- | --- | --- |
 | Static reasoning | 8 VQA-style tasks | `bin/topobench-eval` |
 | Interactive planning | 5 gym-style tasks | `planning_eval_tasks/agent_runner.py` |
-| Interleaved evaluation | 4 image-generation-in-the-loop tasks | `interleaved_eval_tasks/agent_runner.py` |
+| Interleaved evaluation | 5 image-generation-in-the-loop tasks | `interleaved_eval_tasks/agent_runner.py` |
+| Cached-video E2E | 3 planning tasks | `video_eval_tasks/agent_runner.py` |
 
 ## API Keys
 
@@ -92,12 +93,13 @@ requests an imagined image, the harness generates that image, and the model then
 answers using both the original observation and the imagined image. The retained
 interleaved tasks are:
 
+- `continuity_pipe`
 - `knots_untangle`
 - `separation_one_stroke`
 - `enclosure_sheep`
 - `continuity_2d_maze`
 
-No-key passthrough smoke test:
+No-key passthrough smoke test for an interactive planning task:
 
 ```bash
 .venv/bin/python interleaved_eval_tasks/agent_runner.py \
@@ -109,7 +111,18 @@ No-key passthrough smoke test:
 
 API-backed interleaved model configs use the suffix `_imagined`, for example
 `gpt_5_4_mini_imagined` or `internvl_imagined`. Those runs require both the
-text-model key and the configured image-generation key.
+text-model key and the configured image-generation key. OpenAI text and image
+generation share `OPENAI_API_KEYS`. Static QA tasks (`enclosure_sheep` and
+`continuity_2d_maze`) require a model client and restored source images; local
+`oracle`/`random` policies do not answer static QA.
+
+The batch scripts default to four tasks: `knots_untangle`,
+`separation_one_stroke`, `enclosure_sheep`, and `continuity_2d_maze`. Run
+`continuity_pipe` explicitly through `bin/run_interleaved_task.sh` with
+`--env continuity_pipe`, or through `agent_runner.py` with `env=continuity_pipe`.
+
+See [the video evaluation guide](../video_eval_tasks/README.md) for cached-video
+E2E execution and CV-based scoring of completed runs.
 
 ## Shared Modules
 

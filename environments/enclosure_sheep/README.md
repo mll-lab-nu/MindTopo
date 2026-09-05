@@ -45,7 +45,6 @@ Depending on the task, the canonical response is a JSON integer or JSON string:
 - `backend/vlm_benchmark_sheep.py`: shared task definitions, prompt builder, parsers, and scoring
 - `backend/question_phrasings_sheep.py`: canonical question text for the four benchmark tasks
 - `backend/regenerate_dataset.js`: dataset regeneration script
-- `dataset/`: checked-in baseline dataset available for fallback benchmarking
 - `output/`: generated samples written by `backend/generate_samples.py`
 
 ## Run
@@ -73,6 +72,11 @@ npm run dev
 
 ## Benchmark
 
+This snapshot includes `output/question.jsonl` but not its referenced images or
+a fallback `dataset/` directory. Restore the matching image assets before
+evaluating the fixed benchmark, or generate a separate local dataset using the
+commands below.
+
 Run a real model benchmark:
 
 ```bash
@@ -91,12 +95,12 @@ Optional model selection sources, in precedence order:
 
 The benchmark runner is named `internvl3_benchmark.py`, but the request path is OpenAI-compatible. In practice you can point it at other compatible VLMs by changing `--base-url`, `--api-key`, and `--model`.
 
-Run against the checked-in baseline dataset instead:
+Run against a separately prepared local dataset (replace `path/to/dataset`):
 
 ```bash
 cd environments/enclosure_sheep
 python3 backend/internvl3_benchmark.py \
-  --data-dir dataset \
+  --data-dir path/to/dataset \
   --tasks all \
   --output-json output/internvl3_enclosure_sheep.json \
   --output-csv output/internvl3_enclosure_sheep.csv
@@ -201,7 +205,8 @@ The `partitioned` scene type now mixes four layout families (chosen per-sample b
 
 `numPolygonSides` controls the outer-polygon side count for `hex_cross` (always 6), `nested_polygon`, and `polygon_star`.
 
-The benchmark now reads these newly generated samples by default. To benchmark the checked-in dataset instead, pass `--data-dir dataset`.
+The benchmark reads newly generated samples by default. To use a separately
+prepared local dataset, pass `--data-dir path/to/dataset`.
 
 ## Benchmark vs Evaluation
 

@@ -29,11 +29,11 @@ usage: bash bin/run_planning_task.sh --model <model> [--env <env>] [--parallel-s
   --env                 Optional. Run one env instead of the default 5:
                         order_swap_2d_puzzle, enclosure_chat_noir, knots_untangle,
                         separation_one_stroke, continuity_pipe
-  --parallel-sessions   Optional. Default 8. Use "auto" to use model/key-pool capacity.
+  --parallel-sessions   Optional. Default 16 before model-specific limits.
+                        Use "auto" to use model/key-pool capacity.
   --workers-per-key     Optional. Concurrent workers allowed per API key.
-                        Default comes from agent_runner.py, currently 2.
-                        NVIDIA NIM models default to 2.
-                        InternVL/BAGEL/Gemma/ThinkMorph/Cosmos default to 1.
+                        Default 16; InternVL uses 8, NVIDIA NIM uses 2.
+                        BAGEL/Gemma/ThinkMorph/Cosmos use 1.
   --no-step-artifacts   Keep scoring JSONL/summaries but prune each completed
                         episode's PNG/GIF/prompt files to limit disk usage.
 

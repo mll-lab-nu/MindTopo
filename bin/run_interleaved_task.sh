@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # One-line launcher for the interleaved (image-gen-in-the-loop) pipeline.
 # Mirrors bin/run_planning_task.sh: resolves the uv .venv python, .env export,
-# canonical output paths, and looping over the 4 wired envs by default.
+# canonical output paths, and looping over a four-task subset by default.
 #
 #   bash bin/run_interleaved_task.sh --model <model> [--env <env>] [...]
 #
@@ -16,7 +16,7 @@ MODEL_ID=""
 PARALLEL_SESSIONS=""
 MANIFEST_LIMIT=""
 STEP_BUDGET=""
-# The 4 envs wired into the interleaved benchmark.
+# Default batch subset; continuity_pipe is also supported via --env.
 INTERLEAVED_ENVS=(
   knots_untangle
   separation_one_stroke
@@ -30,8 +30,8 @@ usage: bash bin/run_interleaved_task.sh --model <model> [--env <env>] [--paralle
 
   --model               Required. e.g. internvl_imagined, bagel_imagined,
                         gpt_5_4_mini_imagined, oracle, random, greedy, ...
-  --env                 Optional. Run one env instead of the default 4 wired
-                        envs (knots_untangle, separation_one_stroke,
+  --env                 Optional. Run one env (including continuity_pipe) instead of the
+                        default four-task batch (knots_untangle, separation_one_stroke,
                         enclosure_sheep, continuity_2d_maze).
   --parallel-sessions   Optional. Default: omit (runner picks 0 = #API keys
                         for gym; clamps to 1 for reasoning).

@@ -1,7 +1,7 @@
 # TopoBench
 
 TopoBench is a benchmark for topology-aware visual reasoning. This minimal
-snapshot keeps four runnable evaluation paths: static visual QA, interactive
+snapshot keeps four evaluation paths: static visual QA, interactive
 planning, interleaved image-generation-in-the-loop evaluation, and a minimal
 cached-video E2E evaluation across five topological categories: continuity,
 enclosure, knots, order, and separation.
@@ -49,8 +49,15 @@ GOOGLE_PAID_API_KEYS=key1
 ```
 
 No API key is required for the local planning baselines `oracle` and `random`.
-Those local baselines also work as no-key passthrough checks for the interleaved
-runner.
+Those local baselines also work as no-key passthrough checks for interleaved
+planning tasks; interleaved static QA requires a model client.
+
+Static visual QA and interleaved static QA also require the image files referenced
+by each task's `output/question.jsonl`. This snapshot includes the fixed JSONL
+files but excludes those images. Restore the matching image assets before running
+these paths; local ignored images are not part of a fresh clone. Environment
+READMEs describe generation where supported; `order_origami` has no generator in
+this snapshot.
 
 ## Quick Start
 

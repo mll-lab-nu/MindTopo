@@ -54,7 +54,8 @@ Difficulty controls board size and rope count:
 ## Generate question.jsonl
 
 ```bash
-python environments/knots_untangle/backend/generate_samples.py \
+# From the repository root:
+uv run python environments/knots_untangle/backend/generate_samples.py \
   --output-json environments/knots_untangle/output/question.jsonl
 ```
 
@@ -124,14 +125,15 @@ python backend/internvl3_benchmark.py \
 
 In replay mode `--difficulties` and `--repeats` are ignored; difficulty, seed, and step budget come from each row's `meta_info`.
 
-Generate the 180-episode oracle benchmark output (60 per difficulty) without calling the API:
+Generate 180 question rows (60 per difficulty) without calling the API:
 
 ```bash
-cd /Users/yunfei/Desktop/topobench/environments/knots_untangle
-python environments/knots_untangle/backend/generate_samples.py \
+# From the repository root:
+cd environments/knots_untangle
+uv run python backend/generate_samples.py \
   --difficulties easy,medium,hard \
   --repeats 60 \
-  --output-json environments/knots_untangle/output/question.jsonl
+  --output-json output/question.jsonl
 ```
 
 Current default arguments:

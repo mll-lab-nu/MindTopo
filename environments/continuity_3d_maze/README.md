@@ -83,11 +83,12 @@ Oracle and JSONL-based evaluation are reproducible. Real model API outputs may s
 
 ## Debug Preview
 
-The debug UI is the local Tk preview app:
+The debug UI is the local Tk preview app. Activate a Python environment with
+the dependencies in `backend/requirements.txt` installed, then run from the
+repository root:
 
 ```bash
-cd /home/andrew/Desktop/topobench/environments/continuity_3d_maze
-conda activate swing
+cd environments/continuity_3d_maze
 python preview_house.py
 ```
 
