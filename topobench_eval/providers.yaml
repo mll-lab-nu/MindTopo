@@ -208,7 +208,7 @@ models:
     provider: openai
     base_url: https://api.openai.com/v1
     base_url_env: OPENAI_BASE_URL
-    api_key_env: OPENAI_PAID_API_KEYS
+    api_key_env: OPENAI_API_KEYS
 
   gpt_5_4:
     upstream_model_name: gpt-5.4-2026-03-05
@@ -216,7 +216,7 @@ models:
     provider: openai
     base_url: https://api.openai.com/v1
     base_url_env: OPENAI_BASE_URL
-    api_key_env: OPENAI_PAID_API_KEYS
+    api_key_env: OPENAI_API_KEYS
 
   gpt_5_4_mini:
     upstream_model_name: gpt-5.4-mini-2026-03-17
@@ -224,14 +224,14 @@ models:
     provider: openai
     base_url: https://api.openai.com/v1
     base_url_env: OPENAI_BASE_URL
-    api_key_env: OPENAI_PAID_API_KEYS
+    api_key_env: OPENAI_API_KEYS
 
   gpt_5_6_luna:
     upstream_model_name: gpt-5.6-luna
     adapter: openai
     provider: openai
     base_url: https://api.openai.com/v1
-    api_key_env: OPENAI_PAID_API_KEYS
+    api_key_env: OPENAI_API_KEYS
 
 
   # ── Self-hosted open-weight models (GPU required) ────────────────────────

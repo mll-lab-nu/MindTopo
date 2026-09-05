@@ -23,10 +23,9 @@ if [ -e "$RUN_DIR" ] && [ "$(ls -A "$RUN_DIR" 2>/dev/null)" ]; then
 fi
 mkdir -p "$RUN_DIR"
 
-# .env auto-load + paid alias for the gpt_5_4_mini text key var.
+# Load the shared OpenAI key pool for text and image generation.
 set -a; . ./.env; set +a
-export OPENAI_PAID_API_KEYS="${OPENAI_PAID_API_KEYS:-$OPENAI_API_KEYS}"
-[ -n "${OPENAI_PAID_API_KEYS:-}" ] || { echo "no OPENAI key set" >&2; exit 1; }
+[ -n "${OPENAI_API_KEYS:-}" ] || { echo "no OPENAI key set" >&2; exit 1; }
 
 ENVS=(knots_untangle separation_one_stroke enclosure_sheep continuity_2d_maze)
 

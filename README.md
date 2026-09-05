@@ -44,7 +44,7 @@ supported, for example:
 ```dotenv
 INTERNVL_API_KEYS=key1,key2,key3
 NVIDIA_NIM_API_KEYS=key1,key2
-OPENAI_PAID_API_KEYS=key1
+OPENAI_API_KEYS=key1
 GOOGLE_PAID_API_KEYS=key1
 ```
 
