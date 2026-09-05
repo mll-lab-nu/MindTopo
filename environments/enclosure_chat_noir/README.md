@@ -36,9 +36,9 @@ Initial blockers are sampled uniformly at random from non-cat cells. The generat
 ## Frontend Debug
 
 ```bash
-cd /Users/andrewliu/Desktop/manling/topobench/environments/enclosure_chat_noir
-conda activate ptm
-python backend/serve_frontend.py --port 8000
+# From the repository root:
+cd environments/enclosure_chat_noir
+uv run python backend/serve_frontend.py --port 8000
 ```
 
 Open:
@@ -55,7 +55,7 @@ When `catIndex` and `initialBlockedIndices` are not provided, the frontend uses 
 Generate easy data:
 
 ```bash
-python backend/generate_samples.py \
+uv run python backend/generate_samples.py \
   --board-radius auto \
   --initial-block-count auto \
   --cat-policies easy \
@@ -67,7 +67,7 @@ python backend/generate_samples.py \
 Generate medium data:
 
 ```bash
-python backend/generate_samples.py \
+uv run python backend/generate_samples.py \
   --board-radius auto \
   --initial-block-count auto \
   --cat-policies medium \
@@ -79,7 +79,7 @@ python backend/generate_samples.py \
 Generate hard data:
 
 ```bash
-python backend/generate_samples.py \
+uv run python backend/generate_samples.py \
   --board-radius auto \
   --initial-block-count auto \
   --cat-policies hard \
@@ -91,7 +91,7 @@ python backend/generate_samples.py \
 Generate all three difficulties in one file:
 
 ```bash
-python backend/generate_samples.py \
+uv run python backend/generate_samples.py \
   --board-radius auto \
   --initial-block-count auto \
   --cat-policies easy,medium,hard \
@@ -116,7 +116,7 @@ Default generate args:
 Load an existing question JSONL and run oracle mode:
 
 ```bash
-python backend/internvl3_benchmark.py \
+uv run python backend/internvl3_benchmark.py \
   --oracle \
   --question-jsonl output/question.jsonl \
   --output-json output/internvl3_enclosure_chat_noir.json \
@@ -127,7 +127,7 @@ python backend/internvl3_benchmark.py \
 Run direct generation plus benchmark without a prebuilt question JSONL:
 
 ```bash
-python backend/internvl3_benchmark.py \
+uv run python backend/internvl3_benchmark.py \
   --oracle \
   --board-radius auto \
   --initial-block-count auto \
@@ -167,6 +167,6 @@ In `--oracle` mode, the benchmark first asks the same bounded multi-step search 
 ## Smoke Tests
 
 ```bash
-python gym/test_env.py --headless
-python gym/test_protocol.py --headless
+uv run python gym/test_env.py --headless
+uv run python gym/test_protocol.py --headless
 ```

@@ -34,9 +34,9 @@ Each generated setup is accepted only after BFS finds a valid shortest solution 
 ## Debug Frontend
 
 ```bash
-cd /Users/andrewliu/Desktop/manling/topobench/environments/separation_one_stroke
-conda activate ptm
-python backend/serve_frontend.py --port 8000
+# From the repository root:
+cd environments/separation_one_stroke
+uv run python backend/serve_frontend.py --port 8000
 ```
 
 Open:
@@ -56,9 +56,9 @@ To inspect an exact generated benchmark row, load its JSONL row in the browser c
 Generate easy questions:
 
 ```bash
-cd /Users/andrewliu/Desktop/manling/topobench/environments/separation_one_stroke
-conda activate ptm
-python backend/generate_samples.py \
+# From the repository root:
+cd environments/separation_one_stroke
+uv run python backend/generate_samples.py \
   --difficulty easy \
   --repeats 100 \
   --output-json output/question.jsonl
@@ -67,7 +67,7 @@ python backend/generate_samples.py \
 Generate medium questions:
 
 ```bash
-python backend/generate_samples.py \
+uv run python backend/generate_samples.py \
   --difficulty medium \
   --repeats 100 \
   --output-json output/question.jsonl
@@ -76,7 +76,7 @@ python backend/generate_samples.py \
 Generate hard questions:
 
 ```bash
-python backend/generate_samples.py \
+uv run python backend/generate_samples.py \
   --difficulty hard \
   --repeats 100 \
   --output-json output/question.jsonl
@@ -85,7 +85,7 @@ python backend/generate_samples.py \
 Generate multiple difficulties in one JSONL:
 
 ```bash
-python backend/generate_samples.py \
+uv run python backend/generate_samples.py \
   --difficulty easy,medium,hard \
   --repeats 100 \
   --output-json output/question.jsonl
@@ -106,9 +106,9 @@ Current generate defaults:
 Run from a generated `question.jsonl`:
 
 ```bash
-cd /Users/andrewliu/Desktop/manling/topobench/environments/separation_one_stroke
-conda activate ptm
-python backend/internvl3_benchmark.py \
+# From the repository root:
+cd environments/separation_one_stroke
+uv run python backend/internvl3_benchmark.py \
   --config ../api.json \
   --question-jsonl output/question.jsonl
 ```
@@ -116,7 +116,7 @@ python backend/internvl3_benchmark.py \
 Run a direct benchmark without a pre-generated JSONL:
 
 ```bash
-python backend/internvl3_benchmark.py \
+uv run python backend/internvl3_benchmark.py \
   --config ../api.json \
   --difficulty easy,medium,hard \
   --repeats 1
@@ -125,7 +125,7 @@ python backend/internvl3_benchmark.py \
 Run a local oracle check without calling the API:
 
 ```bash
-python backend/internvl3_benchmark.py \
+uv run python backend/internvl3_benchmark.py \
   --oracle \
   --difficulty easy \
   --repeats 1
@@ -160,9 +160,9 @@ Each step directory contains `step_0000_current.png`, `step_0000_prompt_debug.tx
 ## Smoke Tests
 
 ```bash
-cd /Users/andrewliu/Desktop/manling/topobench/environments/separation_one_stroke
-conda activate ptm
-python gym/test_generator.py
-python gym/test_protocol.py --headless
-python gym/test_env.py --headless
+# From the repository root:
+cd environments/separation_one_stroke
+uv run python gym/test_generator.py
+uv run python gym/test_protocol.py --headless
+uv run python gym/test_env.py --headless
 ```

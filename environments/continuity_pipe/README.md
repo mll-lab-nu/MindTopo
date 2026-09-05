@@ -21,22 +21,25 @@ The first seed defaults to `1` via `--seed-start`; each `(difficulty, repeat)` o
 Environment smoke test:
 
 ```bash
-cd /Users/andrewliu/Desktop/manling/topobench/environments
-/Users/andrewliu/opt/anaconda3/envs/ptm/bin/python continuity_pipe/gym/test_env.py --headless
+# From the repository root:
+cd environments
+uv run python continuity_pipe/gym/test_env.py --headless
 ```
 
 Protocol smoke test:
 
 ```bash
-cd /Users/andrewliu/Desktop/manling/topobench/environments
-/Users/andrewliu/opt/anaconda3/envs/ptm/bin/python continuity_pipe/gym/test_protocol.py --headless
+# From the repository root:
+cd environments
+uv run python continuity_pipe/gym/test_protocol.py --headless
 ```
 
 Generate interactive `question.jsonl` rows:
 
 ```bash
-cd /Users/andrewliu/Desktop/manling/topobench/environments
-/Users/andrewliu/opt/anaconda3/envs/ptm/bin/python continuity_pipe/backend/generate_samples.py \
+# From the repository root:
+cd environments
+uv run python continuity_pipe/backend/generate_samples.py \
   --difficulties easy,medium,hard \
   --repeats 200
 ```
@@ -44,20 +47,21 @@ cd /Users/andrewliu/Desktop/manling/topobench/environments
 Generate a specific difficulty bucket:
 
 ```bash
-cd /Users/andrewliu/Desktop/manling/topobench/environments
+# From the repository root:
+cd environments
 
 # easy: 4x4, 10-13 pipes, 2-3 three-way branch junctions, 13-17 oracle rotations
-/Users/andrewliu/opt/anaconda3/envs/ptm/bin/python continuity_pipe/backend/generate_samples.py \
+uv run python continuity_pipe/backend/generate_samples.py \
   --difficulties easy \
   --repeats 10
 
 # medium: 5x5, 13-17 pipes, 3-5 three-way branch junctions, 17-23 oracle rotations
-/Users/andrewliu/opt/anaconda3/envs/ptm/bin/python continuity_pipe/backend/generate_samples.py \
+uv run python continuity_pipe/backend/generate_samples.py \
   --difficulties medium \
   --repeats 10
 
 # hard: 5x5, 17-23 pipes, 5-7 three-way branch junctions, 23-27 oracle rotations
-/Users/andrewliu/opt/anaconda3/envs/ptm/bin/python continuity_pipe/backend/generate_samples.py \
+uv run python continuity_pipe/backend/generate_samples.py \
   --difficulties hard \
   --repeats 10
 ```
@@ -65,8 +69,9 @@ cd /Users/andrewliu/Desktop/manling/topobench/environments
 Run a generated benchmark with the oracle solver:
 
 ```bash
-cd /Users/andrewliu/Desktop/manling/topobench/environments
-/Users/andrewliu/opt/anaconda3/envs/ptm/bin/python continuity_pipe/backend/internvl3_benchmark.py \
+# From the repository root:
+cd environments
+uv run python continuity_pipe/backend/internvl3_benchmark.py \
   --oracle \
   --question-jsonl continuity_pipe/output/question.jsonl
 ```
@@ -74,8 +79,9 @@ cd /Users/andrewliu/Desktop/manling/topobench/environments
 Run a small deterministic oracle smoke directly from difficulty presets:
 
 ```bash
-cd /Users/andrewliu/Desktop/manling/topobench/environments
-/Users/andrewliu/opt/anaconda3/envs/ptm/bin/python continuity_pipe/backend/internvl3_benchmark.py \
+# From the repository root:
+cd environments
+uv run python continuity_pipe/backend/internvl3_benchmark.py \
   --oracle \
   --repeats 1
 ```
@@ -83,8 +89,9 @@ cd /Users/andrewliu/Desktop/manling/topobench/environments
 Frontend preview:
 
 ```bash
-cd /Users/andrewliu/Desktop/manling/topobench/environments
-/Users/andrewliu/opt/anaconda3/envs/ptm/bin/python continuity_pipe/backend/serve_frontend.py --port 8000
+# From the repository root:
+cd environments
+uv run python continuity_pipe/backend/serve_frontend.py --port 8000
 ```
 
 Then open `http://127.0.0.1:8000/`. The standalone frontend supports clicking a pipe cell directly to rotate it.

@@ -167,6 +167,10 @@ topobench-minimal/
 
 More detailed evaluation notes live in `topobench_eval/README.md`.
 
+## License
+
+This project is released under the MIT License; see [LICENSE](LICENSE) for details.
+
 ## Citation
 
 Citation information will be added with the paper release.

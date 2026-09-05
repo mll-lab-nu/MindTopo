@@ -31,9 +31,9 @@ The frontend, generator, and evaluation helper all use the same mapping: choose 
 ## Debug Frontend
 
 ```bash
-cd /Users/andrewliu/Desktop/manling/topobench/environments/order_swap_2d_puzzle
-conda activate ptm
-python backend/serve_frontend.py --port 8000
+# From the repository root:
+cd environments/order_swap_2d_puzzle
+uv run python backend/serve_frontend.py --port 8000
 ```
 
 Open:
@@ -50,9 +50,9 @@ The debug page exposes difficulty, rows, columns, seed, and a row/column action 
 Each row stores the canonical reproduction payload in `meta_info.initial_state.reset_config`; `initialGrid` and `goalGrid` are included only as derived readable views.
 
 ```bash
-cd /Users/andrewliu/Desktop/manling/topobench/environments/order_swap_2d_puzzle
-conda activate ptm
-python backend/generate_samples.py \
+# From the repository root:
+cd environments/order_swap_2d_puzzle
+uv run python backend/generate_samples.py \
   --repeats 100 \
   --output-json output/question.jsonl
 ```
@@ -72,9 +72,9 @@ Use `--grids 2x2,2x3,3x2,3x3,3x4,4x3,4x4` only when you want explicit grid-shape
 Run oracle evaluation and write `question.jsonl` plus `model_answer.jsonl`:
 
 ```bash
-cd /Users/andrewliu/Desktop/manling/topobench/environments/order_swap_2d_puzzle
-conda activate ptm
-python backend/internvl3_benchmark.py \
+# From the repository root:
+cd environments/order_swap_2d_puzzle
+uv run python backend/internvl3_benchmark.py \
   --oracle \
   --difficulties easy,medium,hard \
   --repeats 5 \
@@ -85,7 +85,7 @@ python backend/internvl3_benchmark.py \
 Run from an existing generated `question.jsonl`:
 
 ```bash
-python backend/internvl3_benchmark.py \
+uv run python backend/internvl3_benchmark.py \
   --oracle \
   --question-jsonl output/question.jsonl \
   --output-json output/internvl3_order_swap_2d_puzzle.json \
@@ -103,9 +103,8 @@ Outputs:
 Run from a generated `question.jsonl`:
 
 ```bash
-cd /Users/andrewliu/Desktop/manling/topobench
-conda activate ptm
-python planning_eval_tasks/agent_runner.py env=order_swap_2d_puzzle model=oracle
+# Run from the repository root.
+uv run python planning_eval_tasks/agent_runner.py env=order_swap_2d_puzzle model=oracle
 ```
 
 ## Smoke Tests
@@ -113,13 +112,13 @@ python planning_eval_tasks/agent_runner.py env=order_swap_2d_puzzle model=oracle
 Environment smoke test:
 
 ```bash
-cd /Users/andrewliu/Desktop/manling/topobench/environments/order_swap_2d_puzzle
-conda activate ptm
-python gym/test_env.py --headless
+# From the repository root:
+cd environments/order_swap_2d_puzzle
+uv run python gym/test_env.py --headless
 ```
 
 Protocol smoke test:
 
 ```bash
-python gym/test_protocol.py --headless
+uv run python gym/test_protocol.py --headless
 ```

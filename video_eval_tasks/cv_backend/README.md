@@ -5,7 +5,7 @@ This directory is an internal compatibility backend for
 
 Production callers enter through `backend.py`, which dispatches the five supported
 tasks to the detector implementation in `scripts/video_cv_pipeline.py`. The remaining
-`topo_spike/` modules contain only the CV parsers, frame decoder, calibration helpers,
+`detectors/` modules contain only the CV parsers, frame decoder, calibration helpers,
 and environment-oracle bridges needed by that pipeline. `one_stroke_overlays.py` is
 retained as the One Stroke frame parser.
 

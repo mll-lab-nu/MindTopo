@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from video_eval_tasks.cv_backend import backend
-from video_eval_tasks.cv_backend.topo_spike import (
+from video_eval_tasks.cv_backend.detectors import (
     chat_noir_oracle,
     pipe_oracle,
     swap_oracle,

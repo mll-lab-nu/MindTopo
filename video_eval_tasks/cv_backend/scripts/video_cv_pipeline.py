@@ -6,7 +6,7 @@ existing task-specific detectors intact, then writes a common set of artifacts:
   frames/ -> manifests/ -> detections/ -> static_metrics/ -> dynamic_metrics/
   -> reports/summary.csv
 
-Untangle uses topo_spike.parsing.  One Stroke reuses the detector from
+Untangle uses detectors.parsing.  One Stroke reuses the detector from
 one_stroke_overlays.py, then fits a board homography and snaps white stroke
 pixels onto legal grid edges for normalized path dynamics.
 """
@@ -39,20 +39,20 @@ except ImportError:  # pragma: no cover - the spike venv includes scipy; keep ba
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from topo_spike import config
-from topo_spike.decode import decode_bgr, sample_indices
-from topo_spike.gt_loader import Episode, UntangledGT, iter_episodes
-from topo_spike.overlay import draw_overlay as draw_untangle_overlay
-from topo_spike.parsing import (
+from detectors import config
+from detectors.decode import decode_bgr, sample_indices
+from detectors.gt_loader import Episode, UntangledGT, iter_episodes
+from detectors.overlay import draw_overlay as draw_untangle_overlay
+from detectors.parsing import (
     ParsedFrame,
     _clean_mask,
     assign_colors,
     parse_frame as parse_untangle_frame,
     rope_pixel_mask,
 )
-from topo_spike import swap2d, swap_oracle
-from topo_spike import pipe_cv, pipe_oracle
-from topo_spike import chat_noir_cv, chat_noir_oracle
+from detectors import swap2d, swap_oracle
+from detectors import pipe_cv, pipe_oracle
+from detectors import chat_noir_cv, chat_noir_oracle
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
@@ -3636,7 +3636,7 @@ def _process_one_stroke_video(
 # order_swap_2d_puzzle ("2D swap") — sliding/swap tile puzzle.
 #
 # Discrete state is a row-major arrangement of block tokens (one blank).  We parse each
-# frame with topo_spike.swap2d, then score against env-oracle GT (topo_spike.swap_oracle).
+# frame with detectors.swap2d, then score against env-oracle GT (detectors.swap_oracle).
 # Metrics follow reports/findings_swap_puzzle.md and are split into observation quality,
 # task outcome, process validity/progress, and temporal coverage.
 # =====================================================================================
@@ -4448,8 +4448,8 @@ def _process_swap2d_video(
 # continuity_pipe ("pipe") — rotate-the-pipes connectivity puzzle.
 #
 # Discrete state is a per-cell current_mask (which arms N/E/S/W a pipe shows) plus its
-# green/blue connectivity colour.  We parse each frame with topo_spike.pipe_cv against a
-# clip-level lattice, then score against env-oracle GT (topo_spike.pipe_oracle).  Static
+# green/blue connectivity colour.  We parse each frame with detectors.pipe_cv against a
+# clip-level lattice, then score against env-oracle GT (detectors.pipe_oracle).  Static
 # metrics look at 4 checkpoint frames {0,13,27,40}; dynamic metrics first map
 # each frame/cell to a registered legal pipe pattern, skip only bracketed
 # unreadable/rotating -1 spans, and fail readable pipe shapes outside the
@@ -5151,8 +5151,8 @@ def _process_pipe_video(
 # enclosure_chat_noir ("chat noir") — trap-the-cat hex-board puzzle.
 #
 # Discrete state is (cat_cell, blocked_set) on a static hex board.  We parse each frame with
-# topo_spike.chat_noir_cv against a clip-level lattice, then score against env-oracle GT
-# (topo_spike.chat_noir_oracle).  Static metrics look at 4 checkpoint frames {0,13,27,40};
+# detectors.chat_noir_cv against a clip-level lattice, then score against env-oracle GT
+# (detectors.chat_noir_oracle).  Static metrics look at 4 checkpoint frames {0,13,27,40};
 # dynamic metrics look at all 40 adjacent transitions, per reports/findings_chat_noir.md.
 # =====================================================================================
 
