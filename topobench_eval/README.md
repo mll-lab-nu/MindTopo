@@ -108,7 +108,7 @@ No-key passthrough smoke test:
 ```
 
 API-backed interleaved model configs use the suffix `_imagined`, for example
-`gpt_5_4_mini_imagined` or `internvl3_5_imagined`. Those runs require both the
+`gpt_5_4_mini_imagined` or `internvl_imagined`. Those runs require both the
 text-model key and the configured image-generation key.
 
 ## Shared Modules

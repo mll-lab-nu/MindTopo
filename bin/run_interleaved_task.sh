@@ -28,7 +28,7 @@ usage() {
   cat <<'EOF'
 usage: bash bin/run_interleaved_task.sh --model <model> [--env <env>] [--parallel-sessions N] [--manifest-limit N] [--step-budget N]
 
-  --model               Required. e.g. internvl3_5_imagined, bagel_imagined,
+  --model               Required. e.g. internvl_imagined, bagel_imagined,
                         gpt_5_4_mini_imagined, oracle, random, greedy, ...
   --env                 Optional. Run one env instead of the default 4 wired
                         envs (knots_untangle, separation_one_stroke,
