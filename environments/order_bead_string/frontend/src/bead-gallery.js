@@ -46,7 +46,7 @@ function datasetRopeThickness(rng) {
 
 // ============= State =============
 
-let scene, camera, renderer, controls, shadowPlane, grid;
+let scene, camera, renderer, controls;
 let root = new THREE.Group();
 let currentObjects = { meshes: [], groups: [] };
 let currentMetadata = null;
@@ -151,9 +151,11 @@ function initThree() {
   scene.add(rim);
 
   // Shadow plane
-  shadowPlane = new THREE.Mesh(
+  const shadowPlane = new THREE.Mesh(
     new THREE.PlaneGeometry(220, 220),
-    new THREE.ShadowMaterial({ opacity: 0.18 }),
+    // This plane only receives shadows; its invisible area must not occlude
+    // transparent beads below it.
+    new THREE.ShadowMaterial({ opacity: 0.18, depthWrite: false }),
   );
   shadowPlane.rotation.x = -Math.PI * 0.5;
   shadowPlane.position.y = -2.5;
@@ -161,7 +163,7 @@ function initThree() {
   scene.add(shadowPlane);
 
   // Grid
-  grid = new THREE.GridHelper(60, 30, 0x2a335a, 0x1a2040);
+  const grid = new THREE.GridHelper(60, 30, 0x2a335a, 0x1a2040);
   grid.position.y = -2.5;
   if (Array.isArray(grid.material)) {
     grid.material.forEach(m => { m.transparent = true; m.opacity = 0.3; });
@@ -304,18 +306,9 @@ function buildScene(params) {
 
 // ============= Camera =============
 
-function setCameraPreset(name, group = root) {
+function setCameraPreset(name, group = root, framingBounds = null) {
   const preset = CAMERA_PRESETS[name] || CAMERA_PRESETS.iso_fr;
-  const bounds = new THREE.Box3().setFromObject(group);
-  const sphere = bounds.getBoundingSphere(new THREE.Sphere());
-
-  // Keep the transparent shadow surface below the complete model. A fixed
-  // ground height can depth-occlude low transparent beads, especially bead 0
-  // at the lower endpoint of a helix.
-  const groundY = bounds.min.y - Math.max(0.5, sphere.radius * 0.08);
-  if (shadowPlane) shadowPlane.position.y = groundY;
-  if (grid) grid.position.y = groundY;
-
+  const sphere = (framingBounds || new THREE.Box3().setFromObject(group)).getBoundingSphere(new THREE.Sphere());
   const dirVec = new THREE.Vector3(...preset.pos).normalize();
   const fovRad = camera.fov * Math.PI / 180;
   const dist = Math.max(
@@ -401,6 +394,32 @@ function capturePNG(width = 1024, height = 1024) {
   camera.updateProjectionMatrix();
 
   return dataUrl;
+}
+
+/** Re-render a saved scene without sampling colors, shapes, or question pairs. */
+export function renderSavedSample(sample) {
+  disposeCurrent();
+  const { group, metadata, beadMeshes, framingBounds } = createBeadString({
+    curveType: sample.curve_type,
+    curveComplexity: sample.curve_complexity,
+    numBeads: sample.num_beads,
+    beadColors: sample.bead_sequence,
+    beadSize: sample.bead_size,
+    ropeThickness: sample.rope_thickness,
+    seed: sample.seed,
+    isRing: sample.is_ring,
+    savedBeadPositions: sample.bead_positions,
+    preserveLegacyFraming: true,
+    showStartMarker: true,
+  });
+  root.add(group);
+  currentObjects.groups.push(group);
+  setCameraPreset(sample.camera_angle, group, framingBounds);
+  return {
+    metadata,
+    beadCount: beadMeshes.length,
+    image_data_url: capturePNG(...sample.image_size),
+  };
 }
 
 function downloadPNG() {
