@@ -15,22 +15,22 @@ from topobench_eval.datasets import (
 )
 
 
-def test_fixed_release_is_disjoint_and_preserves_reused_origami_ids():
+def test_extended_is_the_original_dataset_and_flags_core_overlap():
     all_rows = {}
-    for split, expected in (("core", 3900), ("extended", 8780)):
+    for split, expected in (("core", 3900), ("extended", 11035)):
         all_rows[split] = [(task, row) for task in TASKS for row in validate_dataset(task, split, images=False)]
         assert len(all_rows[split]) == expected
-    ids = lambda split: {(task, row["id"]) for task, row in all_rows[split]}
+        assert len({(task, row["id"]) for task, row in all_rows[split]}) == expected
     hashes = lambda split: {(task, row["meta_info"]["release_input_sha256"]) for task, row in all_rows[split]}
-    assert not ids("core") & ids("extended")
-    assert not hashes("core") & hashes("extended")
-    restored = [row for task, row in all_rows["extended"] if "source_id" in row["meta_info"]]
-    assert len(restored) == 150
-    for row in restored:
-        assert row["id"] == "legacy:" + row["meta_info"]["source_id"]
-        core = next(item for task, item in all_rows["core"] if task == "order_origami" and item["id"] == row["meta_info"]["source_id"])
-        assert row["meta_info"]["release_input_sha256"] != core["meta_info"]["release_input_sha256"]
-        assert row["gt_answer"] != core["gt_answer"]
+    manifest = read_rows(ROOT / "data/manifests/extended_manifest.jsonl")
+    assert len(hashes("extended")) == 11030
+    assert hashes("core") & hashes("extended") == {(row["task"], row["input_sha256"]) for row in manifest if row["in_core"]}
+    assert sum(row["in_core"] for row in manifest) == 2250
+    core = {(task, row["id"]): row for task, row in all_rows["core"]}
+    reused = [row for task, row in all_rows["extended"] if (task, row["id"]) in core
+              and core[(task, row["id"])]["meta_info"]["release_input_sha256"] != row["meta_info"]["release_input_sha256"]]
+    assert len(reused) == 150
+    assert all(row["id"].startswith("origami") for row in reused)
 
 
 def test_core_has_150_instances_per_difficulty_without_rewriting_generator_difficulty():

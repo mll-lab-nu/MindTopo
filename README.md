@@ -54,19 +54,23 @@ planning tasks; interleaved static QA requires a model client.
 
 ## Core Set and Extended Set
 
-The release has two disjoint data partitions across all 13 tasks:
+The release has two data sets across all 13 tasks:
 
-| Partition | Instances | Purpose |
+| Set | Instances | Purpose |
 | --- | ---: | --- |
 | `core` | 3,900 | Primary paper evaluation, 300 per task, with 150 Easy and 150 Hard |
-| `extended` | 8,780 | Additional archived instances after exact content deduplication |
+| `extended` | 11,035 | The complete original dataset, kept unchanged |
 
 Static reasoning and planning default to `core`. Select `--split extended`
 explicitly for the Extended Set. Core difficulty is stored as
 `meta_info.benchmark_level`; the original generator's `difficulty` and reset
 configuration are preserved for faithful execution. Extended keeps its source
-difficulty labels. The 150 older Origami variants with reused IDs are retained
-with `legacy:` release IDs and their original `meta_info.source_id`.
+difficulty labels.
+
+The two sets overlap: 2,250 Extended instances have the same model input as a
+Core instance, and `in_core` marks them in `extended_manifest.jsonl`. Report the
+sets separately rather than pooling their scores. IDs are unique within a set
+only, because 150 Origami IDs name different content in Core and Extended.
 
 Canonical JSONL files live under `data/<split>/<task>/question.jsonl`, and
 `data/manifests/` records the fixed paper lists, content hashes and counts.

@@ -1,10 +1,8 @@
 {
   "benchmark_commit": "45f8c4f1fbe57ace7e6c9d9826f36ddb79ed3d95",
   "core": 3900,
-  "archived_pool": 11035,
-  "extended": 8780,
-  "removed": 2255,
-  "renamed_extended_ids": 150,
+  "extended": 11035,
+  "shared_with_core": 2250,
   "image_files_hashed": 30654,
   "tasks": [
     {
@@ -12,142 +10,104 @@
       "label": "2D Maze",
       "mode": "Reasoning",
       "core": 300,
-      "archived": 1000,
-      "extended": 850,
-      "removed": {
-        "core_id_overlap": 150
-      }
+      "extended": 1000,
+      "shared_with_core": 150
     },
     {
       "task": "continuity_3d_maze",
       "label": "3D Maze",
       "mode": "Reasoning",
       "core": 300,
-      "archived": 996,
-      "extended": 846,
-      "removed": {
-        "core_id_overlap": 150
-      }
+      "extended": 996,
+      "shared_with_core": 150
     },
     {
       "task": "continuity_pipe",
       "label": "Pipe",
       "mode": "Planning",
       "core": 300,
-      "archived": 600,
-      "extended": 450,
-      "removed": {
-        "core_id_overlap": 150
-      }
+      "extended": 600,
+      "shared_with_core": 150
     },
     {
       "task": "separation_objects",
       "label": "Assembly",
       "mode": "Reasoning",
       "core": 300,
-      "archived": 1040,
-      "extended": 890,
-      "removed": {
-        "core_id_overlap": 150
-      }
+      "extended": 1040,
+      "shared_with_core": 150
     },
     {
       "task": "separation_one_stroke",
       "label": "One Stroke",
       "mode": "Planning",
       "core": 300,
-      "archived": 600,
-      "extended": 450,
-      "removed": {
-        "core_id_overlap": 150
-      }
+      "extended": 600,
+      "shared_with_core": 150
     },
     {
       "task": "order_bead_string",
       "label": "Bead",
       "mode": "Reasoning",
       "core": 300,
-      "archived": 1000,
-      "extended": 850,
-      "removed": {
-        "core_id_overlap": 150
-      }
+      "extended": 1000,
+      "shared_with_core": 150
     },
     {
       "task": "order_origami",
       "label": "Origami Point",
       "mode": "Reasoning",
       "core": 300,
-      "archived": 1000,
       "extended": 1000,
-      "removed": {}
+      "shared_with_core": 0
     },
     {
       "task": "order_swap_2d_puzzle",
       "label": "Swap",
       "mode": "Planning",
       "core": 300,
-      "archived": 600,
-      "extended": 445,
-      "removed": {
-        "within_extended_input": 5,
-        "core_id_overlap": 150
-      }
+      "extended": 600,
+      "shared_with_core": 150
     },
     {
       "task": "enclosure_sheep",
       "label": "Sheep",
       "mode": "Reasoning",
       "core": 300,
-      "archived": 1000,
-      "extended": 700,
-      "removed": {
-        "core_id_overlap": 300
-      }
+      "extended": 1000,
+      "shared_with_core": 300
     },
     {
       "task": "enclosure_hole_detection",
       "label": "Hole",
       "mode": "Reasoning",
       "core": 300,
-      "archived": 999,
-      "extended": 699,
-      "removed": {
-        "core_id_overlap": 300
-      }
+      "extended": 999,
+      "shared_with_core": 300
     },
     {
       "task": "enclosure_chat_noir",
       "label": "Chat Noir",
       "mode": "Planning",
       "core": 300,
-      "archived": 600,
-      "extended": 450,
-      "removed": {
-        "core_id_overlap": 150
-      }
+      "extended": 600,
+      "shared_with_core": 150
     },
     {
       "task": "knots_static",
       "label": "Knots",
       "mode": "Reasoning",
       "core": 300,
-      "archived": 1000,
-      "extended": 850,
-      "removed": {
-        "core_id_overlap": 150
-      }
+      "extended": 1000,
+      "shared_with_core": 150
     },
     {
       "task": "knots_untangle",
       "label": "Untangle",
       "mode": "Planning",
       "core": 300,
-      "archived": 600,
-      "extended": 300,
-      "removed": {
-        "core_id_overlap": 300
-      }
+      "extended": 600,
+      "shared_with_core": 300
     }
   ],
   "source_sha256": {
@@ -230,11 +190,11 @@
     "environments/knots_untangle/output/question.jsonl": 150,
     "git:45f8c4f1fbe57ace7e6c9d9826f36ddb79ed3d95:environments/knots_untangle/output/question.jsonl": 600
   },
-  "deduplication_scope": "Exact model-input equality; shared IDs alone do not establish duplication. Content-distinct reused IDs receive a legacy: prefix and retain their original source_id. Reasoning uses normalized full question and ordered image-file SHA256s. Planning uses saved initial scene, reset state and action budget, ignoring seed and difficulty tags. No perceptual or topological-isomorphism deduplication.",
+  "overlap_scope": "An Extended instance is shared with Core when its model input is identical. Reasoning uses normalized full question and ordered image-file SHA256s. Planning uses saved initial scene, reset state and action budget, ignoring seed and difficulty tags.",
   "core_duplicate_input_groups": 0,
-  "paper_source_commit": "72f52c87ae42737b1c52f2405d6d54a42d8ced24",
   "paper_manifest_sha256": {
     "core": "339d296a7e4b8eee743488662ae9cac85a04120ac593425db619f37d3813011f",
-    "extended": "6059d10b5778f297035365e0ee611b18cc77dd64e150ee486cec7c31854f068e"
-  }
+    "extended": "490180818deca36fcfda75c523a37978f0f51bd44a6b365467d09eadb8eaa6bc"
+  },
+  "paper_source_commit": "68c601f51c8777513adc518e0ecb68a35bbde6c2"
 }

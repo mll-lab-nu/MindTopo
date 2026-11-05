@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate release counts, IDs, content disjointness, assets and probing lists."""
+"""Validate release counts, IDs, Core overlap, assets and probing lists."""
 from pathlib import Path
 import argparse
 from collections import Counter
@@ -17,7 +17,7 @@ def main():
     parser.add_argument("--skip-images", action="store_true", help="Check manifests/JSONL only")
     args = parser.parse_args()
     records = {}
-    for split, count in (("core", 3900), ("extended", 8780)):
+    for split, count in (("core", 3900), ("extended", 11035)):
         rows = []
         for task in TASKS:
             task_rows = validate_dataset(task, split, images=not args.skip_images)
@@ -37,11 +37,20 @@ def main():
         print(f"{split}: {len(rows)} records, {len(TASKS)} tasks")
     keys = lambda rows: {(task, row["id"]) for task, row in rows}
     inputs = lambda rows: {(task, row["meta_info"]["release_input_sha256"]) for task, row in rows}
-    assert not (keys(records["core"]) & keys(records["extended"]))
-    assert not (inputs(records["core"]) & inputs(records["extended"]))
-    assert len(inputs(records["extended"])) == 8780
-    renamed = [row for task, row in records["extended"] if "source_id" in row["meta_info"]]
-    assert len(renamed) == 150 and all(row["id"] == "legacy:" + row["meta_info"]["source_id"] for row in renamed)
+    for split, count in (("core", 3900), ("extended", 11035)):
+        assert len(keys(records[split])) == count
+    # Extended is the unmodified original dataset, so it overlaps Core and keeps
+    # its five repeated Swap inputs. IDs are unique within a split only.
+    assert len(inputs(records["extended"])) == 11030
+    shared = inputs(records["core"]) & inputs(records["extended"])
+    flagged = {(entry["task"], entry["input_sha256"])
+               for entry in read_rows(ROOT / "data/manifests/extended_manifest.jsonl") if entry["in_core"]}
+    assert len(shared) == 2250 and shared == flagged
+    core_inputs = {(task, row["id"]): row["meta_info"]["release_input_sha256"] for task, row in records["core"]}
+    reused = [row for task, row in records["extended"]
+              if (task, row["id"]) in core_inputs
+              and core_inputs[(task, row["id"])] != row["meta_info"]["release_input_sha256"]]
+    assert len(reused) == 150
     for path in (ROOT / "data/slices/balanced_105").glob("*.json"):
         ids = json.loads(path.read_text())
         available = {row["id"] for row in read_rows(ROOT / f"data/probing/{path.stem}/question.jsonl")}
@@ -53,7 +62,7 @@ def main():
             assert not path.is_symlink() and path.stat().st_size == info["bytes"], path
             assert hashlib.sha256(path.read_bytes()).hexdigest() == info["sha256"], path
         print(f"{len(assets)} image hashes verified")
-    print("PASS: fixed counts, preserved Origami variants, disjoint inputs and unchanged balanced_105 lists")
+    print("PASS: fixed counts, flagged Core overlap, split-local IDs and unchanged balanced_105 lists")
 
 
 if __name__ == "__main__":

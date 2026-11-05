@@ -105,8 +105,6 @@ def main() -> None:
                         release_input_sha256=entry["input_sha256"])
             if entry.get("level"):
                 meta["benchmark_level"] = entry["level"]
-            if "source_id" in entry:
-                meta["source_id"] = entry["source_id"]
             grouped.setdefault(entry["task"], []).append(row)
         for task, rows in grouped.items():
             output = ROOT / "data" / split / task
@@ -139,7 +137,6 @@ def main() -> None:
     release["paper_manifest_sha256"] = {split: hashlib.sha256((manifests / f"{split}_manifest.jsonl").read_bytes()).hexdigest() for split in ("core", "extended")}
     release["paper_source_commit"] = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=paper, text=True).strip()
     (target / "release_counts.json").write_text(json.dumps(release, indent=2) + "\n")
-    shutil.copy2(manifests / "deduplication_removals.jsonl", target / "deduplication_removals.jsonl")
     (target / "assets.json").write_text(json.dumps(assets, indent=2, sort_keys=True) + "\n")
     print(f"Materialized {len(assets)} content-addressed images; no absolute symlinks", flush=True)
 
