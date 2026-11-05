@@ -1,8 +1,8 @@
 import { Swap2DPuzzleRenderer } from "./render.ts";
 
 const BLANK_TOKEN = "_";
-const MAX_GRID_ROWS = 4;
-const MAX_GRID_COLS = 4;
+const MAX_GRID_ROWS = 5;
+const MAX_GRID_COLS = 5;
 const DIFFICULTY_GRID_SHAPES = Object.freeze({
   easy: Object.freeze([
     [2, 2],
@@ -32,7 +32,17 @@ const BLOCK_LIBRARY = Object.freeze([
   { id: "S", label: "S", name: "Silver", color: "#9aa7b2" },
   { id: "V", label: "V", name: "Violet", color: "#9a4bd7" },
   { id: "I", label: "I", name: "Indigo", color: "#4b5bdc" },
-  { id: "A", label: "A", name: "Amber", color: "#d79a00" }
+  { id: "A", label: "A", name: "Amber", color: "#d79a00" },
+  { id: "D", label: "D", name: "D", color: "#8b4513" },
+  { id: "E", label: "E", name: "E", color: "#ff69b4" },
+  { id: "F", label: "F", name: "F", color: "#708238" },
+  { id: "H", label: "H", name: "H", color: "#00ced1" },
+  { id: "J", label: "J", name: "J", color: "#cd853f" },
+  { id: "K", label: "K", name: "K", color: "#9932cc" },
+  { id: "Q", label: "Q", name: "Q", color: "#228b22" },
+  { id: "U", label: "U", name: "U", color: "#dc143c" },
+  { id: "W", label: "W", name: "W", color: "#4682b4" },
+  { id: "X", label: "X", name: "X", color: "#d2691e" }
 ]);
 
 const BLOCK_BY_ID = new Map(BLOCK_LIBRARY.map((spec) => [spec.id, spec]));
@@ -80,7 +90,7 @@ function normalizeDifficulty(value) {
     return null;
   }
   const text = String(value).trim().toLowerCase();
-  if (!text || text === "custom" || text === "grid" || text === "manual" || text === "none" || text.startsWith("grid_")) {
+  if (!text || text === "expert" || text === "custom" || text === "grid" || text === "manual" || text === "none" || text.startsWith("grid_")) {
     return null;
   }
   const aliases = new Map([
@@ -388,6 +398,7 @@ export class OrderSwap2DPuzzleGame {
       currentArrangement: this.currentArrangement.slice(),
       goalArrangement: this.goalArrangement.slice(),
       difficulty: this.config.difficulty,
+      moveRule: this.config.moveRule,
       currentGrid: arrangementToGrid(this.currentArrangement, this.config.gridRows, this.config.gridCols),
       goalGrid: arrangementToGrid(this.goalArrangement, this.config.gridRows, this.config.gridCols),
       blankCellIndex,
@@ -410,6 +421,7 @@ export class OrderSwap2DPuzzleGame {
       numBlocks: this.config.selectedBlockIds.length,
       cellCount: this.currentArrangement.length,
       difficulty: this.config.difficulty,
+      moveRule: this.config.moveRule,
       targetDifficulty: this.config.targetDifficulty,
       seed: this.config.seed,
       selectedBlockIds: this.config.selectedBlockIds.slice(),
@@ -639,6 +651,13 @@ export class OrderSwap2DPuzzleGame {
     if (this.currentArrangement[cellIndex] === BLANK_TOKEN) {
       return { legal: false, reason: "selected_blank" };
     }
+    if (this.config.moveRule === "row_column_v1") {
+      const blank = this.currentArrangement.indexOf(BLANK_TOKEN);
+      if (Math.floor(cellIndex / this.config.gridCols) !== Math.floor(blank / this.config.gridCols)
+          && cellIndex % this.config.gridCols !== blank % this.config.gridCols) {
+        return { legal: false, reason: "different_row_and_column" };
+      }
+    }
     return { legal: true, reason: null };
   }
 
@@ -692,7 +711,9 @@ export class OrderSwap2DPuzzleGame {
       theoreticalMinSteps = sampled.theoreticalMinSteps;
     }
 
-    theoreticalMinSteps = shortestSwapDistance(initialArrangement, goalArrangement);
+    theoreticalMinSteps = merged.moveRule === "row_column_v1"
+      ? Number(merged.theoreticalMinSteps)
+      : shortestSwapDistance(initialArrangement, goalArrangement);
 
     const budgetMultiplier = Math.max(1.0, Number(merged.budgetMultiplier) || DEFAULT_CONFIG.budgetMultiplier);
     const stepBudget = clampInt(
@@ -709,6 +730,7 @@ export class OrderSwap2DPuzzleGame {
       gridCols,
       difficulty: requestedDifficulty || difficultyLabelForGrid(gridRows, gridCols),
       targetDifficulty: requestedDifficulty,
+      moveRule: merged.moveRule || null,
       seed,
       selectedBlockIds,
       initialArrangement,
@@ -726,7 +748,7 @@ export class OrderSwap2DPuzzleGame {
   _legalActions() {
     const legal = [];
     for (let cellIndex = 0; cellIndex < this.currentArrangement.length; cellIndex += 1) {
-      if (this.currentArrangement[cellIndex] !== BLANK_TOKEN) {
+      if (this._validateMove(cellIndex).legal) {
         legal.push({
           cell_index: cellIndex,
           cellIndex,

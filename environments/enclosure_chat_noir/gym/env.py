@@ -136,6 +136,8 @@ CAT_POLICIES: Dict[str, Dict[str, Any]] = {
             "then prefers shorter boundary distance while preserving more escape connectivity."
         ),
     },
+    "expert": {"name": "expert", "level": 4,
+               "description": "Deterministic three-turn forced-capture avoidance."},
 }
 
 

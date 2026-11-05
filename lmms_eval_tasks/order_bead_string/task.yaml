@@ -2,7 +2,7 @@ task: order_bead_string
 dataset_path: json
 dataset_kwargs:
   data_files:
-    test: environments/order_bead_string/output/question.jsonl
+    test: data/core/order_bead_string/question.jsonl
 test_split: test
 output_type: generate_until
 

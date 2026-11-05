@@ -3,7 +3,13 @@ defaults:
   - model: seedance_2_0_mini_i2v_ark_vlm_e2e_gpt56luna
   - _self_
 
+data:
+  split: null
+  protocol: legacy_probing
+  label: legacy_probing
+
 run:
+  check_only: false
   manifest_offset: 0
   manifest_limit: null
   only_episode_id: null
@@ -18,7 +24,7 @@ run:
   compact_assistant_history: true
   fallback_on_invalid: false
   num_extracted_frames: 8
-  output_dir: logs/video_eval/${env.name}/${now:%Y%m%d_%H%M%S}_${model.id}
+  output_dir: logs/video_eval/${data.label}/${env.name}/${now:%Y%m%d_%H%M%S}_${model.id}
   output_json: ${run.output_dir}/summary.json
   output_config: ${run.output_dir}/resolved_config.yaml
 

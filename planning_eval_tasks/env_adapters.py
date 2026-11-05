@@ -111,7 +111,8 @@ def _cfg_optional_int(value: Any) -> Optional[int]:
 
 
 def _source_question_jsonl_relpath(env_name: str) -> str:
-    return f"environments/{env_name}/output/question.jsonl"
+    from topobench_eval.datasets import question_path
+    return str(question_path(env_name).relative_to(REPO_ROOT))
 
 
 class _BenchmarkAdapterBase:
@@ -145,9 +146,10 @@ class _BenchmarkAdapterBase:
         if existing_path and existing_path.resolve() != benchmark_path.resolve():
             for module_name in self.cleanup_modules:
                 sys.modules.pop(module_name, None)
-        for candidate in (str(backend_dir), str(gym_dir), str(backend_dir.parent), str(REPO_ROOT)):
-            if candidate not in sys.path:
-                sys.path.insert(0, candidate)
+        for candidate in reversed((str(backend_dir), str(gym_dir), str(backend_dir.parent), str(REPO_ROOT))):
+            if candidate in sys.path:
+                sys.path.remove(candidate)
+            sys.path.insert(0, candidate)
         importlib.invalidate_caches()
         self._benchmark = importlib.import_module("internvl3_benchmark")
         return self._benchmark
@@ -175,9 +177,29 @@ class _BenchmarkAdapterBase:
     def _prepare_question_specs(self, cfg: DictConfig, specs: List[EpisodeSpec]) -> List[EpisodeSpec]:
         self._configure_run_options(cfg)
         source_rel = self.source_question_jsonl_relpath(cfg)
+        import json
+        path = Path(source_rel) if Path(source_rel).is_absolute() else REPO_ROOT / source_rel
+        release_metadata = {}
+        if path.is_file():
+            for line in path.read_text().splitlines():
+                if line.strip():
+                    row = json.loads(line)
+                    release_metadata[row["id"]] = row.get("meta_info", {})
         for spec in specs:
+            original_meta = release_metadata.get(spec.episode_id, {})
+            if original_meta.get("benchmark_level") == "Hard":
+                reset = (original_meta.get("initial_state") or {}).get("reset_config") or {}
+                if reset.get("referenceActions"):
+                    spec.metadata["reference_actions"] = list(reset["referenceActions"])
+                winning = (original_meta.get("solvability_filter") or {}).get("winning_action_sequences") or {}
+                if reset.get("catPolicy") == "expert" and winning:
+                    spec.metadata["reference_actions"] = list(next(iter(winning.values())))
+            for key in ("benchmark_split", "benchmark_level", "source_id"):
+                if key in original_meta:
+                    spec.metadata[key] = original_meta[key]
             spec.metadata.setdefault("config_rel", _config_relpath(cfg, self.env_dir_name))
             spec.metadata.setdefault("source_question_jsonl", source_rel)
+            spec.metadata.update({key: val for key, val in dict(getattr(cfg, "data", {})).items() if key.startswith("dataset_")})
         self._cached_specs = specs
         return specs
 
@@ -957,7 +979,13 @@ class OrderSwap2DAdapter(_BenchmarkAdapterBase, PlanningEnvAdapter):
         if policy_name != "oracle":
             return None
         bench = self._load_benchmark()
-        parsed = bench.build_oracle_action(turn.context.planner_state or {})
+        reference = turn.spec.metadata.get("reference_actions")
+        if reference and turn.context.step_index < len(reference):
+            index = int(reference[turn.context.step_index])
+            cols = int(turn.context.prompt_metadata["grid_cols"])
+            parsed = {"row": index // cols, "col": index % cols}
+        else:
+            parsed = bench.build_oracle_action(turn.context.planner_state or {})
         raw = "<no-solution>" if parsed is None else json.dumps({"answer": {"row": parsed["row"], "col": parsed["col"]}}, separators=(",", ":"))
         return ParsedActionResult(parsed_action=parsed, raw_response_text=raw, response_debug={"mode": "oracle"}, invalid_response=parsed is None)
 
@@ -1123,7 +1151,11 @@ class ChatNoirAdapter(_BenchmarkAdapterBase, PlanningEnvAdapter):
         if policy_name != "oracle":
             return None
         bench = self._load_benchmark()
-        parsed = bench.build_oracle_action(board=turn.context.prompt_metadata.get("current_board"), state=turn.context.planner_state or {})
+        reference = turn.spec.metadata.get("reference_actions")
+        if reference and turn.context.step_index < len(reference):
+            parsed = int(reference[turn.context.step_index])
+        else:
+            parsed = bench.build_oracle_action(board=turn.context.prompt_metadata.get("current_board"), state=turn.context.planner_state or {})
         return ParsedActionResult(parsed_action=parsed, raw_response_text="<no-legal-action>" if parsed is None else json.dumps({"answer": {"cell_index": parsed}}, separators=(",", ":")), response_debug={"mode": "oracle"}, invalid_response=parsed is None)
 
     def to_env_action(self, parsed_action: Any, turn: TurnInput) -> Any:

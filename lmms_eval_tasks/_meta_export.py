@@ -2,13 +2,14 @@
 
 Schema reference: environments/meta_jsonl/README.md (reasoning_model_answer section).
 
-Source: each shard directory at lmms_eval_tasks/logs/<model>__<task>/shard_NN/
+Source: each shard directory at lmms_eval_tasks/logs/<split>/<model>__<task>/shard_NN/
 contains an lmms-eval-produced `<datetime>_samples_<task>.jsonl` whose rows
 include a TopoBench metric payload (see lmms_eval_tasks/_common.py).
 
-Sinks:
-- environments/<task>/output/model_answer.jsonl (or output/benchmark_output/model_answer.jsonl on legacy envs)
-- lmms_eval_tasks/logs/<model>__<task>/model_answer.jsonl
+Sink:
+- lmms_eval_tasks/logs/<split>/<model>__<task>/model_answer.jsonl
+
+Release JSONL files are read-only; model outputs never enter data/core or data/extended.
 
 Each file has one row per question, in the same order as `question.jsonl`.
 """
@@ -25,6 +26,8 @@ TOPBENCH_EVAL_ROOT = ROOT / "topobench_eval"
 if str(TOPBENCH_EVAL_ROOT) not in sys.path:
     sys.path.insert(0, str(TOPBENCH_EVAL_ROOT))
 
+from topobench_eval.datasets import question_path, selected_split, provenance
+
 _HOOKS_CACHE: Dict[str, Any] = {}
 
 try:
@@ -34,27 +37,16 @@ except ModuleNotFoundError:  # pragma: no cover - package import fallback
 
 
 def _task_output_root(task_name: str) -> Path:
-    """Prefer the new `environments/<task>/output/` layout, fall back to legacy."""
-    new_layout = ROOT / "environments" / task_name / "output"
-    if (new_layout / "question.jsonl").exists():
-        return new_layout
-    legacy = new_layout / "benchmark_output"
-    if (legacy / "question.jsonl").exists():
-        return legacy
-    return new_layout
+    return question_path(task_name).parent
 
 
 def _question_jsonl_path(task_name: str) -> Path:
     return _task_output_root(task_name) / "question.jsonl"
 
 
-def _model_answer_path(task_name: str) -> Path:
-    return _task_output_root(task_name) / "model_answer.jsonl"
-
-
 def _shard_root(model_id: str, task_name: str) -> Path:
     safe_model = model_id.replace("/", "_")
-    return HERE / "logs" / f"{safe_model}__{task_name}"
+    return HERE / "logs" / selected_split() / f"{safe_model}__{task_name}"
 
 
 def _log_model_answer_path(model_id: str, task_name: str) -> Path:
@@ -149,10 +141,10 @@ def _fresh_meta(task_name: str, sample: Dict[str, Any], qrow: Dict[str, Any], fa
         except ModuleNotFoundError:
             from _common import make_hooks  # type: ignore
 
-        hooks = _HOOKS_CACHE.get(task_name)
+        hooks = _HOOKS_CACHE.get((task_name, selected_split()))
         if hooks is None:
             hooks = make_hooks(_question_jsonl_path(task_name).parent)
-            _HOOKS_CACHE[task_name] = hooks
+            _HOOKS_CACHE[(task_name, selected_split())] = hooks
         result = hooks["process_results"](qrow, [raw])
         payload = result.get("topobench_exact_match")
         if isinstance(payload, dict):
@@ -212,7 +204,8 @@ def _convert_row(
         "id": qrow["id"],
         "category": qrow["category"],
         "type": qrow["type"],
-        "meta_info": {**(qrow.get("meta_info") or {}), "model_id": model_name},
+        "meta_info": {**(qrow.get("meta_info") or {}), "model_id": model_name,
+                      **provenance(question_path(task_name), selected_split())},
         "question": qrow.get("question", ""),
         "gt_answer": qrow.get("gt_answer"),
         "answer": predicted,
@@ -236,7 +229,7 @@ def _compute_stats(rows: List[Dict[str, Any]]) -> Dict[str, Any]:
     for r in rows:
         meta = r.get("meta_info") or {}
         t = str(r.get("type", "?"))
-        d = str(meta.get("difficulty", "?"))
+        d = str(meta.get("benchmark_level") or meta.get("difficulty", "?"))
         q = meta.get("question_type")
         is_correct = bool(r.get("correct"))
         is_invalid = bool(r.get("invalid_response"))
@@ -295,6 +288,7 @@ def _render_task_summary_md(task_name: str, model_id: str, model_name: str, stat
         f"# {task_name} — {model_name}",
         "",
         f"- Model ID: `{model_id}`",
+        f"- Dataset split: `{selected_split()}`",
         f"- Total samples: {total}",
         f"- Correct: {correct}",
         f"- Accuracy: **{_fmt_pct(correct, total)}**",
@@ -361,6 +355,7 @@ def _render_overall_summary_md(model_id: str, model_name: str, per_task: Dict[st
         f"# Reasoning Summary — {model_name}",
         "",
         f"- Model ID: `{model_id}`",
+        f"- Dataset split: `{selected_split()}`",
         f"- Tasks: {len(per_task)}",
         f"- Total samples: {total_n}",
         f"- Aggregate accuracy: **{_fmt_pct(total_c, total_n)}**",
@@ -431,9 +426,9 @@ def export_task(task_name: str, *, model_id: str, model_name: str) -> Dict[str, 
     # Stable order: follow question.jsonl
     ordered_ids = list(questions.keys())
     rows_out = [rows_by_id[qid] for qid in ordered_ids if qid in rows_by_id]
-    out_path = _model_answer_path(task_name)
     log_out_path = _log_model_answer_path(model_id, task_name)
-    for path in (out_path, log_out_path):
+    out_path = log_out_path
+    for path in {out_path, log_out_path}:
         path.parent.mkdir(parents=True, exist_ok=True)
         with path.open("w", encoding="utf-8") as f:
             for row in rows_out:
@@ -471,7 +466,7 @@ def export_all(model_id: str, tasks: List[str]) -> None:
 
     if per_task_stats:
         overall_md = _render_overall_summary_md(model_id, model_name, per_task_stats)
-        overall_path = HERE / "logs" / f"{_safe_model_filename(model_id)}_reasoning_summary.md"
+        overall_path = HERE / "logs" / selected_split() / f"{_safe_model_filename(model_id)}_reasoning_summary.md"
         overall_path.parent.mkdir(parents=True, exist_ok=True)
         overall_path.write_text(overall_md, encoding="utf-8")
         print(f"[meta-export] cross-task summary → {overall_path}")

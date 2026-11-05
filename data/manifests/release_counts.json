@@ -1,0 +1,240 @@
+{
+  "benchmark_commit": "45f8c4f1fbe57ace7e6c9d9826f36ddb79ed3d95",
+  "core": 3900,
+  "archived_pool": 11035,
+  "extended": 8780,
+  "removed": 2255,
+  "renamed_extended_ids": 150,
+  "image_files_hashed": 30654,
+  "tasks": [
+    {
+      "task": "continuity_2d_maze",
+      "label": "2D Maze",
+      "mode": "Reasoning",
+      "core": 300,
+      "archived": 1000,
+      "extended": 850,
+      "removed": {
+        "core_id_overlap": 150
+      }
+    },
+    {
+      "task": "continuity_3d_maze",
+      "label": "3D Maze",
+      "mode": "Reasoning",
+      "core": 300,
+      "archived": 996,
+      "extended": 846,
+      "removed": {
+        "core_id_overlap": 150
+      }
+    },
+    {
+      "task": "continuity_pipe",
+      "label": "Pipe",
+      "mode": "Planning",
+      "core": 300,
+      "archived": 600,
+      "extended": 450,
+      "removed": {
+        "core_id_overlap": 150
+      }
+    },
+    {
+      "task": "separation_objects",
+      "label": "Assembly",
+      "mode": "Reasoning",
+      "core": 300,
+      "archived": 1040,
+      "extended": 890,
+      "removed": {
+        "core_id_overlap": 150
+      }
+    },
+    {
+      "task": "separation_one_stroke",
+      "label": "One Stroke",
+      "mode": "Planning",
+      "core": 300,
+      "archived": 600,
+      "extended": 450,
+      "removed": {
+        "core_id_overlap": 150
+      }
+    },
+    {
+      "task": "order_bead_string",
+      "label": "Bead",
+      "mode": "Reasoning",
+      "core": 300,
+      "archived": 1000,
+      "extended": 850,
+      "removed": {
+        "core_id_overlap": 150
+      }
+    },
+    {
+      "task": "order_origami",
+      "label": "Origami Point",
+      "mode": "Reasoning",
+      "core": 300,
+      "archived": 1000,
+      "extended": 1000,
+      "removed": {}
+    },
+    {
+      "task": "order_swap_2d_puzzle",
+      "label": "Swap",
+      "mode": "Planning",
+      "core": 300,
+      "archived": 600,
+      "extended": 445,
+      "removed": {
+        "within_extended_input": 5,
+        "core_id_overlap": 150
+      }
+    },
+    {
+      "task": "enclosure_sheep",
+      "label": "Sheep",
+      "mode": "Reasoning",
+      "core": 300,
+      "archived": 1000,
+      "extended": 700,
+      "removed": {
+        "core_id_overlap": 300
+      }
+    },
+    {
+      "task": "enclosure_hole_detection",
+      "label": "Hole",
+      "mode": "Reasoning",
+      "core": 300,
+      "archived": 999,
+      "extended": 699,
+      "removed": {
+        "core_id_overlap": 300
+      }
+    },
+    {
+      "task": "enclosure_chat_noir",
+      "label": "Chat Noir",
+      "mode": "Planning",
+      "core": 300,
+      "archived": 600,
+      "extended": 450,
+      "removed": {
+        "core_id_overlap": 150
+      }
+    },
+    {
+      "task": "knots_static",
+      "label": "Knots",
+      "mode": "Reasoning",
+      "core": 300,
+      "archived": 1000,
+      "extended": 850,
+      "removed": {
+        "core_id_overlap": 150
+      }
+    },
+    {
+      "task": "knots_untangle",
+      "label": "Untangle",
+      "mode": "Planning",
+      "core": 300,
+      "archived": 600,
+      "extended": 300,
+      "removed": {
+        "core_id_overlap": 300
+      }
+    }
+  ],
+  "source_sha256": {
+    "environments/continuity_2d_maze_t1hard/output/question.jsonl": "e97787abb8877e928360d936ce2188674e617da4474f23a821ce8466d441ee15",
+    "environments/continuity_2d_maze/output/question.jsonl": "5bee058162ac4408e718e1d29879d61332758f3f2a906a4969a60a3df32d9a2c",
+    "environments/continuity_2d_maze/output_arxiv/question.jsonl": "1c58cf1d833e10bfc5b97ba9a71316bd1d1cf5f22a6bbc58b7fe897cb90d773d",
+    "environments/continuity_3d_maze_t1hard/output/question.jsonl": "2e13fb0022382e5ed02d92b478e4c2403d673d9c83b7cd33aaaecb97a7dbcfe0",
+    "environments/continuity_3d_maze/output/question.jsonl": "aa2c5bc9671b76e81defc58481be992c8c1dd824246991db896c0e1f022aa438",
+    "environments/continuity_3d_maze/output_arxiv/question.jsonl": "2967b9d40ba3733f19b5e87adacaf03b52d71dd31083bd3a997e2c09c1e90047",
+    "environments/continuity_pipe/dataset-t1hard-150/question.jsonl": "5b0ab0eea64a695b99435ef40add3ba802e9f572152e7239efedf5e2f600b092",
+    "environments/continuity_pipe/output/question.jsonl": "2b776d9e851f2a52c4c5aae226eff51621ba2276f892aee6b41e331f09c0a05e",
+    "environments/continuity_pipe/output_arxiv/question.jsonl": "aaf0e6bafbe033f10a6f8314c88fd28a8ecb24bf9565bebaad6bc3dfd3e4f8da",
+    "environments/separation_objects_t1hard/output/question.jsonl": "258293e4e105bf9a5ea00efdbf35957285726711bf8910d1a27f2f87eb8b31ad",
+    "environments/separation_objects/output/question.jsonl": "ea21591875cd5f185b6131f9909f51757deaabc6eeb5f370fb6b8371917063e0",
+    "environments/separation_objects/output_arxiv/question.jsonl": "9c36d643a66bf60b16633eab37421ef0afb6dcbb5cdcfee94dc73a5a89a969cc",
+    "environments/separation_one_stroke/dataset-t1hard-150/question.jsonl": "0a62f60de553b72759edb22abaa5cefa25fcac5d175429697b7a284725afd595",
+    "environments/separation_one_stroke/output/question.jsonl": "c34b6cce05da3cd65c4ae3155cb7f4abb3e2c1553747a5a7331e5fe05be4d1ff",
+    "git:45f8c4f1fbe57ace7e6c9d9826f36ddb79ed3d95:environments/separation_one_stroke/output/question.jsonl": "82aa83c341bc1e70fad042b41bf37485dd2f68eac7e26e5dc9f3950a36c86dbb",
+    "environments/order_bead_string_t1hard/output/question.jsonl": "2b6c1c3299992b78766470b3637bf33ebadc7dbf00afb64c4424fd1cacbe4642",
+    "environments/order_bead_string/output/question.jsonl": "ec86f6645691a289243b92dc4613d058b77e5bc3f71980a1575dd2b351105d16",
+    "environments/order_bead_string/output_arxiv/question.jsonl": "30d2ca620c0ea6532a14a098ff26865b796c0ea5c11fe1a1d3a1c4cb6e54fe28",
+    "environments/order_origami_v5/output/question.jsonl": "36015efedb98bd780ed88dae3f6f0b0bd0fc34cd609ea1a2dc983194f667b7c0",
+    "environments/order_origami/output_arxiv/question.jsonl": "fe7c142dbd512fbf9ab6bcac60137bd9dc4ceba4270e8b065554fba712749b3f",
+    "environments/order_swap_2d_puzzle/dataset-t1hard-150/question.jsonl": "f5929ead5c4eec1076936d9b3c0f7ddb55efa7fa9d8f77a4c333b3a90cffad9e",
+    "environments/order_swap_2d_puzzle/output/question.jsonl": "dbe6a0d62dd94753a623eca9177e6a4930182fd1e6b93d16e29ca528995f977a",
+    "git:45f8c4f1fbe57ace7e6c9d9826f36ddb79ed3d95:environments/order_swap_2d_puzzle/output/question.jsonl": "4fd33f4aa11bc4935368675bfe7319d7ca99e7cfee87154e1ab01df1be1a5936",
+    "environments/enclosure_sheep_t1hard/output/question.jsonl": "b0f991daf79ca20d6d0117341a4b583ce04ac849a1c5aa0d23a04739462bf55a",
+    "environments/enclosure_sheep/output/question.jsonl": "08db886e59aa21c9c1fc40c0861d0c8e62ae909a9d0259f1d82db327bb9f6eae",
+    "environments/enclosure_sheep/output_arxiv/question.jsonl": "8b234bdf5383bfaf25e29dfb1923a669c1e07a2ba40752efa0926c2774d08a79",
+    "environments/enclosure_hole_detection_t1hard/output/question.jsonl": "af728680f08a85cd70065361c7d41d20afd7ed3df36e68f3d980da9f15cbaa80",
+    "environments/enclosure_hole_detection/output/question.jsonl": "d0ee8abd39f1d3ac43db89de07e7fff5313054bfc44574ddc39e4d91eb3979f8",
+    "environments/enclosure_hole_detection/output_arxiv/question.jsonl": "94fd87ddfc187b5a3c9874f5d6e7bad4cdd4095aaf89adc95baf662f3efa13c1",
+    "environments/enclosure_chat_noir/dataset-t1hard-150/question.jsonl": "fa277c36f4790edca2ca07b97f7f0eedf0ed161676aba06c17d23f72b677676f",
+    "environments/enclosure_chat_noir/output/question.jsonl": "33f39d68b7e982756677bfab71bd16ee7054d4d430ef9dab1f5ce468b2684c5a",
+    "environments/enclosure_chat_noir/output_arxiv/question.jsonl": "649a4f8cfb7ea28fb5a46794aaf71ce749ff99703fccea540cd5f1acdf20dc18",
+    "environments/knots_static_t1hard/output/question.jsonl": "a782786f75f2cd89edc460e74dedb4bd73db489aabb8b5ce5b2613644050f7f1",
+    "environments/knots_static/output/question.jsonl": "db1e456e5a3798d621bef427bac2fd13d233f2001a52aa0df33c4858dfd9df9b",
+    "environments/knots_static/output_arxiv/question.jsonl": "2288e9fd2e29daa4468c9093005ce79b7cf9abc7c33910fd1935cb9b2fcfff15",
+    "environments/knots_untangle/dataset-t1hard-150/question.jsonl": "1c515b1c1e4ba4625823e3735f3e49fe531f61a2c69b7e3f73f68dfa51a9cfee",
+    "environments/knots_untangle/output/question.jsonl": "d92c144f922f2f7b12a28a2d8e389106bbd1b7c88d418671659062d9433e1a0d",
+    "git:45f8c4f1fbe57ace7e6c9d9826f36ddb79ed3d95:environments/knots_untangle/output/question.jsonl": "728ab658d21559db3a0a6e72b0c49f79064c240b89b6c4cc4d980e770cb1b7ee"
+  },
+  "source_counts": {
+    "environments/continuity_2d_maze_t1hard/output/question.jsonl": 150,
+    "environments/continuity_2d_maze/output/question.jsonl": 150,
+    "environments/continuity_2d_maze/output_arxiv/question.jsonl": 1000,
+    "environments/continuity_3d_maze_t1hard/output/question.jsonl": 150,
+    "environments/continuity_3d_maze/output/question.jsonl": 150,
+    "environments/continuity_3d_maze/output_arxiv/question.jsonl": 996,
+    "environments/continuity_pipe/dataset-t1hard-150/question.jsonl": 150,
+    "environments/continuity_pipe/output/question.jsonl": 150,
+    "environments/continuity_pipe/output_arxiv/question.jsonl": 600,
+    "environments/separation_objects_t1hard/output/question.jsonl": 150,
+    "environments/separation_objects/output/question.jsonl": 150,
+    "environments/separation_objects/output_arxiv/question.jsonl": 1040,
+    "environments/separation_one_stroke/dataset-t1hard-150/question.jsonl": 150,
+    "environments/separation_one_stroke/output/question.jsonl": 150,
+    "git:45f8c4f1fbe57ace7e6c9d9826f36ddb79ed3d95:environments/separation_one_stroke/output/question.jsonl": 600,
+    "environments/order_bead_string_t1hard/output/question.jsonl": 150,
+    "environments/order_bead_string/output/question.jsonl": 150,
+    "environments/order_bead_string/output_arxiv/question.jsonl": 1000,
+    "environments/order_origami_v5/output/question.jsonl": 300,
+    "environments/order_origami/output_arxiv/question.jsonl": 1000,
+    "environments/order_swap_2d_puzzle/dataset-t1hard-150/question.jsonl": 150,
+    "environments/order_swap_2d_puzzle/output/question.jsonl": 150,
+    "git:45f8c4f1fbe57ace7e6c9d9826f36ddb79ed3d95:environments/order_swap_2d_puzzle/output/question.jsonl": 600,
+    "environments/enclosure_sheep_t1hard/output/question.jsonl": 150,
+    "environments/enclosure_sheep/output/question.jsonl": 150,
+    "environments/enclosure_sheep/output_arxiv/question.jsonl": 1000,
+    "environments/enclosure_hole_detection_t1hard/output/question.jsonl": 150,
+    "environments/enclosure_hole_detection/output/question.jsonl": 150,
+    "environments/enclosure_hole_detection/output_arxiv/question.jsonl": 999,
+    "environments/enclosure_chat_noir/dataset-t1hard-150/question.jsonl": 150,
+    "environments/enclosure_chat_noir/output/question.jsonl": 150,
+    "environments/enclosure_chat_noir/output_arxiv/question.jsonl": 600,
+    "environments/knots_static_t1hard/output/question.jsonl": 150,
+    "environments/knots_static/output/question.jsonl": 150,
+    "environments/knots_static/output_arxiv/question.jsonl": 1000,
+    "environments/knots_untangle/dataset-t1hard-150/question.jsonl": 150,
+    "environments/knots_untangle/output/question.jsonl": 150,
+    "git:45f8c4f1fbe57ace7e6c9d9826f36ddb79ed3d95:environments/knots_untangle/output/question.jsonl": 600
+  },
+  "deduplication_scope": "Exact model-input equality; shared IDs alone do not establish duplication. Content-distinct reused IDs receive a legacy: prefix and retain their original source_id. Reasoning uses normalized full question and ordered image-file SHA256s. Planning uses saved initial scene, reset state and action budget, ignoring seed and difficulty tags. No perceptual or topological-isomorphism deduplication.",
+  "core_duplicate_input_groups": 0,
+  "paper_source_commit": "72f52c87ae42737b1c52f2405d6d54a42d8ced24",
+  "paper_manifest_sha256": {
+    "core": "339d296a7e4b8eee743488662ae9cac85a04120ac593425db619f37d3813011f",
+    "extended": "6059d10b5778f297035365e0ee611b18cc77dd64e150ee486cec7c31854f068e"
+  }
+}

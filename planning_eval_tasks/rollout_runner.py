@@ -342,6 +342,9 @@ class RolloutRunner:
                 )
             raise
 
+        from release_rules import require_frontend_rules
+        require_frontend_rules(spec, info)
+
         step_index = 0
         while not terminated and not truncated:
             turn_context = self.adapter.extract_turn_context(env=env, obs=obs, info=info, step_index=step_index, history=turns)
@@ -366,6 +369,8 @@ class RolloutRunner:
             cache_task_prompt = self._cache_task_prompt() and not keep_history
             use_initial = step_index == 0 or (not keep_history and not cache_task_prompt)
             prompt_parts = self.adapter.build_initial_prompt(turn_input) if use_initial else self.adapter.build_followup_prompt(turn_input)
+            from release_rules import apply_release_rules
+            prompt_parts = apply_release_rules(prompt_parts, spec)
 
             current_user_message = {"role": "user", "content": prompt_parts.model_blocks}
             current_debug_message = {"role": "user", "content": prompt_parts.debug_blocks or prompt_parts.model_blocks}
@@ -510,6 +515,8 @@ class RolloutRunner:
             turns=turns,
         )
         result.metadata = self.adapter.build_episode_meta(spec, result)
+        result.metadata.update({key: value for key, value in spec.metadata.items()
+                                if key.startswith("dataset_") or key in ("benchmark_split", "benchmark_level", "source_id")})
         return result
 
     def _choose_random_action(self, turn: TurnInput) -> ParsedActionResult:
@@ -1037,6 +1044,7 @@ class RolloutRunner:
             "model_base_url": str(model_info.get("model_base_url", getattr(self.cfg.model, "base_url", ""))),
             "total_episodes": total,
             "source_question_jsonl": self._source_question_jsonl(),
+            **{key: val for key, val in dict(getattr(self.cfg, "data", {})).items() if key.startswith("dataset_")},
             "skipped_episodes": list(skipped_episodes),
             "successes": successes,
             "success_rate": (successes / total) if total else 0.0,
@@ -1060,7 +1068,7 @@ class RolloutRunner:
     def _source_question_jsonl(self) -> Optional[str]:
         source_relpath = getattr(self.adapter, "source_question_jsonl_relpath", None)
         if callable(source_relpath):
-            return str(source_relpath())
+            return str(source_relpath(self.cfg))
         return None
 
     def _build_episode_jsonl_row(self, result: EpisodeRunResult) -> Optional[Dict[str, Any]]:

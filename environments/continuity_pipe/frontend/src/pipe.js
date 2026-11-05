@@ -686,7 +686,44 @@ function neighborIndex(x, y, gridSize, dir) {
   return ny * gridSize + nx;
 }
 
+function channelsForCell(cell) {
+  if (!cell.hasPipe) return [];
+  if (!cell.splitChannels || cell.solvedMask !== 15) return [cell.currentMask];
+  if (!cell.channelPair) return [10, 5];
+  const first = rotateMask(cell.channelPair, cell.rotation);
+  return [first, 15 ^ first];
+}
+
+function channelConnections(cells, gridSize, sourceIndex) {
+  const masks = cells.map(channelsForCell);
+  const visited = new Set();
+  const queue = masks[sourceIndex].map((_, channel) => [sourceIndex, channel]);
+  for (const [index, channel] of queue) visited.add(`${index}:${channel}`);
+  for (let head = 0; head < queue.length; head += 1) {
+    const [index, channel] = queue[head];
+    for (const dir of DIRS) {
+      if (!(masks[index][channel] & dir.bit)) continue;
+      const next = neighborIndex(cells[index].x, cells[index].y, gridSize, dir);
+      if (next === null) continue;
+      const nextChannel = masks[next].findIndex(mask => mask & OPPOSITE_BITS[dir.bit]);
+      const key = `${next}:${nextChannel}`;
+      if (nextChannel < 0 || visited.has(key)) continue;
+      visited.add(key); queue.push([next, nextChannel]);
+    }
+  }
+  return masks.map((parts, index) => parts.map((_, channel) => visited.has(`${index}:${channel}`)));
+}
+
+function cellTargetTicks(cell) {
+  if (cell.splitChannels && cell.solvedMask === 15) return cell.channelPair ? cell.rotation % 2 : 0;
+  return targetTicksForMaskRotation(cell.solvedMask, cell.rotation);
+}
+
 function computeConnectedIndices(cells, gridSize, sourceIndex) {
+  if (cells.some(cell => cell.splitChannels)) {
+    const fed = channelConnections(cells, gridSize, sourceIndex);
+    return cells.filter(cell => cell.hasPipe && fed[cell.index].every(Boolean)).map(cell => cell.index);
+  }
   const connected = new Set([sourceIndex]);
   const queue = [sourceIndex];
   for (let head = 0; head < queue.length; head += 1) {
@@ -715,7 +752,7 @@ function currentMasks(cells) {
 }
 
 function targetRotationTicks(cells) {
-  return cells.map((cell) => (cell.hasPipe ? targetTicksForMaskRotation(cell.solvedMask, cell.rotation) : 0));
+  return cells.map((cell) => (cell.hasPipe ? cellTargetTicks(cell) : 0));
 }
 
 function activePipeCells(cells) {
@@ -802,6 +839,28 @@ class PipeRenderer {
         const strokeColor = connectedToSource ? "#19d955" : "#0aa2ff";
         const glowColor = connectedToSource ? "rgba(25,217,85,0.5)" : "rgba(10,162,255,0.42)";
 
+        if (cell.splitChannels && cell.solvedMask === 15) {
+          const fed = state.channelConnections[index];
+          channelsForCell(cell).forEach((mask, channel) => {
+            const ports = DIRS.filter(dir => mask & dir.bit);
+            const a = ports[0], b = ports[1];
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            const curve = cell.channelPair ? "Q 50 50" : (mask === 5 ? "L 50 35 Q 74 50 50 65 L" : "L");
+            path.setAttribute("d", `M ${50 + a.dx * 40} ${50 + a.dy * 40} ${curve} ${50 + b.dx * 40} ${50 + b.dy * 40}`);
+            path.setAttribute("fill", "none");
+            if (!cell.channelPair && mask === 5) {
+              const bridge = path.cloneNode();
+              bridge.setAttribute("stroke", "#101b27");
+              bridge.setAttribute("stroke-width", "22");
+              bridge.setAttribute("stroke-linecap", "round");
+              svg.appendChild(bridge);
+            }
+            path.setAttribute("stroke", fed[channel] ? "#19d955" : "#0aa2ff");
+            path.setAttribute("stroke-width", "12");
+            path.setAttribute("stroke-linecap", "round");
+            svg.appendChild(path);
+          });
+        } else {
         for (const dir of DIRS) {
           if ((cell.currentMask & dir.bit) === 0) {
             continue;
@@ -825,6 +884,7 @@ class PipeRenderer {
         center.setAttribute("fill", cell.isSource ? "#19d955" : strokeColor);
         center.style.filter = `drop-shadow(0 0 7px ${glowColor})`;
         svg.appendChild(center);
+        }
         cellElement.appendChild(svg);
         this.root.appendChild(cellElement);
       }
@@ -885,6 +945,8 @@ export class ContinuityPipeGame {
       sourceIndex,
       solvedMasks,
       rotations,
+      pipeRule: config.pipeRule || null,
+      doubleBendPairings: config.doubleBendPairings || new Array(total).fill(0),
       solutionTicks: ticks,
       difficulty: hasSolvedMasks ? (targetDifficulty ?? difficultyLabelForSolutionTicks(ticks)) : sampled.difficulty,
       junctionCount: hasSolvedMasks ? junctionCountFromMasks(solvedMasks) : sampled.junctionCount,
@@ -904,6 +966,10 @@ export class ContinuityPipeGame {
       this.config.rotations,
       this.config.sourceIndex
     );
+    this.cells.forEach((cell, index) => {
+      cell.splitChannels = this.config.pipeRule === "split_channels_v2";
+      cell.channelPair = this.config.doubleBendPairings[index] || 0;
+    });
     this.stepCount = 0;
     this.lastTurn = null;
     this.moveHistory = [];
@@ -966,13 +1032,16 @@ export class ContinuityPipeGame {
         solvedMask: cell.solvedMask,
         rotation: cell.rotation,
         currentMask: cell.currentMask,
-        targetRotationTicks: cell.hasPipe ? targetTicksForMaskRotation(cell.solvedMask, cell.rotation) : 0,
+        splitChannels: cell.splitChannels,
+        channelPair: cell.channelPair,
+        targetRotationTicks: cell.hasPipe ? cellTargetTicks(cell) : 0,
         isSource: cell.isSource
       })),
       currentMasks: currentMasks(this.cells),
       solvedMasks: this.config.solvedMasks.slice(),
       rotations: this.cells.map((cell) => cell.rotation),
       connectedIndices,
+      channelConnections: channelConnections(this.cells, this.config.gridSize, this.config.sourceIndex),
       connectedCount: connectedIndices.length,
       totalPipes: activeCells.length,
       activePipeIndices: activeCells.map((cell) => cell.index),

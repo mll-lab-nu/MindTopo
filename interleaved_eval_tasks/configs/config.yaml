@@ -3,7 +3,13 @@ defaults:
   - model: bagel_imagined
   - _self_
 
+data:
+  split: null
+  protocol: legacy_probing
+  label: legacy_probing
+
 run:
+  check_only: false
   manifest_offset: 0
   manifest_limit: null
   parallel_sessions: 0  # when 0: depends on api key numbers
@@ -20,7 +26,7 @@ run:
   # every step. Has no effect when `keep_message_history` is true.
   cache_task_prompt: false
   protocol_prompt_key: interleaved_default
-  output_dir: logs/interleaved_eval/${env.name}/${now:%Y%m%d_%H%M%S}_${model.id}
+  output_dir: logs/interleaved_eval/${data.label}/${env.name}/${now:%Y%m%d_%H%M%S}_${model.id}
   output_json: ${run.output_dir}/summary.json
   output_config: ${run.output_dir}/resolved_config.yaml
 

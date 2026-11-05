@@ -52,19 +52,61 @@ No API key is required for the local planning baselines `oracle` and `random`.
 Those local baselines also work as no-key passthrough checks for interleaved
 planning tasks; interleaved static QA requires a model client.
 
-Static visual QA and interleaved static QA also require the image files referenced
-by each task's `output/question.jsonl`. This snapshot includes the fixed JSONL
-files but excludes those images. Restore the matching image assets before running
-these paths; local ignored images are not part of a fresh clone. Environment
-READMEs describe generation where supported; `order_origami` has no generator in
-this snapshot.
+## Core Set and Extended Set
+
+The release has two disjoint data partitions across all 13 tasks:
+
+| Partition | Instances | Purpose |
+| --- | ---: | --- |
+| `core` | 3,900 | Primary paper evaluation, 300 per task, with 150 Easy and 150 Hard |
+| `extended` | 8,780 | Additional archived instances after exact content deduplication |
+
+Static reasoning and planning default to `core`. Select `--split extended`
+explicitly for the Extended Set. Core difficulty is stored as
+`meta_info.benchmark_level`; the original generator's `difficulty` and reset
+configuration are preserved for faithful execution. Extended keeps its source
+difficulty labels. The 150 older Origami variants with reused IDs are retained
+with `legacy:` release IDs and their original `meta_info.source_id`.
+
+Canonical JSONL files live under `data/<split>/<task>/question.jsonl`, and
+`data/manifests/` records the fixed paper lists, content hashes and counts.
+Images live under `data/assets/` with content-addressed filenames. They are
+excluded from Git and must be restored with the matching asset package.
+Missing or corrupt images stop evaluation before provider initialization.
+They never silently reduce the benchmark sample count.
+
+The authors can reconstruct the local release from its recorded original
+exports without regenerating any scenes or labels:
+
+```bash
+python bin/export_release.py \
+  --paper-root /path/to/topobench_arxiv \
+  --benchmark-root /path/to/topobench
+uv run python bin/check_release.py
+```
+
+`bin/check_release.py --skip-images` validates JSONL and manifests in a clone
+without image assets. The normal check verifies every image hash as well.
+
+Interleaved and video defaults retain the existing `legacy_probing` protocol.
+Their frozen question snapshots are in `data/probing/`, and the original
+105-ID lists remain in `data/slices/balanced_105/`. These protocol views are
+separate from the two public data partition choices. To run a new Core or
+Extended probing experiment through Hydra, set `data.split=core` or
+`data.split=extended` and explicitly clear `env.episode_ids_path=null` where
+a balanced-105 list is configured. Explicit custom `env.source_question_jsonl`
+paths remain supported and are labelled `custom`, rather than Core/Extended.
+
+The legacy files under `environments/<task>/output/` are retained for old
+generation/examples. Public benchmark commands load the canonical data paths
+above. Updating the main default does not replace the probing question sets.
 
 ## Quick Start
 
 Run one planning task with an API-backed model:
 
 ```bash
-bash bin/run_planning_task.sh --env knots_untangle --model internvl
+bash bin/run_planning_task.sh --env knots_untangle --model internvl --split core
 ```
 
 Run selected static tasks with the convenience wrapper:
@@ -72,7 +114,14 @@ Run selected static tasks with the convenience wrapper:
 ```bash
 bash bin/run_reasoning_task.sh \
   --env knots_static,enclosure_sheep,separation_objects \
-  --model internvl
+  --model internvl --split extended
+```
+
+Validate main evaluation inputs without API keys or model calls:
+
+```bash
+bash bin/run_reasoning_task.sh --check --env order_origami --split core
+bash bin/run_planning_task.sh --check --model oracle --env order_swap_2d_puzzle --split extended
 ```
 
 Run a no-key interleaved smoke test:
@@ -134,7 +183,7 @@ minimal repository.
 Planning outputs include:
 
 ```text
-logs/planning_eval/
+logs/planning_eval/<split>/<model>/<task>/
 ├── summary.json
 ├── resolved_config.yaml
 ├── model_answer.jsonl
@@ -142,11 +191,11 @@ logs/planning_eval/
 ```
 
 Static evaluation outputs are written by `lmms-eval` through
-`bin/topobench-eval`, normally under `lmms_eval_tasks/logs/`.
+`bin/topobench-eval`, normally under `lmms_eval_tasks/logs/<split>/`. Caches are separated by split too.
 
 Interleaved outputs include the planning-style `model_answer.jsonl`,
 `summary.json`, and imagined-image artifacts under
-`logs/interleaved_eval/` unless `run.output_dir` is overridden.
+`logs/interleaved_eval/<protocol>/` unless `run.output_dir` is overridden.
 
 Cached-video E2E outputs use the same planning-style summaries and store the
 generated clip and extracted frames beside the episode screenshots. The same
@@ -159,7 +208,8 @@ which writes its report to `<dir>/reports/video_metrics/` — see
 
 ```text
 topobench-minimal/
-├── environments/           # task implementations and fixed benchmark data
+├── data/                   # core, extended, probing, manifests, and ignored assets
+├── environments/           # task implementations and legacy generator exports
 ├── lmms_eval_tasks/        # static reasoning adapters for lmms-eval
 ├── planning_eval_tasks/    # Hydra + Playwright planning rollout runner
 ├── interleaved_eval_tasks/ # image-generation-in-the-loop runner

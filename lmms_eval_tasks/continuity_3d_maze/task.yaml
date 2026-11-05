@@ -2,7 +2,7 @@ task: continuity_3d_maze
 dataset_path: json
 dataset_kwargs:
   data_files:
-    test: environments/continuity_3d_maze/output/question.jsonl
+    test: data/core/continuity_3d_maze/question.jsonl
 test_split: test
 output_type: generate_until
 

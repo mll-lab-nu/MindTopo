@@ -72,3 +72,6 @@ environments/*/*.zip
 
 # ai2thor runtime cache for continuity_3d_maze
 environments/*/.thor_runtime/
+
+# Portable benchmark image assets are distributed separately from Git.
+/data/assets/

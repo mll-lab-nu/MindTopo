@@ -1,5 +1,5 @@
 name: continuity_pipe
-source_question_jsonl: environments/continuity_pipe/output/question.jsonl
+source_question_jsonl: data/probing/continuity_pipe/question.jsonl
 episode_ids_path: data/slices/balanced_105/continuity_pipe.json
 host: 127.0.0.1
 port: 0

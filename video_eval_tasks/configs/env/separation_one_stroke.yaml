@@ -1,5 +1,5 @@
 name: separation_one_stroke
-source_question_jsonl: environments/separation_one_stroke/output/question.jsonl
+source_question_jsonl: data/probing/separation_one_stroke/question.jsonl
 episode_ids_path: data/slices/balanced_105/separation_one_stroke.json
 host: 127.0.0.1
 port: 0

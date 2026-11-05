@@ -60,9 +60,9 @@ except ImportError:  # pragma: no cover - fallback when gymnasium is unavailable
 BLANK_TOKEN = "_"
 MIN_GRID_ROWS = 2
 MIN_GRID_COLS = 2
-MAX_GRID_ROWS = 4
-MAX_GRID_COLS = 4
-MAX_CELLS = 16
+MAX_GRID_ROWS = 5
+MAX_GRID_COLS = 5
+MAX_CELLS = 25
 DEFAULT_BUDGET_MULTIPLIER = 1.2
 INVALID_ACTION = -999
 STABLE_RNG_INCREMENT = 0x6D2B79F5
@@ -89,6 +89,16 @@ BLOCK_LIBRARY: Tuple[Dict[str, str], ...] = (
     {"id": "V", "label": "V", "name": "Violet", "color": "#9a4bd7"},
     {"id": "I", "label": "I", "name": "Indigo", "color": "#4b5bdc"},
     {"id": "A", "label": "A", "name": "Amber", "color": "#d79a00"},
+    {"id": "D", "label": "D", "name": "D", "color": "#8b4513"},
+    {"id": "E", "label": "E", "name": "E", "color": "#ff69b4"},
+    {"id": "F", "label": "F", "name": "F", "color": "#708238"},
+    {"id": "H", "label": "H", "name": "H", "color": "#00ced1"},
+    {"id": "J", "label": "J", "name": "J", "color": "#cd853f"},
+    {"id": "K", "label": "K", "name": "K", "color": "#9932cc"},
+    {"id": "Q", "label": "Q", "name": "Q", "color": "#228b22"},
+    {"id": "U", "label": "U", "name": "U", "color": "#dc143c"},
+    {"id": "W", "label": "W", "name": "W", "color": "#4682b4"},
+    {"id": "X", "label": "X", "name": "X", "color": "#d2691e"},
 )
 BLOCK_BY_ID = {spec["id"]: spec for spec in BLOCK_LIBRARY}
 
@@ -116,7 +126,7 @@ def normalize_difficulty(value: Any) -> Optional[str]:
     if value is None:
         return None
     text = str(value).strip().casefold()
-    if not text or text in {"custom", "grid", "manual", "none", "null"} or text.startswith("grid_"):
+    if not text or text in {"expert", "custom", "grid", "manual", "none", "null"} or text.startswith("grid_"):
         return None
     aliases = {
         "easy": "easy",
@@ -586,6 +596,8 @@ class OrderSwap2DPuzzleEnv(gym.Env):
         self.action_space = spaces.Discrete(len(self.action_map))
         self.current_initial_arrangement = list(initial_arrangement)
         self.current_goal_arrangement = list(goal_arrangement)
+        if frontend_config.get("moveRule") == "row_column_v1":
+            theoretical_min_steps = int(frontend_config["theoreticalMinSteps"])
         self.current_theoretical_min_steps = int(theoretical_min_steps)
         self.current_step_budget = int(step_budget)
         self.current_difficulty = resolved_difficulty
@@ -607,6 +619,10 @@ class OrderSwap2DPuzzleEnv(gym.Env):
             "moveReward": self.move_reward,
             "winReward": self.win_reward,
         }
+        if frontend_config.get("moveRule"):
+            if frontend_config["moveRule"] != "row_column_v1":
+                raise ValueError("Unsupported explicit Swap moveRule")
+            frontend_payload["moveRule"] = frontend_config["moveRule"]
         passthrough_keys = {
             "animate": options.get("animate", frontend_config.get("animate", self.animate)),
             "illegalReward": options.get("illegal_reward", frontend_config.get("illegalReward", self.illegal_reward)),

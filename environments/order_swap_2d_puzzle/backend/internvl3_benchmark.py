@@ -592,6 +592,10 @@ def compute_legal_actions(state: Dict[str, Any]) -> List[Dict[str, int]]:
     for cell_index, token in enumerate(arrangement):
         if token == BLANK_TOKEN:
             continue
+        if state.get("moveRule") == "row_column_v1":
+            blank = arrangement.index(BLANK_TOKEN)
+            if cell_index // grid_cols != blank // grid_cols and cell_index % grid_cols != blank % grid_cols:
+                continue
         row_col = cell_index_to_row_col(cell_index, grid_cols)
         actions.append({"row": int(row_col["row"]), "col": int(row_col["col"]), "cell_index": int(cell_index)})
     return actions

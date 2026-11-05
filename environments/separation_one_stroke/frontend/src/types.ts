@@ -84,6 +84,8 @@ export const COLORS: Record<string, number> = {
   'yellow': 0xffe119,
   'purple': 0x911eb4,
   'cyan': 0x42d4f4,
+  'orange': 0xf58231,
+  'pink': 0xfabed4,
   'gray': 0x9ca3af,
   'white': 0xffffff,
 };

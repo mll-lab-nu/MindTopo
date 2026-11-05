@@ -5,6 +5,8 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$HERE/.." && pwd)"
 
 MODEL_ID="internvl"
+DATA_SPLIT="core"
+CHECK_ONLY=0
 NUM_CPUS=16
 WORKERS_PER_KEY=2
 MAX_SHARD_WORKERS=16
@@ -32,8 +34,10 @@ PLANNING_ONLY_ENVS=(
 
 usage() {
   cat <<'EOF'
-usage: bash bin/run_reasoning_task.sh [--model <id>] [--env csv] [--num-cpus N] [--workers-per-key N] [--max-shard-workers N] [--shard-size N] [--adaptive-concurrency]
+usage: bash bin/run_reasoning_task.sh [--split core|extended] [--model <id>] [--env csv] [--num-cpus N] [--workers-per-key N] [--max-shard-workers N] [--shard-size N] [--adaptive-concurrency]
 
+  --check              Validate inputs without API calls
+  --split              Data partition: core (default) or extended
   --model              Default internvl
                        BAGEL accepts: bagel or ByteDance-Seed/BAGEL-7B-MoT
 	  --env                Comma-separated env names. Default: 8 reasoning envs
@@ -55,6 +59,10 @@ EOF
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --check) CHECK_ONLY=1; shift ;;
+    --split)
+      [[ "${2-}" == "core" || "${2-}" == "extended" ]] || { printf 'error: --split must be core or extended\n' >&2; exit 2; }
+      DATA_SPLIT="$2"; shift 2 ;;
     --model)
       [[ -n "${2-}" ]] || { printf 'error: --model requires a value\n' >&2; exit 2; }
       MODEL_ID="$2"; shift 2 ;;
@@ -154,6 +162,7 @@ fi
 export PYTHON
 
 cd "$ROOT"
+if [[ "$CHECK_ONLY" == "1" ]]; then EXTRA_LMMS_ARGS+=(--check); fi
 ADAPTIVE_ARGS=(--no-adaptive-concurrency)
 if [[ "$ADAPTIVE_CONCURRENCY" == "1" ]]; then
   ADAPTIVE_ARGS=(--adaptive-concurrency)
@@ -164,6 +173,7 @@ if [[ "$SHARD_SIZE" != "0" ]]; then
 fi
 
 exec ./bin/topobench-eval \
+  --split "$DATA_SPLIT" \
   --num-cpus "$NUM_CPUS" \
   --workers-per-key "$WORKERS_PER_KEY" \
   --max-shard-workers "$MAX_SHARD_WORKERS" \

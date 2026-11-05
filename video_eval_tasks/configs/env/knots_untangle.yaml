@@ -1,5 +1,5 @@
 name: knots_untangle
-source_question_jsonl: environments/knots_untangle/output/question.jsonl
+source_question_jsonl: data/probing/knots_untangle/question.jsonl
 episode_ids_path: data/slices/balanced_105/knots_untangle.json
 headless: true
 animate: false
