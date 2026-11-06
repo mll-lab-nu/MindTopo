@@ -8,6 +8,7 @@ from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from _common import make_hooks  # noqa: E402
+from topobench_eval.datasets import data_root  # noqa: E402
 from PIL import Image, ImageDraw, ImageFont, UnidentifiedImageError  # noqa: E402
 try:
     from loguru import logger as eval_logger  # noqa: E402
@@ -16,10 +17,7 @@ except ImportError:  # Lightweight parser/test installations.
 
     eval_logger = logging.getLogger(__name__)
 
-ENV_DATA_ROOT = (
-    Path(__file__).resolve().parents[2]
-    / "environments/order_origami/output"
-)
+ENV_DATA_ROOT = data_root('order_origami')
 
 _BASE_HOOKS = make_hooks(ENV_DATA_ROOT)
 globals().update(_BASE_HOOKS)

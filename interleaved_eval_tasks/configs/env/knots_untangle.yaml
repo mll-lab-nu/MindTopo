@@ -1,7 +1,7 @@
 name: knots_untangle
 episode_ids_path: data/slices/balanced_105/knots_untangle.json
 # Minimal snapshot default: use the retained fixed planning question set.
-source_question_jsonl: environments/knots_untangle/output/question.jsonl
+source_question_jsonl: data/probing/knots_untangle/question.jsonl
 headless: true
 animate: false
 illegal_reward: -1.0

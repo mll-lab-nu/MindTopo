@@ -42,6 +42,24 @@ def main(cfg: DictConfig) -> None:
     load_dotenv(ROOT / ".env", override=False)
     ensure_common_tool_paths()
     ensure_runtime_settings()
+    from topobench_eval.datasets import configure_run
+    configure_run(cfg, probing=False)
+    if bool(getattr(cfg.run, "check_only", False)):
+        import json
+        from topobench_eval.datasets import REPO_ROOT, read_rows
+        path = Path(str(cfg.env.source_question_jsonl))
+        path = path if path.is_absolute() else REPO_ROOT / path
+        rows = read_rows(path)
+        manifest = getattr(cfg.env, "episode_ids_path", None)
+        if manifest:
+            ids = json.loads((REPO_ROOT / str(manifest)).read_text())
+            if not set(ids) <= {row["id"] for row in rows}:
+                raise ValueError("Probing manifest contains missing instance IDs")
+            count = len(ids)
+        else:
+            count = len(rows)
+        print(json.dumps({"task": str(cfg.env.name), "instances": count, **dict(cfg.data)}))
+        return
     adapter = build_adapter(str(cfg.env.name))
     model_client = build_model_client(model_cfg=cfg.model, system_prompt=get_system_prompt(str(cfg.env.system_prompt_key)))
     runner = RolloutRunner(

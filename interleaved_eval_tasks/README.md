@@ -51,8 +51,9 @@ bash bin/setup_frontends.sh
 
 For API-backed interleaved models, create `.env` from `.env.example` and set the
 text-model and image-generation provider keys required by the model config.
-Local passthrough models such as `oracle` and `random` do not require keys and
-bypass image generation.
+For planning tasks, local passthrough models such as `oracle` and `random` do
+not require keys and bypass image generation. Static QA tasks require a model
+client; these local policies do not provide static answers.
 
 ## Quick Checks
 

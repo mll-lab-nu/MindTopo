@@ -3,7 +3,13 @@ defaults:
   - model: oracle
   - _self_
 
+data:
+  split: core
+  protocol: benchmark
+  label: ${data.split}
+
 run:
+  check_only: false
   sample_offset: 0
   sample_limit: null
   parallel_sessions: 0  # when 0: depends on api key numbers
@@ -15,7 +21,7 @@ run:
   history_window: 5  # conversation messages incl. current: 3 user prompts + 2 assistant replies; system is separate
   compact_assistant_history: true  # store parsed answers in prompt history, not verbose model reasoning
   fallback_on_invalid: false
-  output_dir: logs/planning_eval/${model.id}/${env.name}/${now:%Y%m%d_%H%M%S}
+  output_dir: logs/planning_eval/${data.label}/${model.id}/${env.name}/${now:%Y%m%d_%H%M%S}
   output_json: ${run.output_dir}/summary.json
   output_config: ${run.output_dir}/resolved_config.yaml
 

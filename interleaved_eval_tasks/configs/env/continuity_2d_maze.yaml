@@ -1,7 +1,7 @@
 name: continuity_2d_maze
 eval_kind: reasoning
 # Minimal snapshot default: use the retained fixed reasoning question set.
-data_root: environments/continuity_2d_maze/output
+data_root: data/probing/continuity_2d_maze
 question_jsonl: ${env.data_root}/question.jsonl
 image_root: ${env.data_root}
 system_prompt_key: continuity_2d_maze_interleaved

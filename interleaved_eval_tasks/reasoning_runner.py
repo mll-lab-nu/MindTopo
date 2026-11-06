@@ -445,6 +445,7 @@ class ReasoningRunner:
         summary: Dict[str, Any] = {
             "env": str(self.cfg.env.name),
             "eval_kind": "reasoning",
+            **{key: val for key, val in dict(getattr(self.cfg, "data", {})).items() if key.startswith("dataset_")},
             "model_id": str(model_info.get("model_id", self.cfg.model.id)),
             "model_name": str(model_info.get("model_name", getattr(self.cfg.model, "name", self.cfg.model.id))),
             "model_provider": str(model_info.get("model_provider", getattr(self.cfg.model, "provider", "local"))),

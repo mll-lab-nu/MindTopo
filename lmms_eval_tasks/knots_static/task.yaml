@@ -2,7 +2,7 @@ task: knots_static
 dataset_path: json
 dataset_kwargs:
   data_files:
-    test: environments/knots_static/output/question.jsonl
+    test: data/core/knots_static/question.jsonl
 test_split: test
 output_type: generate_until
 

@@ -33,6 +33,7 @@ import shlex
 import sqlite3
 import subprocess
 import sys
+import json
 import threading
 import time
 import traceback
@@ -75,6 +76,8 @@ except ModuleNotFoundError as exc:  # pragma: no cover - import guard
 from key_pool import KeyPool, PoolExhausted, SharedKeyPool  # type: ignore  # noqa: E402
 
 import _dataset_count  # type: ignore  # noqa: E402
+from _release_tasks import include_path as release_include_path
+from topobench_eval.datasets import selected_split, provenance, question_path, validate_dataset, require_same_dataset
 import _meta_export  # type: ignore  # noqa: E402
 from _retryable_response import (  # type: ignore  # noqa: E402
     RETRYABLE_FAILURE_SQL_LIKE_PATTERNS,
@@ -190,11 +193,11 @@ def _safe_part(value: str) -> str:
 
 
 def _shard_dir(model_id: str, task: str, shard_index: int) -> Path:
-    return HERE / "logs" / f"{_safe_part(model_id)}__{_safe_part(task)}" / f"shard_{shard_index:02d}"
+    return HERE / "logs" / selected_split() / f"{_safe_part(model_id)}__{_safe_part(task)}" / f"shard_{shard_index:02d}"
 
 
 def _shared_cache_dir(model_id: str, tasks_csv: str) -> Path:
-    return HERE / "cache" / f"{_safe_part(model_id)}__{_safe_part(tasks_csv)}"
+    return HERE / "cache" / selected_split() / f"{_safe_part(model_id)}__{_safe_part(tasks_csv)}"
 
 
 def _looks_rate_limited(raw: str) -> bool:
@@ -306,7 +309,7 @@ def _build_subprocess_cmd(
         "--model", "openai",
         "--model_args", model_args,
         "--tasks", task,
-        "--include_path", str(HERE),
+        "--include_path", str(release_include_path()),
         "--batch_size", "1",
         "--log_samples",
         "--offset", str(offset),
@@ -324,7 +327,8 @@ def _build_subprocess_cmd(
 
 
 def _lmms_eval_executable() -> str:
-    sibling = Path(sys.executable).resolve().parent / "lmms-eval"
+    # Keep the venv path: resolving its python symlink leaves the venv.
+    sibling = Path(sys.executable).parent / "lmms-eval"
     if sibling.exists():
         return str(sibling)
     found = shutil.which("lmms-eval")
@@ -712,6 +716,8 @@ def _run_shard(
 def _parse_args(argv: List[str]) -> Tuple[argparse.Namespace, List[str]]:
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("--dry-run", action="store_true", dest="dry_run")
+    parser.add_argument("--check", action="store_true", help="Validate data and routing without credentials or model calls")
+    parser.add_argument("--split", choices=("core", "extended"), default=os.environ.get("TOPOBENCH_DATA_SPLIT", "core"))
     parser.add_argument("--num-cpus", type=int, default=16)
     parser.add_argument("--workers-per-key", type=int, default=2)
     parser.add_argument("--max-shard-workers", type=int, default=32)
@@ -737,7 +743,7 @@ def _parse_args(argv: List[str]) -> Tuple[argparse.Namespace, List[str]]:
 
 
 _USAGE = (
-    "usage: topobench-eval [--dry-run] [--num-cpus N] [--workers-per-key N] "
+    "usage: topobench-eval [--split core|extended] [--check] [--dry-run] [--num-cpus N] [--workers-per-key N] "
     "[--max-shard-workers N] [--shard-size N] [--key-rpm R] [--limit N] "
     "[--max-api-failed-row-retries N] "
     "[--[no-]adaptive-concurrency] [--adaptive-max-concurrency N] [--[no-]export-meta] "
@@ -755,6 +761,22 @@ def main() -> None:
 
     model_id, tasks_csv, *extra = remaining
 
+    os.environ["TOPOBENCH_DATA_SPLIT"] = selected_split(args.split)
+    tasks = [t.strip() for t in tasks_csv.split(",") if t.strip()]
+    if not tasks:
+        _die("at least one task name required")
+    # Validate fixed datasets before reading credentials or calling a provider.
+    for task in tasks:
+        validate_dataset(task, args.split)
+        prior_metadata = _shard_dir(model_id, task, 0).parent / "dataset.json"
+        if prior_metadata.exists():
+            require_same_dataset(json.loads(prior_metadata.read_text()), provenance(question_path(task), args.split))
+    if args.check:
+        for task in tasks:
+            info = provenance(question_path(task), args.split)
+            print(json.dumps({"task": task, "instances": _dataset_count.get_or_compute(task), **info}))
+        print(f"task_configs={release_include_path()}")
+        return
     load_dotenv(ROOT / ".env")
 
     try:
@@ -822,7 +844,7 @@ def main() -> None:
         f"workers_per_key={args.workers_per_key} key_slots={total_key_slots} "
         f"shard_workers={shard_workers} max_shard_workers={args.max_shard_workers} "
         f"shard_size={args.shard_size or 'auto'} "
-        f"tasks={tasks} num_cpus={args.num_cpus} "
+        f"split={args.split} tasks={tasks} num_cpus={args.num_cpus} "
         f"pool={'shared' if use_shared else 'in-process'} "
         f"request_min_interval={request_min_interval:g}s "
         f"api_failed_row_retries="
@@ -838,6 +860,8 @@ def main() -> None:
         adaptive_concurrency=bool(args.adaptive_concurrency),
         adaptive_max_concurrency=args.adaptive_max_concurrency,
     )
+
+    release_include_path()  # Generate once before concurrent shard workers start.
 
     # Plan shards across all tasks.
     shards: List[dict] = []
@@ -879,6 +903,10 @@ def main() -> None:
     if not shards:
         _die("no shards to run")
 
+    for task in tasks:
+        metadata_dir = _shard_dir(model_id, task, 0).parent
+        metadata_dir.mkdir(parents=True, exist_ok=True)
+        (metadata_dir / "dataset.json").write_text(json.dumps(provenance(question_path(task), args.split), indent=2) + "\n")
     if args.dry_run:
         for shard in shards:
             cmd = _build_subprocess_cmd(

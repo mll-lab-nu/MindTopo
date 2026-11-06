@@ -459,6 +459,8 @@ function getColorStyle(colorName: string): string {
     'yellow': '#ffe119',
     'purple': '#911eb4',
     'cyan': '#42d4f4',
+    'orange': '#f58231',
+    'pink': '#fabed4',
     'gray': '#9ca3af',
     'white': '#ffffff',
   };

@@ -2,7 +2,7 @@ task: enclosure_hole_detection
 dataset_path: json
 dataset_kwargs:
   data_files:
-    test: environments/enclosure_hole_detection/output/question.jsonl
+    test: data/core/enclosure_hole_detection/question.jsonl
 test_split: test
 output_type: generate_until
 

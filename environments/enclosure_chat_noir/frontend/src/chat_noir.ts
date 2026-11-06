@@ -54,7 +54,9 @@ const CAT_POLICIES = Object.freeze({
     name: "hard",
     level: 3,
     description: "Connectivity-aware greedy runner. It avoids immediate one-move traps when possible, then prefers shorter boundary distance while preserving more escape connectivity."
-  }
+  },
+  expert: { name: "expert", level: 4, description: "Three-turn forced-capture avoidance." }
+
 });
 
 const DEFAULT_CONFIG = Object.freeze({
@@ -518,7 +520,70 @@ function createSeededRandom(seed) {
   };
 }
 
+// Core Hard policy: a player turn is one block followed by a cat move.
+// The minimax test considers every legal player block and every cat response.
+function oneTurnRiskSet(board, blockedSet, memo) {
+  const key = "cuts|" + Array.from(blockedSet).sort((a,b) => a-b).join(",");
+  if (memo.has(key)) return memo.get(key);
+  const root = board.cells.length, disc = [], low = [], risky = new Set();
+  let time = 0;
+  function visit(node, parent) {
+    disc[node] = low[node] = ++time;
+    const descendants = [node];
+    const neighbors = node === root ? board.boundaryIndices : [...board.cells[node].neighborIndices, ...(board.cells[node].isBoundary ? [root] : [])];
+    for (const next of neighbors) {
+      if (blockedSet.has(next) || next === parent) continue;
+      if (!disc[next]) {
+        const below = visit(next, node);
+        if (node !== root && low[next] >= disc[node]) below.forEach(x => risky.add(x));
+        descendants.push(...below); low[node] = Math.min(low[node], low[next]);
+      } else low[node] = Math.min(low[node], disc[next]);
+    }
+    return descendants;
+  }
+  visit(root, -1);
+  board.cells.forEach(cell => { if (!blockedSet.has(cell.index) && !disc[cell.index]) risky.add(cell.index); });
+  memo.set(key, risky); return risky;
+}
+
+function forcedCaptureWithin(board, catIndex, blockedSet, turns, memo) {
+  if (board.cells[catIndex].isBoundary) return false;
+  if (shortestBoundaryPath(board, catIndex, blockedSet) === null) return true;
+  const moves = legalCatMoves(board, catIndex, blockedSet);
+  if (!moves.length) return true;
+  if (turns <= 0) return false;
+  if (turns === 1) return oneTurnRiskSet(board, blockedSet, memo).has(catIndex);
+  const key = `${catIndex}|${turns}|${Array.from(blockedSet).sort((a,b) => a-b).join(",")}`;
+  if (memo.has(key)) return memo.get(key);
+  for (const cell of board.cells) {
+    if (cell.index === catIndex || blockedSet.has(cell.index)) continue;
+    const after = new Set(blockedSet); after.add(cell.index);
+    const replies = legalCatMoves(board, catIndex, after);
+    if (shortestBoundaryPath(board, catIndex, after) === null || !replies.length || replies.every(next => forcedCaptureWithin(board, next, after, turns - 1, memo))) {
+      memo.set(key, true); return true;
+    }
+  }
+  memo.set(key, false); return false;
+}
+
+function chooseExpertCatMove(board, catIndex, blockedSet) {
+  const legalMoves = legalCatMoves(board, catIndex, blockedSet);
+  const memo = new Map();
+  const evaluatedMoves = legalMoves.map(moveIndex => {
+    const stats = reachableRegionStats(board, moveIndex, blockedSet);
+    const risks = [1,2,3].map(turns => stats.distance === 0 ? false : forcedCaptureWithin(board, moveIndex, blockedSet, turns, memo));
+    return {moveIndex, distance: stats.distance, captureRisks: risks,
+      scoreTuple: [stats.distance === 0 ? 0 : 1, ...risks.map(Number),
+        stats.distance === null ? Infinity : stats.distance,
+        -stats.shortestPathCount, -stats.boundaryCount, -stats.reachableOpenCount,
+        -countOpenNeighborDegree(board, moveIndex, blockedSet), moveIndex]};
+  });
+  evaluatedMoves.sort((a,b) => compareTuples(a.scoreTuple,b.scoreTuple));
+  return {chosenMove: evaluatedMoves[0]?.moveIndex ?? null, legalMoves, evaluatedMoves};
+}
+
 function chooseCatMove(board, catIndex, blockedSet, catPolicy, randomFn = Math.random) {
+  if (catPolicy.name === "expert") return chooseExpertCatMove(board, catIndex, blockedSet);
   const legalMoves = legalCatMoves(board, catIndex, blockedSet);
   if (!legalMoves.length) {
     return {

@@ -214,11 +214,13 @@ def _select_env_summaries(model_root: Path) -> Dict[str, Dict[str, Any]]:
 def _difficulty_for_episode(episode: Mapping[str, Any]) -> str:
     meta_info = episode.get("meta_info")
     if isinstance(meta_info, dict):
+        if meta_info.get("benchmark_level"):
+            return str(meta_info["benchmark_level"])
         if meta_info.get("task_name") == "enclosure_chat_noir":
             policy = str(meta_info.get("cat_policy_name") or "").strip().lower()
             if policy in {"easy", "medium", "hard"}:
                 return policy
-        difficulty = meta_info.get("difficulty")
+        difficulty = meta_info.get("benchmark_level") or meta_info.get("difficulty")
         if difficulty not in (None, ""):
             return str(difficulty)
         if meta_info.get("task_name") == "separation_one_stroke":

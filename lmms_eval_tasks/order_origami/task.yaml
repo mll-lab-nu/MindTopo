@@ -2,7 +2,7 @@ task: order_origami
 dataset_path: json
 dataset_kwargs:
   data_files:
-    test: environments/order_origami/output/question.jsonl
+    test: data/core/order_origami/question.jsonl
 test_split: test
 output_type: generate_until
 

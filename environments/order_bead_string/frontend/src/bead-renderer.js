@@ -11,7 +11,6 @@ import { createCurve, sampleEquidistantPoints, makeRng } from './bead-curve-libr
 // ============= Color Palette =============
 
 const ROPE_COLOR = '#8B7355';
-const BEAD_OPACITY = 0.85;
 
 export const BEAD_PALETTE = {
   RED:    { name: 'RED',    hex: '#E74C3C' },
@@ -191,8 +190,7 @@ export function createBeadMesh(position, colorName, beadSize = 0.35) {
     metalness: 0.12,
     envMapIntensity: 0.8,
     transparent: true,
-    opacity: BEAD_OPACITY,
-    depthWrite: true,
+    opacity: 0.9,
   });
   const mesh = new THREE.Mesh(geometry, material);
   mesh.position.copy(position);
@@ -249,9 +247,7 @@ export function createDirectionArrow(position, tangent, beadSize = 0.35) {
     metalness: 0.4,
     emissive: 0xffffff,
     emissiveIntensity: 0.25,
-    transparent: true,
     depthTest: false,
-    depthWrite: false,
   });
   const shaftMat = new THREE.MeshStandardMaterial({
     color: 0xd8dde6,
@@ -259,9 +255,7 @@ export function createDirectionArrow(position, tangent, beadSize = 0.35) {
     metalness: 0.25,
     emissive: 0xd8dde6,
     emissiveIntensity: 0.12,
-    transparent: true,
     depthTest: false,
-    depthWrite: false,
   });
   const shaft = new THREE.Mesh(
     new THREE.CylinderGeometry(shaftRadius, shaftRadius, shaftLength, 12),
@@ -283,6 +277,9 @@ export function createDirectionArrow(position, tangent, beadSize = 0.35) {
   arrowGroup.position.copy(position).addScaledVector(side, beadSize * 2.5);
 
   arrowGroup.renderOrder = 999;
+  arrowGroup.traverse(child => {
+    if (child.isMesh) child.renderOrder = 999;
+  });
 
   return arrowGroup;
 }
@@ -303,6 +300,7 @@ export function createDirectionArrow(position, tangent, beadSize = 0.35) {
  * @param {string} [config.seed] - for reproducibility
  * @param {boolean} [config.isRing] - force ring/cyclic mode
  * @param {boolean} [config.showStartMarker] - show ring around first bead
+ * @param {number[][]} [config.savedBeadPositions] - lock a replay to archived positions
  * @returns {{ group: THREE.Group, metadata: Object }}
  */
 export function createBeadString(config = {}) {
@@ -317,6 +315,8 @@ export function createBeadString(config = {}) {
     seed = 'bead-default',
     isRing = false,
     showStartMarker = true,
+    savedBeadPositions = null,
+    preserveLegacyFraming = false,
   } = config;
 
   const rng = makeRng(seed);
@@ -350,7 +350,24 @@ export function createBeadString(config = {}) {
   // ("穿模") and hides the start-bead behind a neighbour.
   let positions;
   let tangents;
-  if (closed && numBeads >= 2) {
+  if (savedBeadPositions && closed && numBeads >= 2) {
+    // Several offsets can have the same max-min gap. Floating-point ties can
+    // choose another rotation on replay, so recover the archived offset using
+    // its four-decimal positions, retaining full-precision points and tangents.
+    const matchesSaved = candidate => candidate.positions.every((point, i) =>
+      point.toArray().every((value, j) =>
+        +value.toFixed(4) === savedBeadPositions[i]?.[j]));
+    let matched = null;
+    for (let k = 0; k < 36; k++) {
+      const candidate = sampleEquidistantPoints(parametricCurve, numBeads, true, k / 36);
+      if (matchesSaved(candidate)) {
+        matched = candidate;
+        break;
+      }
+    }
+    if (!matched) throw new Error(`Cannot recover archived bead positions: ${seed}`);
+    ({ positions, tangents } = matched);
+  } else if (closed && numBeads >= 2) {
     // Exhaustively search 36 offsets; pick the global max-min-distance. We
     // don't early-exit at a "good enough" threshold because the camera
     // projection can still merge beads that are 3-D-separated by ~1×
@@ -417,8 +434,24 @@ export function createBeadString(config = {}) {
 
   // Center the group
   const bbox = new THREE.Box3().setFromObject(group);
+  if (preserveLegacyFraming) {
+    // Archived cameras fitted the old thread guides too. Retain their bounds
+    // solely for framing; no guide mesh is added to or drawn in the scene.
+    const radius = Math.max(ropeThickness * 0.42, beadSize * 0.045);
+    const geometry = new THREE.CylinderGeometry(radius, radius, beadSize * 2.35, 16);
+    geometry.computeBoundingBox();
+    for (let i = 0; i < positions.length; i++) {
+      const dir = tangents[i].clone().normalize();
+      if (dir.lengthSq() < 1e-6) continue;
+      const rotation = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
+      const matrix = new THREE.Matrix4().compose(positions[i], rotation, new THREE.Vector3(1, 1, 1));
+      bbox.union(geometry.boundingBox.clone().applyMatrix4(matrix));
+    }
+    geometry.dispose();
+  }
   const center = bbox.getCenter(new THREE.Vector3());
   group.position.sub(center);
+  const framingBounds = bbox.clone().translate(center.clone().negate());
 
   const metadata = {
     bead_sequence: colors,
@@ -435,7 +468,7 @@ export function createBeadString(config = {}) {
     ]),
   };
 
-  return { group, metadata, beadMeshes, curve, closed };
+  return { group, metadata, beadMeshes, curve, closed, framingBounds };
 }
 
 export default {

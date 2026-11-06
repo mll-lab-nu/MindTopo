@@ -4,6 +4,7 @@ import concurrent.futures
 import json
 import multiprocessing
 import random
+import re
 import signal
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
@@ -42,6 +43,19 @@ def _skip_reason_bucket(reason: str) -> str:
     return raw or "unknown"
 
 
+_INLINE_THOUGHT = re.compile(r"<thought>.*?</thought>", re.DOTALL)
+
+
+def strip_inline_thoughts(text: str) -> str:
+    """Drop inline <thought> blocks; an unclosed block means no answer was given."""
+    if not text or "<thought>" not in text:
+        return text
+    text = _INLINE_THOUGHT.sub("", text)
+    if "<thought>" in text:
+        text = text.split("<thought>", 1)[0]
+    return text.strip()
+
+
 class RolloutRunner:
     def __init__(
         self,
@@ -55,6 +69,7 @@ class RolloutRunner:
         self.adapter = adapter
         self.writer = writer
         self.model_client = model_client
+        self._base_system_prompt = str(getattr(model_client, "effective_system_prompt", "") or "")
         # Tally of worker exceptions surfaced in summary.json so flaky episodes
         # don't silently disappear during multi-hour parallel sweeps.
         self._worker_error_count = 0
@@ -288,6 +303,26 @@ class RolloutRunner:
         else:
             executor.shutdown(wait=True)
 
+    def _select_episode_system_prompt(self, spec: Any, prompt_metadata: Dict[str, Any]) -> None:
+        key = str(getattr(self.cfg.env, "system_prompt_key", "none"))
+        if (
+            self.model_client is None
+            or str(self.cfg.model.kind) not in ("openai_compatible", "registry_remote")
+            or key not in ("order_swap_2d_puzzle_planning", "continuity_pipe_planning")
+        ):
+            return
+        from expert_system_prompts import get_expert_system_prompt
+
+        config = (spec.reset_kwargs.get("options") or {}).get("frontend_config") or {}
+        is_expert = config.get("moveRule") == "row_column_v1" or bool(config.get("pipeRule"))
+        # Clients are reused in both serial runs and workers. Restore the base
+        # prompt when an ordinary episode follows an Expert episode.
+        self.model_client.system_prompt = get_expert_system_prompt(
+            key,
+            difficulty="expert" if is_expert else str(prompt_metadata.get("difficulty", "")),
+            pipe_rule=config.get("pipeRule") or prompt_metadata.get("pipe_rule"),
+        ) or self._base_system_prompt
+
     def _make_env(self, spec: Any) -> Any:
         make_env_for_episode = getattr(self.adapter, "make_env_for_episode", None)
         if callable(make_env_for_episode):
@@ -342,6 +377,9 @@ class RolloutRunner:
                 )
             raise
 
+        from release_rules import require_frontend_rules
+        require_frontend_rules(spec, info)
+
         step_index = 0
         while not terminated and not truncated:
             turn_context = self.adapter.extract_turn_context(env=env, obs=obs, info=info, step_index=step_index, history=turns)
@@ -349,6 +387,7 @@ class RolloutRunner:
                 set_step_budget = getattr(self.model_client, "set_episode_step_budget", None)
                 if callable(set_step_budget):
                     set_step_budget(turn_context.step_budget)
+                self._select_episode_system_prompt(spec, turn_context.prompt_metadata)
             turn_context.prompt_metadata.setdefault("env_ref", env)
             turn_context.prompt_metadata.setdefault("current_info", info)
             provisional_turn = TurnInput(spec=spec, context=turn_context, history=turns, saved_images=[])
@@ -408,7 +447,14 @@ class RolloutRunner:
                     parse_result = ParsedActionResult(parsed_action=None, raw_response_text=response.raw_response_text, response_debug=response.response_debug, invalid_response=False)
                 else:
                     # Remote models return raw text
-                    parse_result = self.adapter.parse_model_action(response.raw_response_text, turn_input)
+                    # Gemini thought summaries arrive inline as <thought>...</thought>
+                    # before the answer. Parse only the text after them, so a cell
+                    # or move mentioned while thinking is never executed in place of
+                    # the final JSON answer; the full text is still logged.
+                    parse_result = self.adapter.parse_model_action(
+                        strip_inline_thoughts(response.raw_response_text), turn_input
+                    )
+                    parse_result.raw_response_text = response.raw_response_text
                     if not parse_result.response_debug:
                         parse_result.response_debug = dict(response.response_debug)
 
@@ -510,6 +556,8 @@ class RolloutRunner:
             turns=turns,
         )
         result.metadata = self.adapter.build_episode_meta(spec, result)
+        result.metadata.update({key: value for key, value in spec.metadata.items()
+                                if key.startswith("dataset_") or key in ("benchmark_split", "benchmark_level", "source_id")})
         return result
 
     def _choose_random_action(self, turn: TurnInput) -> ParsedActionResult:
@@ -1037,6 +1085,7 @@ class RolloutRunner:
             "model_base_url": str(model_info.get("model_base_url", getattr(self.cfg.model, "base_url", ""))),
             "total_episodes": total,
             "source_question_jsonl": self._source_question_jsonl(),
+            **{key: val for key, val in dict(getattr(self.cfg, "data", {})).items() if key.startswith("dataset_")},
             "skipped_episodes": list(skipped_episodes),
             "successes": successes,
             "success_rate": (successes / total) if total else 0.0,
@@ -1060,7 +1109,7 @@ class RolloutRunner:
     def _source_question_jsonl(self) -> Optional[str]:
         source_relpath = getattr(self.adapter, "source_question_jsonl_relpath", None)
         if callable(source_relpath):
-            return str(source_relpath())
+            return str(source_relpath(self.cfg))
         return None
 
     def _build_episode_jsonl_row(self, result: EpisodeRunResult) -> Optional[Dict[str, Any]]:

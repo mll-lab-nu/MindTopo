@@ -54,6 +54,14 @@ def make_hooks(env_data_root: Path | str) -> dict[str, Callable[..., Any]]:
                     return False
             return True
 
+        from topobench_eval.datasets import REPO_ROOT, validate_images
+        if any(root.is_relative_to(REPO_ROOT / "data" / split) for split in ("core", "extended")):
+            rows = list(dataset)
+            expected_split = root.parent.name
+            if any(row.get("meta_info", {}).get("benchmark_split") != expected_split for row in rows):
+                raise ValueError("Static task config and image loader select different benchmark splits")
+            validate_images(rows, root)
+            return dataset
         return dataset.filter(valid)
 
     def doc_to_visual(doc: dict[str, Any]) -> list[Image.Image]:

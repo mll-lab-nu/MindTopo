@@ -21,7 +21,7 @@ image_gen:
   upstream_model_name: gpt-image-2
   base_url: https://api.openai.com/v1
   base_url_env: ""
-  api_key_env: OPENAI_PAID_API_KEYS
+  api_key_env: OPENAI_API_KEYS
   mode: edits
   size: match_input
   response_format: ""

@@ -1,6 +1,6 @@
 name: enclosure_sheep
 eval_kind: reasoning
-data_root: environments/enclosure_sheep/output
+data_root: data/probing/enclosure_sheep
 question_jsonl: ${env.data_root}/question.jsonl
 image_root: ${env.data_root}
 system_prompt_key: enclosure_sheep_interleaved

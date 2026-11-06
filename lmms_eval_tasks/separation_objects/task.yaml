@@ -2,7 +2,7 @@ task: separation_objects
 dataset_path: json
 dataset_kwargs:
   data_files:
-    test: environments/separation_objects/output/question.jsonl
+    test: data/core/separation_objects/question.jsonl
 test_split: test
 output_type: generate_until
 

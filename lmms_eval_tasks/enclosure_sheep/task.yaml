@@ -2,7 +2,7 @@ task: enclosure_sheep
 dataset_path: json
 dataset_kwargs:
   data_files:
-    test: environments/enclosure_sheep/output/question.jsonl
+    test: data/core/enclosure_sheep/question.jsonl
 test_split: test
 output_type: generate_until
 

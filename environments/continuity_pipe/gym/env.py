@@ -698,6 +698,8 @@ class ContinuityPipeEnv(gym.Env):
         self.current_max_steps = max(1, int(max_steps))
 
         return {
+            "pipeRule": frontend_config.get("pipeRule"),
+            "doubleBendPairings": frontend_config.get("doubleBendPairings", [0] * total),
             "gridSize": grid_size,
             "seed": seed,
             "sourceIndex": source_index,

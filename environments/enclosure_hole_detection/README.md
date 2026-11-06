@@ -40,9 +40,9 @@ The same per-scene seed also deterministically controls whether the lower board 
 ## Frontend Debug
 
 ```bash
-cd /Users/andrewliu/Desktop/manling/topobench/environments/enclosure_hole_detection
-conda activate ptm
-python backend/serve_frontend.py --port 8000
+# From the repository root:
+cd environments/enclosure_hole_detection
+uv run python backend/serve_frontend.py --port 8000
 ```
 
 Open:
@@ -58,7 +58,7 @@ The debug page exposes `Difficulty Preset`, `Global Seed`, board geometry, hole 
 Generate easy data:
 
 ```bash
-python backend/generate_samples.py \
+uv run python backend/generate_samples.py \
   --difficulty 1 \
   --repeats 100 \
   --seed 12345 \
@@ -69,7 +69,7 @@ python backend/generate_samples.py \
 Generate medium data:
 
 ```bash
-python backend/generate_samples.py \
+uv run python backend/generate_samples.py \
   --difficulty 2 \
   --repeats 100 \
   --seed 12345 \
@@ -80,7 +80,7 @@ python backend/generate_samples.py \
 Generate hard data:
 
 ```bash
-python backend/generate_samples.py \
+uv run python backend/generate_samples.py \
   --difficulty 3 \
   --repeats 100 \
   --seed 12345 \
@@ -91,7 +91,7 @@ python backend/generate_samples.py \
 Generate all default difficulties:
 
 ```bash
-python backend/generate_samples.py \
+uv run python backend/generate_samples.py \
   --difficulty 1,2,3 \
   --repeats 1 \
   --seed 12345 \
@@ -119,7 +119,7 @@ output/images/{data_id}/state_0.png
 Load an existing generated question JSONL and call the model API:
 
 ```bash
-python backend/internvl3_benchmark.py \
+uv run python backend/internvl3_benchmark.py \
   --config ../api.json \
   --question-jsonl output/question.jsonl
 ```
@@ -127,7 +127,7 @@ python backend/internvl3_benchmark.py \
 Load an existing generated question JSONL with the local oracle:
 
 ```bash
-python backend/internvl3_benchmark.py \
+uv run python backend/internvl3_benchmark.py \
   --oracle \
   --question-jsonl output/question.jsonl \
   --output-json output/internvl3_enclosure_hole_detection.json \
@@ -138,7 +138,7 @@ python backend/internvl3_benchmark.py \
 Run direct generation plus model benchmark:
 
 ```bash
-python backend/internvl3_benchmark.py \
+uv run python backend/internvl3_benchmark.py \
   --config ../api.json \
   --difficulty 1,2,3 \
   --repeats 1 \
@@ -148,7 +148,7 @@ python backend/internvl3_benchmark.py \
 Run direct generation plus oracle benchmark:
 
 ```bash
-python backend/internvl3_benchmark.py \
+uv run python backend/internvl3_benchmark.py \
   --oracle \
   --difficulty 1,2,3 \
   --repeats 1 \
@@ -178,5 +178,5 @@ Benchmark output includes:
 ## Smoke Test
 
 ```bash
-python backend/playwright_smoke.py --headless --difficulty 2 --seed 12345
+uv run python backend/playwright_smoke.py --headless --difficulty 2 --seed 12345
 ```

@@ -690,12 +690,26 @@ class ArtifactWriter:
                 "phase1_attempts",
                 "phase2_attempts",
                 "phase_retry_log",
+                "video_prompt",
+                "video_gen_skip_reason",
+                "video_gen_mode",
+                "video_gen_api_error",
+                "video_gen_api_error_message",
+                "frame_extract_error",
             ):
                 if key in debug:
                     row[key] = debug[key]
             imagined_relpath = debug.get("imagined_image_rel_path")
             if imagined_relpath:
                 row["imagined_images"] = [imagined_relpath]
+            # Surface the generated clip so `video_metrics evaluate --run-dir`
+            # can consume this run directly (io.py reads trajectory[].imagined_video).
+            imagined_video = debug.get("imagined_video_rel_path") or debug.get("video_gen_rel_path")
+            if imagined_video:
+                row["imagined_video"] = imagined_video
+            frame_rel_paths = debug.get("video_frame_rel_paths")
+            if frame_rel_paths:
+                row["imagined_frames"] = list(frame_rel_paths)
             trajectory.append(row)
         return {
             "id": result.spec.episode_id,

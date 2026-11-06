@@ -6,6 +6,8 @@ ROOT="$(cd "$HERE/.." && pwd)"
 
 ENV_NAME=""
 MODEL_ID=""
+DATA_SPLIT="core"
+CHECK_ONLY=0
 PARALLEL_SESSIONS=16
 PARALLEL_SESSIONS_EXPLICIT=0
 WORKERS_PER_KEY=16
@@ -22,27 +24,33 @@ PLANNING_ENVS=(
 
 usage() {
   cat <<'EOF'
-usage: bash bin/run_planning_task.sh --model <model> [--env <env>] [--parallel-sessions N|auto] [--workers-per-key N] [--no-step-artifacts]
+usage: bash bin/run_planning_task.sh [--split core|extended] --model <model> [--env <env>] [--parallel-sessions N|auto] [--workers-per-key N] [--no-step-artifacts]
 
+  --check              Validate inputs without API calls
+  --split              Data partition: core (default) or extended
   --model               Required. e.g. internvl, qwen, qvq, gpt_5_5, gemini_3_1_pro, ...
                         BAGEL accepts: bagel or ByteDance-Seed/BAGEL-7B-MoT
   --env                 Optional. Run one env instead of the default 5:
                         order_swap_2d_puzzle, enclosure_chat_noir, knots_untangle,
                         separation_one_stroke, continuity_pipe
-  --parallel-sessions   Optional. Default 8. Use "auto" to use model/key-pool capacity.
+  --parallel-sessions   Optional. Default 16 before model-specific limits.
+                        Use "auto" to use model/key-pool capacity.
   --workers-per-key     Optional. Concurrent workers allowed per API key.
-                        Default comes from agent_runner.py, currently 2.
-                        NVIDIA NIM models default to 2.
-                        InternVL/BAGEL/Gemma/ThinkMorph/Cosmos default to 1.
+                        Default 16; InternVL uses 8, NVIDIA NIM uses 2.
+                        BAGEL/Gemma/ThinkMorph/Cosmos use 1.
   --no-step-artifacts   Keep scoring JSONL/summaries but prune each completed
                         episode's PNG/GIF/prompt files to limit disk usage.
 
-Output goes to logs/planning_eval/<model>/<env>/
+Output goes to logs/planning_eval/<split>/<model>/<env>/
 EOF
 }
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --check) CHECK_ONLY=1; shift ;;
+    --split)
+      [[ "${2-}" == "core" || "${2-}" == "extended" ]] || { printf 'error: --split must be core or extended\n' >&2; exit 2; }
+      DATA_SPLIT="$2"; shift 2 ;;
     --env)
       [[ -n "${2-}" ]] || { printf 'error: --env requires a value\n' >&2; exit 2; }
       ENV_NAME="$2"; shift 2 ;;
@@ -73,6 +81,8 @@ while [[ $# -gt 0 ]]; do
       usage; exit 2 ;;
   esac
 done
+
+if [[ "$CHECK_ONLY" == "1" ]]; then MODEL_OVERRIDES+=("run.check_only=true"); fi
 
 if [[ "$RETAIN_STEP_ARTIFACTS" == "0" ]]; then
   MODEL_OVERRIDES+=(
@@ -199,12 +209,12 @@ trap release_heavy_env_lock EXIT INT TERM
 
 run_env() {
   local env_name="$1"
-  local output_dir="logs/planning_eval/${MODEL_ID}/${env_name}"
+  local output_dir="logs/planning_eval/${DATA_SPLIT}/${MODEL_ID}/${env_name}"
   local workers_per_key_label="${TOPOBENCH_WORKERS_PER_KEY:-2(default)}"
   local status=0
 
-  case "$env_name" in
-    separation_one_stroke|continuity_pipe)
+  case "$env_name:$CHECK_ONLY" in
+    separation_one_stroke:0|continuity_pipe:0)
       acquire_heavy_env_lock "$env_name"
       ;;
   esac
@@ -214,6 +224,7 @@ run_env() {
   if "$PYTHON" planning_eval_tasks/agent_runner.py \
       "env=${env_name}" \
       "model=${MODEL_ID}" \
+      "data.split=${DATA_SPLIT}" \
       "run.parallel_sessions=${PARALLEL_SESSIONS}" \
       "run.output_dir=${output_dir}" \
       ${MODEL_OVERRIDES[@]+"${MODEL_OVERRIDES[@]}"}; then
