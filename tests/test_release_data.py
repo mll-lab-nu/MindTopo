@@ -118,18 +118,26 @@ def test_static_configs_and_paths_follow_the_same_split(monkeypatch):
         assert module.ENV_DATA_ROOT == data_root("order_origami", split)
 
 
-def test_explicit_core_rules_are_explained_without_changing_legacy_prompts():
+def test_expert_prompts_follow_saved_rules_and_restore_the_base_prompt():
     from types import SimpleNamespace
-    from unified_types import PromptParts
-    from release_rules import apply_release_rules
-    legacy = PromptParts(model_blocks=[{"type": "text", "text": "Original prompt"}])
-    assert apply_release_rules(legacy, SimpleNamespace(reset_kwargs={})) is legacy
-    assert legacy.model_blocks == [{"type": "text", "text": "Original prompt"}]
-    parts = PromptParts(model_blocks=[{"type": "text", "text": "A legal action is any non-empty cell in the current grid."}])
-    spec = SimpleNamespace(reset_kwargs={"options": {"frontend_config": {"moveRule": "row_column_v1"}}})
-    apply_release_rules(parts, spec)
-    text = " ".join(block["text"] for block in parts.model_blocks)
-    assert "must share a row or column" in text and "any non-empty cell" not in text
+    from rollout_runner import RolloutRunner, strip_inline_thoughts
+
+    def run(key, frontend_config, difficulty="easy"):
+        client = SimpleNamespace(system_prompt="base", effective_system_prompt="base")
+        runner = RolloutRunner.__new__(RolloutRunner)
+        runner.cfg = SimpleNamespace(env=SimpleNamespace(system_prompt_key=key), model=SimpleNamespace(kind="openai_compatible"))
+        runner.model_client, runner._base_system_prompt = client, "base"
+        spec = SimpleNamespace(reset_kwargs={"options": {"frontend_config": frontend_config}})
+        runner._select_episode_system_prompt(spec, {"difficulty": difficulty})
+        return client.system_prompt
+
+    assert "same row or column as the blank" in run("order_swap_2d_puzzle_planning", {"moveRule": "row_column_v1"})
+    assert "double-bend" in run("continuity_pipe_planning", {"pipeRule": "split_channels_v2"})
+    assert run("order_swap_2d_puzzle_planning", {}) == "base"
+    assert run("continuity_pipe_planning", {}, "hard") == "base"
+    assert run("enclosure_chat_noir_planning", {"catPolicy": "expert"}, "expert") == "base"
+    assert strip_inline_thoughts('<thought>row 1</thought>{"answer":1}') == '{"answer":1}'
+    assert strip_inline_thoughts("<thought>unfinished") == ""
 
 
 def test_planning_adapters_load_both_partitions_in_one_process():
