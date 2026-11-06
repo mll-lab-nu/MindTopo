@@ -54,11 +54,13 @@ def _is_nvidia_nim_context() -> bool:
         return override
 
     provider = os.environ.get("TOPOBENCH_OPENAI_PROVIDER", "").strip().lower()
-    if provider == "nvidia_nim":
+    # Mistral's API has the same 8-image cap (HTTP 400 code 3051), so it gets
+    # the same pair packing as NIM.
+    if provider in {"nvidia_nim", "mistral"}:
         return True
 
     base_url = os.environ.get("OPENAI_API_BASE", "").strip().lower()
-    return "integrate.api.nvidia.com" in base_url
+    return "integrate.api.nvidia.com" in base_url or "api.mistral.ai" in base_url
 
 
 def _should_pack_image_pairs(doc: dict[str, Any]) -> bool:
