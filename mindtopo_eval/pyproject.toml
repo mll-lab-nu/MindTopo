@@ -1,7 +1,7 @@
 [project]
-name = "topobench_eval"
+name = "mindtopo_eval"
 version = "0.1.0"
-description = "Shared utilities for the TopoBench evaluation pipelines (gym + lmms_eval)."
+description = "Shared utilities for the MindTopo evaluation pipelines (gym + lmms_eval)."
 requires-python = ">=3.10"
 dependencies = ["PyYAML>=6,<7"]
 
@@ -11,4 +11,4 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["topobench_eval*"]
+include = ["mindtopo_eval*"]

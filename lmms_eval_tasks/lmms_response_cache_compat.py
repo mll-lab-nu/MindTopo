@@ -1,6 +1,6 @@
 """Runtime guardrails for lmms-eval response caching.
 
-TopoBench treats provider/API failures as "not run". Some lmms-eval versions
+MindTopo treats provider/API failures as "not run". Some lmms-eval versions
 return a textual failure sentinel after exhausting request retries, and some
 providers occasionally return "no image was provided" refusals for visual
 prompts. If those responses reach ResponseCache, they can be replayed forever.

@@ -24,7 +24,7 @@ def _png_to_data_url_cached(path: str, mtime_ns: int) -> str:
 
 from evaluator_utils import require_remote_api_key
 from key_pool import KeyPool, PoolExhausted, SharedKeyPool, _DAILY_KEYWORDS
-from topobench_eval.provider_registry import resolve_model_registry_entry
+from mindtopo_eval.provider_registry import resolve_model_registry_entry
 from unified_types import Message, ModelResponse, SavedImage
 
 

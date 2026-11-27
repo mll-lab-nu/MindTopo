@@ -27,8 +27,8 @@ if str(_PLANNING_DIR) not in sys.path:
 
 from artifact_writer import ArtifactWriter  # noqa: E402
 from model_adapter import BaseModelClient  # noqa: E402
-from topobench_eval.answer_parser import ParseResult, parse_answer_result  # noqa: E402
-from topobench_eval.answer_scoring import answers_equal  # noqa: E402
+from mindtopo_eval.answer_parser import ParseResult, parse_answer_result  # noqa: E402
+from mindtopo_eval.answer_scoring import answers_equal  # noqa: E402
 from unified_types import (  # noqa: E402
     EpisodeSpec,
     ModelResponse,

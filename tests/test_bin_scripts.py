@@ -15,7 +15,7 @@ SHELL_SCRIPTS = [
     "run_interleaved_task.sh",
     "run_interleaved_full.sh",
     "setup_frontends.sh",
-    "topobench-eval",
+    "mindtopo-eval",
 ]
 
 

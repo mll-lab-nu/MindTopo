@@ -1,11 +1,11 @@
-# TopoBench Evaluation Guide
+# MindTopo Evaluation Guide
 
 This directory contains the shared model registry, answer contracts, parsing,
 and scoring utilities used by the retained benchmark pipelines:
 
 | Pipeline | Tasks | Entry point |
 | --- | --- | --- |
-| Static reasoning | 8 VQA-style tasks | `bin/topobench-eval` |
+| Static reasoning | 8 VQA-style tasks | `bin/mindtopo-eval` |
 | Interactive planning | 5 gym-style tasks | `planning_eval_tasks/agent_runner.py` |
 | Interleaved evaluation | 5 image-generation-in-the-loop tasks | `interleaved_eval_tasks/agent_runner.py` |
 | Cached-video E2E | 3 planning tasks | `video_eval_tasks/agent_runner.py` |
@@ -28,7 +28,7 @@ live in `../interleaved_eval_tasks/configs/model/`.
 
 ## Static Reasoning
 
-Static tasks are exposed through `lmms-eval` under the `topobench` task group.
+Static tasks are exposed through `lmms-eval` under the `mindtopo` task group.
 The retained tasks are:
 
 - `continuity_2d_maze`
@@ -43,7 +43,7 @@ The retained tasks are:
 Example:
 
 ```bash
-./bin/topobench-eval \
+./bin/mindtopo-eval \
   --num-cpus 1 \
   --workers-per-key 1 \
   --max-shard-workers 1 \

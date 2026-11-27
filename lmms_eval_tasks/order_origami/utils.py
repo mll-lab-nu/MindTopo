@@ -8,7 +8,7 @@ from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from _common import make_hooks  # noqa: E402
-from topobench_eval.datasets import data_root  # noqa: E402
+from mindtopo_eval.datasets import data_root  # noqa: E402
 from PIL import Image, ImageDraw, ImageFont, UnidentifiedImageError  # noqa: E402
 try:
     from loguru import logger as eval_logger  # noqa: E402
@@ -146,13 +146,13 @@ def doc_to_visual(doc: dict[str, Any]) -> list[Image.Image]:
             labels.append(_step_label(str(path), idx))
         except (FileNotFoundError, UnidentifiedImageError, OSError) as e:
             eval_logger.warning(
-                f"[topobench] image load fail: {path} ({e}) - process_docs should have filtered this"
+                f"[mindtopo] image load fail: {path} ({e}) - process_docs should have filtered this"
             )
 
     packed = _pack_labeled_image_pairs(images, labels)
     if len(packed) > _NVIDIA_NIM_IMAGE_LIMIT:
         eval_logger.warning(
-            f"[topobench] order_origami packed {len(images)} images into {len(packed)} "
+            f"[mindtopo] order_origami packed {len(images)} images into {len(packed)} "
             f"images, still above NVIDIA NIM limit {_NVIDIA_NIM_IMAGE_LIMIT}"
         )
     return packed

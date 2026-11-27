@@ -1,6 +1,6 @@
 # Continuity 3D Maze
 
-`continuity_3d_maze` is a TopoBench reasoning task. It uses the ProcTHOR/AI2-THOR renderer to generate furnished houses as 3D mazes, samples labeled valid navigation points, renders five fixed views, and asks connectivity questions under the visible door states.
+`continuity_3d_maze` is a MindTopo reasoning task. It uses the ProcTHOR/AI2-THOR renderer to generate furnished houses as 3D mazes, samples labeled valid navigation points, renders five fixed views, and asks connectivity questions under the visible door states.
 
 ## Question Types
 

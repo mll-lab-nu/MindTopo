@@ -1,7 +1,7 @@
-"""Shared LMMS hooks for TopoBench static reasoning tasks.
+"""Shared LMMS hooks for MindTopo static reasoning tasks.
 
 This file is deliberately an adapter: contracts, parsing, normalization, and
-comparison are owned by ``topobench_eval`` so every evaluation entry point
+comparison are owned by ``mindtopo_eval`` so every evaluation entry point
 uses the same semantics.
 """
 from __future__ import annotations
@@ -20,13 +20,13 @@ except ImportError:  # Lightweight parser-only/test installations.
     eval_logger = logging.getLogger(__name__)
 
 
-TOPOBENCH_EVAL_ROOT = Path(__file__).resolve().parent.parent / "topobench_eval"
+TOPOBENCH_EVAL_ROOT = Path(__file__).resolve().parent.parent / "mindtopo_eval"
 if str(TOPOBENCH_EVAL_ROOT) not in sys.path:
     sys.path.insert(0, str(TOPOBENCH_EVAL_ROOT))
 
-from topobench_eval.answer_parser import parse_answer_result  # noqa: E402
-from topobench_eval.answer_scoring import answers_equal  # noqa: E402
-from topobench_eval.contract_resolver import resolve_answer_contract  # noqa: E402
+from mindtopo_eval.answer_parser import parse_answer_result  # noqa: E402
+from mindtopo_eval.answer_scoring import answers_equal  # noqa: E402
+from mindtopo_eval.contract_resolver import resolve_answer_contract  # noqa: E402
 
 
 def make_hooks(env_data_root: Path | str) -> dict[str, Callable[..., Any]]:
@@ -54,7 +54,7 @@ def make_hooks(env_data_root: Path | str) -> dict[str, Callable[..., Any]]:
                     return False
             return True
 
-        from topobench_eval.datasets import REPO_ROOT, validate_images
+        from mindtopo_eval.datasets import REPO_ROOT, validate_images
         if any(root.is_relative_to(REPO_ROOT / "data" / split) for split in ("core", "extended")):
             rows = list(dataset)
             expected_split = root.parent.name
@@ -71,7 +71,7 @@ def make_hooks(env_data_root: Path | str) -> dict[str, Callable[..., Any]]:
                 images.append(Image.open(resolve_path(str(raw_path))).convert("RGB"))
             except (FileNotFoundError, UnidentifiedImageError, OSError) as exc:
                 eval_logger.warning(
-                    f"[topobench] image load fail: {raw_path} ({exc}) - "
+                    f"[mindtopo] image load fail: {raw_path} ({exc}) - "
                     "process_docs should have filtered this row"
                 )
         return images
@@ -82,7 +82,7 @@ def make_hooks(env_data_root: Path | str) -> dict[str, Callable[..., Any]]:
     ) -> str:
         """Return one non-conflicting answer schema.
 
-        Generated TopoBench questions already include an ``[Answer Format]``
+        Generated MindTopo questions already include an ``[Answer Format]``
         section.  Legacy rows without one receive the shared contract's schema.
         """
         question = str(doc.get("question") or "").strip()
@@ -142,7 +142,7 @@ def make_hooks(env_data_root: Path | str) -> dict[str, Callable[..., Any]]:
             name: round(sum(values) / len(values) * 100, 2)
             for name, values in by_type.items()
         }
-        eval_logger.info(f"[topobench] per-type accuracy: {per_type}")
+        eval_logger.info(f"[mindtopo] per-type accuracy: {per_type}")
         return round(
             sum(value for values in by_type.values() for value in values)
             / sum(len(values) for values in by_type.values())

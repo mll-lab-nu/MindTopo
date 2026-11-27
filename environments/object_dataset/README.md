@@ -1,4 +1,4 @@
-# IKEA-Manual Dataset (TopoBench subset)
+# IKEA-Manual Dataset (MindTopo subset)
 
 This is the minimal subset of the upstream IKEA-Manual dataset that the
 `separation_objects` task actually uses. The upstream release additionally ships

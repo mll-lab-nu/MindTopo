@@ -14,8 +14,8 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "topobench_eval"))
-from topobench_eval.datasets import REASONING_TASKS
+sys.path.insert(0, str(ROOT / "mindtopo_eval"))
+from mindtopo_eval.datasets import REASONING_TASKS
 
 
 def sha(value: object) -> str:

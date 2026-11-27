@@ -1,10 +1,10 @@
-"""Convert lmms-eval per-sample shards into TopoBench's reasoning_model_answer.meta.jsonl.
+"""Convert lmms-eval per-sample shards into MindTopo's reasoning_model_answer.meta.jsonl.
 
 Schema reference: environments/meta_jsonl/README.md (reasoning_model_answer section).
 
 Source: each shard directory at lmms_eval_tasks/logs/<split>/<model>__<task>/shard_NN/
 contains an lmms-eval-produced `<datetime>_samples_<task>.jsonl` whose rows
-include a TopoBench metric payload (see lmms_eval_tasks/_common.py).
+include a MindTopo metric payload (see lmms_eval_tasks/_common.py).
 
 Sink:
 - lmms_eval_tasks/logs/<split>/<model>__<task>/model_answer.jsonl
@@ -22,11 +22,11 @@ from typing import Any, Dict, Iterable, List, Optional
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
-TOPBENCH_EVAL_ROOT = ROOT / "topobench_eval"
+TOPBENCH_EVAL_ROOT = ROOT / "mindtopo_eval"
 if str(TOPBENCH_EVAL_ROOT) not in sys.path:
     sys.path.insert(0, str(TOPBENCH_EVAL_ROOT))
 
-from topobench_eval.datasets import question_path, selected_split, provenance
+from mindtopo_eval.datasets import question_path, selected_split, provenance
 
 _HOOKS_CACHE: Dict[str, Any] = {}
 
@@ -449,7 +449,7 @@ def export_task(task_name: str, *, model_id: str, model_name: str) -> Dict[str, 
 
 
 def export_all(model_id: str, tasks: List[str]) -> None:
-    from topobench_eval.provider_registry import resolve_model_registry_entry  # type: ignore
+    from mindtopo_eval.provider_registry import resolve_model_registry_entry  # type: ignore
 
     resolved = resolve_model_registry_entry(model_id)
     model_name = resolved.upstream_model_name

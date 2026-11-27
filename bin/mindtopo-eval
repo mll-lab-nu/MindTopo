@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# One-line launcher for lmms-eval on topobench tasks.
-#   topobench-eval <model-id> <task> [extra lmms-eval args...]
-#   topobench-eval --dry-run --limit 1 <model-id> <task>  # preview one-sample canary
+# One-line launcher for lmms-eval on MindTopo tasks.
+#   mindtopo-eval <model-id> <task> [extra lmms-eval args...]
+#   mindtopo-eval --dry-run --limit 1 <model-id> <task>  # preview one-sample canary
 #
 # Prereq: `uv sync --extra openai --extra lmms-eval --extra dev` (installs
 # lmms-eval into .venv). Override the interpreter with PYTHON=/path/to/python.

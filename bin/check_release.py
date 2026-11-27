@@ -8,8 +8,8 @@ import json
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "topobench_eval"))
-from topobench_eval.datasets import TASKS, validate_dataset, read_rows
+sys.path.insert(0, str(ROOT / "mindtopo_eval"))
+from mindtopo_eval.datasets import TASKS, validate_dataset, read_rows
 
 
 def main():

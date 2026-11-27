@@ -1,6 +1,6 @@
 # Knots Untangle
 
-`knots_untangle` is a TopoBench interactive planning task in the `knots` category.
+`knots_untangle` is a MindTopo interactive planning task in the `knots` category.
 
 The current benchmark follows the shared interactive rollout format used by the standardized planning environments:
 
@@ -182,7 +182,7 @@ Each saved state image is labeled in-image as `State 0`, `State 1`, and so on.
 
 Unlike some earlier interactive benchmarks, this runner currently writes one combined prompt snapshot file per step (`step_XXXX_prompt.txt`) instead of separate `prompt_debug.txt` and `pure_prompt.txt` files.
 
-The interactive JSONL files follow the shared schema used across TopoBench tasks:
+The interactive JSONL files follow the shared schema used across MindTopo tasks:
 
 - `question.jsonl` stores episode initialization only
 - `model_answer.jsonl` stores the rollout `trajectory`

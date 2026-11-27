@@ -1,6 +1,6 @@
 # Cached Video E2E Evaluation
 
-This directory contains TopoBench's minimal video-generation-in-the-loop path.
+This directory contains MindTopo's minimal video-generation-in-the-loop path.
 It reuses the planning runner and action parsers, but wraps each episode in a
 two-phase protocol:
 

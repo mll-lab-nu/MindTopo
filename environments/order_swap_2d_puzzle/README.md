@@ -1,6 +1,6 @@
 # Order Swap 2D Puzzle
 
-`order_swap_2d_puzzle` is a TopoBench interactive planning task in the `order` category.
+`order_swap_2d_puzzle` is a MindTopo interactive planning task in the `order` category.
 
 The model sees two images at each turn:
 

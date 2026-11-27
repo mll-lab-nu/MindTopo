@@ -2,7 +2,7 @@
 
 Some current OpenAI reasoning/chat models reject the legacy Chat Completions
 ``max_tokens`` field and only accept ``max_completion_tokens``. lmms-eval still
-emits ``max_tokens`` for most models, so TopoBench installs this patch in shard
+emits ``max_tokens`` for most models, so MindTopo installs this patch in shard
 subprocesses via ``sitecustomize``.
 """
 
@@ -282,7 +282,7 @@ def _log_rate_limit_sleep(
 ) -> None:
     preview = str(error).replace("\n", " ")[:200]
     print(
-        "[topobench-openai-backoff] "
+        "[mindtopo-openai-backoff] "
         f"rate limited; sleeping {seconds:.1f}s before retry "
         f"{retry_index + 1}/{retries}. Last error: {preview}",
         file=sys.stderr,

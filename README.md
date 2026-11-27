@@ -1,6 +1,6 @@
-# TopoBench
+# MindTopo
 
-TopoBench is a benchmark for topology-aware visual reasoning. This minimal
+MindTopo is a benchmark for topology-aware visual reasoning. This minimal
 snapshot keeps four evaluation paths: static visual QA, interactive
 planning, interleaved image-generation-in-the-loop evaluation, and a minimal
 cached-video E2E evaluation across five topological categories: continuity,
@@ -68,9 +68,11 @@ configuration are preserved for faithful execution. Extended keeps its source
 difficulty labels.
 
 The two sets overlap: 2,250 Extended instances have the same model input as a
-Core instance, and `in_core` marks them in `extended_manifest.jsonl`. Report the
-sets separately rather than pooling their scores. IDs are unique within a set
-only, because 150 Origami IDs name different content in Core and Extended.
+Core instance, and `in_core` marks them in `extended_manifest.jsonl`. Table 2
+of the paper evaluates an 8,780-instance subset after excluding those 2,250
+inputs and five repeated Swap inputs. The `--split extended` option selects
+the full 11,035-instance archive. IDs are unique within a set only, because
+150 Origami IDs name different content in Core and Extended.
 
 Canonical JSONL files live under `data/<split>/<task>/question.jsonl`, and
 `data/manifests/` records the fixed paper lists, content hashes and counts.
@@ -85,7 +87,7 @@ exports without regenerating any scenes or labels:
 ```bash
 python bin/export_release.py \
   --paper-root /path/to/topobench_arxiv \
-  --benchmark-root /path/to/topobench
+  --benchmark-root /path/to/benchmark-source
 uv run python bin/check_release.py
 ```
 
@@ -150,7 +152,7 @@ uv run python video_eval_tasks/agent_runner.py \
 
 ## Models
 
-Model IDs are configured in `topobench_eval/providers.yaml` and
+Model IDs are configured in `mindtopo_eval/providers.yaml` and
 `planning_eval_tasks/configs/model/`.
 
 Local planning baselines:
@@ -195,7 +197,7 @@ logs/planning_eval/<split>/<model>/<task>/
 ```
 
 Static evaluation outputs are written by `lmms-eval` through
-`bin/topobench-eval`, normally under `lmms_eval_tasks/logs/<split>/`. Caches are separated by split too.
+`bin/mindtopo-eval`, normally under `lmms_eval_tasks/logs/<split>/`. Caches are separated by split too.
 
 Interleaved outputs include the planning-style `model_answer.jsonl`,
 `summary.json`, and imagined-image artifacts under
@@ -211,7 +213,7 @@ which writes its report to `<dir>/reports/video_metrics/` — see
 ## Repository Layout
 
 ```text
-topobench-minimal/
+MindTopo/
 ├── data/                   # core, extended, probing, manifests, and ignored assets
 ├── environments/           # task implementations and legacy generator exports
 ├── lmms_eval_tasks/        # static reasoning adapters for lmms-eval
@@ -220,13 +222,13 @@ topobench-minimal/
 ├── video_eval_tasks/       # one cached video per planning episode
 │   ├── video_metrics/      #   CV-based scoring of completed video runs
 │   └── cv_backend/         #   internal task-specific CV detectors
-├── topobench_eval/         # shared provider registry, parsing, and scoring
+├── mindtopo_eval/         # shared provider registry, parsing, and scoring
 ├── bin/                    # public command wrappers
 ├── pyproject.toml          # Python dependency source of truth
 └── uv.lock
 ```
 
-More detailed evaluation notes live in `topobench_eval/README.md`.
+More detailed evaluation notes live in `mindtopo_eval/README.md`.
 
 ## License
 
@@ -234,4 +236,4 @@ This project is released under the MIT License; see [LICENSE](LICENSE) for detai
 
 ## Citation
 
-Citation information will be added with the paper release.
+Please cite [MindTopo: Can Foundation Models Reason in Topological Space? (arXiv:2609.11900v2)](https://arxiv.org/abs/2609.11900v2).

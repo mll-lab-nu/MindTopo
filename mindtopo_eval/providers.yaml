@@ -1,4 +1,4 @@
-# TopoBench remote model registry.
+# MindTopo remote model registry.
 #
 # Keys under `models` are internal IDs used by Hydra/CLI/logging.
 # `upstream_model_name` is the actual model string sent to the provider API.

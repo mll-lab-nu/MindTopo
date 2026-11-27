@@ -1,4 +1,4 @@
-"""Resolve :class:`AnswerContract` objects from TopoBench JSONL rows.
+"""Resolve :class:`AnswerContract` objects from MindTopo JSONL rows.
 
 Dataset adapters should use this single resolver instead of re-implementing
 prompt-string heuristics. Explicit metadata wins; structured task metadata is
@@ -9,7 +9,7 @@ from __future__ import annotations
 import re
 from typing import Any, Iterable, Mapping
 
-from topobench_eval.answer_contract import (
+from mindtopo_eval.answer_contract import (
     AnswerContract,
     AnswerMode,
     choice_contract,

@@ -56,9 +56,9 @@ Thumbs.db
 logs/
 lmms_eval_tasks/cache/
 lmms_eval_tasks/logs/
-topobench_eval/*.egg-info/
-topobench_eval/build/
-topobench_eval/dist/
+mindtopo_eval/*.egg-info/
+mindtopo_eval/build/
+mindtopo_eval/dist/
 
 # Generated environment assets and benchmark outputs.
 # Keep the fixed question.jsonl under each environments/<task>/output/;

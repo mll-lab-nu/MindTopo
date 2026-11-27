@@ -23,7 +23,7 @@ def _load_task_yaml(path):
 
 
 def test_all_static_tasks_in_group_config():
-    group = yaml.safe_load((ROOT / "lmms_eval_tasks" / "topobench.yaml").read_text())
+    group = yaml.safe_load((ROOT / "lmms_eval_tasks" / "mindtopo.yaml").read_text())
     listed = set(group.get("task", []))
     assert set(STATIC_TASKS) <= listed, set(STATIC_TASKS) - listed
 

@@ -7,7 +7,7 @@ from pathlib import Path
 from omegaconf import DictConfig
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-TOPBENCH_EVAL_ROOT = REPO_ROOT / "topobench_eval"
+TOPBENCH_EVAL_ROOT = REPO_ROOT / "mindtopo_eval"
 
 if str(TOPBENCH_EVAL_ROOT) not in sys.path:
     sys.path.insert(0, str(TOPBENCH_EVAL_ROOT))

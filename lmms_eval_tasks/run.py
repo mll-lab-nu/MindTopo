@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""topobench-eval launcher with multi-key API pool.
+"""mindtopo-eval launcher with multi-key API pool.
 
 Usage:
     python lmms_eval_tasks/run.py [wrapper args] <model-id> <task1,task2,...> [extra lmms-eval args...]
@@ -47,14 +47,14 @@ try:
     from dotenv import load_dotenv
 except ModuleNotFoundError as exc:  # pragma: no cover - import guard
     print(
-        "[topobench-eval] error: missing dependency 'python-dotenv'.",
+        "[mindtopo-eval] error: missing dependency 'python-dotenv'.",
         file=sys.stderr,
     )
     raise SystemExit(2) from exc
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
-TOPBENCH_EVAL_ROOT = ROOT / "topobench_eval"
+TOPBENCH_EVAL_ROOT = ROOT / "mindtopo_eval"
 PLANNING_EVAL_ROOT = ROOT / "planning_eval_tasks"
 for _path in (TOPBENCH_EVAL_ROOT, PLANNING_EVAL_ROOT, HERE):
     _sp = str(_path)
@@ -62,13 +62,13 @@ for _path in (TOPBENCH_EVAL_ROOT, PLANNING_EVAL_ROOT, HERE):
         sys.path.insert(0, _sp)
 
 try:
-    from topobench_eval.provider_registry import (  # type: ignore
+    from mindtopo_eval.provider_registry import (  # type: ignore
         list_model_ids,
         resolve_model_registry_entry,
     )
 except ModuleNotFoundError as exc:  # pragma: no cover - import guard
     print(
-        "[topobench-eval] error: missing dependency 'PyYAML'.",
+        "[mindtopo-eval] error: missing dependency 'PyYAML'.",
         file=sys.stderr,
     )
     raise SystemExit(2) from exc
@@ -77,7 +77,7 @@ from key_pool import KeyPool, PoolExhausted, SharedKeyPool  # type: ignore  # no
 
 import _dataset_count  # type: ignore  # noqa: E402
 from _release_tasks import include_path as release_include_path
-from topobench_eval.datasets import selected_split, provenance, question_path, validate_dataset, require_same_dataset
+from mindtopo_eval.datasets import selected_split, provenance, question_path, validate_dataset, require_same_dataset
 import _meta_export  # type: ignore  # noqa: E402
 from _retryable_response import (  # type: ignore  # noqa: E402
     RETRYABLE_FAILURE_SQL_LIKE_PATTERNS,
@@ -88,7 +88,7 @@ OPENAI_COMPAT_BACKOFF_PROVIDERS = frozenset({"google", "nvidia_nim", "gemma_api"
 
 
 def _die(msg: str) -> NoReturn:
-    print(f"[topobench-eval] error: {msg}", file=sys.stderr)
+    print(f"[mindtopo-eval] error: {msg}", file=sys.stderr)
     sys.exit(2)
 
 
@@ -151,7 +151,7 @@ def _preflight_google_api(api_keys: List[str]) -> None:
     timeout = _provider_preflight_timeout()
     req = urllib.request.Request(
         f"https://generativelanguage.googleapis.com/v1beta/models?key={key}",
-        headers={"User-Agent": "topobench-eval/1.0"},
+        headers={"User-Agent": "mindtopo-eval/1.0"},
         method="GET",
     )
     try:
@@ -743,7 +743,7 @@ def _parse_args(argv: List[str]) -> Tuple[argparse.Namespace, List[str]]:
 
 
 _USAGE = (
-    "usage: topobench-eval [--split core|extended] [--check] [--dry-run] [--num-cpus N] [--workers-per-key N] "
+    "usage: mindtopo-eval [--split core|extended] [--check] [--dry-run] [--num-cpus N] [--workers-per-key N] "
     "[--max-shard-workers N] [--shard-size N] [--key-rpm R] [--limit N] "
     "[--max-api-failed-row-retries N] "
     "[--[no-]adaptive-concurrency] [--adaptive-max-concurrency N] [--[no-]export-meta] "
@@ -811,7 +811,7 @@ def main() -> None:
     request_min_interval = min_interval
     if resolved.provider in OPENAI_COMPAT_BACKOFF_PROVIDERS and request_min_interval <= 0:
         request_min_interval = 16.0
-    # Default to SharedKeyPool so concurrent `topobench-eval` invocations on the
+    # Default to SharedKeyPool so concurrent `mindtopo-eval` invocations on the
     # same provider coordinate through on-disk lease state — one wrapper holding
     # `slots_per_key` slots prevents another wrapper from oversubscribing the
     # same key. Set TOPOBENCH_DISABLE_SHARED_KEY_POOL=1 to fall back to the
@@ -840,7 +840,7 @@ def main() -> None:
         _die("at least one task name required")
 
     print(
-        f"[topobench-eval] provider={resolved.provider} keys={len(api_keys)} "
+        f"[mindtopo-eval] provider={resolved.provider} keys={len(api_keys)} "
         f"workers_per_key={args.workers_per_key} key_slots={total_key_slots} "
         f"shard_workers={shard_workers} max_shard_workers={args.max_shard_workers} "
         f"shard_size={args.shard_size or 'auto'} "
@@ -879,7 +879,7 @@ def main() -> None:
             else _split_shards(size, shard_workers)
         )
         if not ranges:
-            print(f"[topobench-eval] task={task} has 0 samples; skipping", file=sys.stderr)
+            print(f"[mindtopo-eval] task={task} has 0 samples; skipping", file=sys.stderr)
             continue
         for i, (offset, limit) in enumerate(ranges):
             output_dir = _shard_dir(model_id, task, i)
@@ -895,7 +895,7 @@ def main() -> None:
                 "label": f"{task}.s{i:02d}[{offset}:{offset+limit}]",
             })
         print(
-            f"[topobench-eval] task={task} size={size} shards={len(ranges)} "
+            f"[mindtopo-eval] task={task} size={size} shards={len(ranges)} "
             f"chunk={ranges[0][1] if ranges else 0}",
             file=sys.stderr,
         )
@@ -1008,14 +1008,14 @@ def main() -> None:
                         failed += 1
                         print(f"[shard-failed] {label} non-api failure; not retrying", file=sys.stderr, flush=True)
     except KeyboardInterrupt:
-        print("[topobench-eval] interrupted; terminating shard subprocesses...", file=sys.stderr)
+        print("[mindtopo-eval] interrupted; terminating shard subprocesses...", file=sys.stderr)
         _kill_live_procs()
         for fut in futures:
             fut.cancel()
         raise
 
     print(
-        f"[topobench-eval] shards: succeeded={succeeded} failed={failed} "
+        f"[mindtopo-eval] shards: succeeded={succeeded} failed={failed} "
         f"retries={retries} total={len(shards)}",
         file=sys.stderr,
     )
