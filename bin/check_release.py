@@ -16,6 +16,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--skip-images", action="store_true", help="Check manifests/JSONL only")
     args = parser.parse_args()
+    manifests = ROOT / "data/manifests"
+    release = json.loads((manifests / "release_counts.json").read_text())
     records = {}
     for split, count in (("core", 3900), ("extended", 11035)):
         rows = []
@@ -23,14 +25,23 @@ def main():
             task_rows = validate_dataset(task, split, images=not args.skip_images)
             if split == "core":
                 assert Counter(row["meta_info"].get("benchmark_level") for row in task_rows) == {"Easy": 150, "Hard": 150}, task
+                if task == "enclosure_hole_detection":
+                    groups = Counter((row["meta_info"]["benchmark_level"], row["meta_info"]["difficulty"])
+                                     for row in task_rows)
+                    assert groups == {("Easy", "easy"): 50, ("Easy", "medium"): 50,
+                                      ("Easy", "hard"): 50, ("Hard", "hard"): 150}, groups
             for row in task_rows:
                 assert all(not Path(image).is_absolute() for image in row.get("images", []))
             rows.extend((task, row) for row in task_rows)
         assert len(rows) == count
-        manifest = read_rows(ROOT / f"data/manifests/{split}_manifest.jsonl")
+        manifest_path = manifests / f"{split}_manifest.jsonl"
+        assert hashlib.sha256(manifest_path.read_bytes()).hexdigest() == release["paper_manifest_sha256"][split], manifest_path
+        manifest = read_rows(manifest_path)
         expected = {(entry["task"], entry["id"]): entry for entry in manifest}
         for task, row in rows:
             entry = expected[(task, row["id"])]
+            if split == "core":
+                assert row["meta_info"]["benchmark_level"] == entry["level"], (task, row["id"])
             assert row["meta_info"]["release_record_sha256"] == entry["record_sha256"]
             assert row["meta_info"]["release_input_sha256"] == entry["input_sha256"]
         records[split] = rows
@@ -62,7 +73,7 @@ def main():
             assert not path.is_symlink() and path.stat().st_size == info["bytes"], path
             assert hashlib.sha256(path.read_bytes()).hexdigest() == info["sha256"], path
         print(f"{len(assets)} image hashes verified")
-    print("PASS: fixed counts, flagged Core overlap, split-local IDs and unchanged balanced_105 lists")
+    print("PASS: release counts and hashes, Core levels, flagged overlap, split-local IDs and balanced_105 lists")
 
 
 if __name__ == "__main__":

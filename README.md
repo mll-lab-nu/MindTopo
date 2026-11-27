@@ -67,6 +67,10 @@ explicitly for the Extended Set. Core difficulty is stored as
 configuration are preserved for faithful execution. Extended keeps its source
 difficulty labels.
 
+For Hole, Core Easy contains 50 instances from each of the three original
+generator difficulty settings. Core Hard contains a separate set of 150
+instances from the third setting, as described in [arXiv v2](https://arxiv.org/abs/2609.11900v2).
+
 The two sets overlap: 2,250 Extended instances have the same model input as a
 Core instance, and `in_core` marks them in `extended_manifest.jsonl`. Table 2
 of the paper evaluates an 8,780-instance subset after excluding those 2,250
@@ -81,13 +85,17 @@ excluded from Git and must be restored with the matching asset package.
 Missing or corrupt images stop evaluation before provider initialization.
 They never silently reduce the benchmark sample count.
 
-The authors can reconstruct the local release from its recorded original
-exports without regenerating any scenes or labels:
+The authors can reconstruct the local release from the recorded exports
+without regenerating scenes or labels. Check out the paper repository at
+`paper_source_commit` in `data/manifests/release_counts.json` to recover the
+full Extended archive. Pass the recorded `core_manifest_source_commit` for
+the corrected Core labels:
 
 ```bash
 python bin/export_release.py \
   --paper-root /path/to/topobench_arxiv \
-  --benchmark-root /path/to/benchmark-source
+  --benchmark-root /path/to/benchmark-source \
+  --core-manifest-ref 8b477adc910515561ab145955abf7f415ddd9f4e
 uv run python bin/check_release.py
 ```
 
