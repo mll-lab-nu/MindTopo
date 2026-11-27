@@ -172,7 +172,7 @@ if [[ "$SHARD_SIZE" != "0" ]]; then
   SHARD_ARGS=(--shard-size "$SHARD_SIZE")
 fi
 
-exec ./bin/topobench-eval \
+exec ./bin/mindtopo-eval \
   --split "$DATA_SPLIT" \
   --num-cpus "$NUM_CPUS" \
   --workers-per-key "$WORKERS_PER_KEY" \

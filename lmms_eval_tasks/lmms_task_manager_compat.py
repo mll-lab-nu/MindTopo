@@ -1,4 +1,4 @@
-"""Runtime compatibility for lmms-eval task discovery in TopoBench runs."""
+"""Runtime compatibility for lmms-eval task discovery in MindTopo runs."""
 
 from __future__ import annotations
 

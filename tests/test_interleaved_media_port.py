@@ -19,7 +19,7 @@ def _png(width: int, height: int) -> bytes:
 
 
 def test_gpt_5_6_luna_provider_and_configs_are_wired():
-    providers = yaml.safe_load((ROOT / "topobench_eval" / "providers.yaml").read_text())
+    providers = yaml.safe_load((ROOT / "mindtopo_eval" / "providers.yaml").read_text())
     assert providers["models"]["gpt_5_6_luna"]["upstream_model_name"] == "gpt-5.6-luna"
 
     planning = yaml.safe_load(

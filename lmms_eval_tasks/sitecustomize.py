@@ -1,4 +1,4 @@
-"""TopoBench runtime hooks for Python subprocesses."""
+"""MindTopo runtime hooks for Python subprocesses."""
 
 from __future__ import annotations
 

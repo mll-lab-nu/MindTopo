@@ -1,6 +1,6 @@
 # Continuity Pipe
 
-`continuity_pipe` is a TopoBench interactive planning task in the `continuity` category.
+`continuity_pipe` is a MindTopo interactive planning task in the `continuity` category.
 
 The board is a square grid where some cells contain rotatable pipe pieces and some cells may be empty. One source pipe is green. Pipes connected to the source are green, while disconnected pipes are blue. At each turn, the agent chooses one non-empty pipe cell and that pipe rotates clockwise by 90 degrees. The task succeeds when every pipe is connected to the source.
 

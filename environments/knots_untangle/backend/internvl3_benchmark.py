@@ -53,11 +53,11 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 REPO_ROOT = PROJECT_ROOT.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
-TOPOBENCH_EVAL_ROOT = REPO_ROOT.parent / "topobench_eval"
+TOPOBENCH_EVAL_ROOT = REPO_ROOT.parent / "mindtopo_eval"
 if str(TOPOBENCH_EVAL_ROOT) not in sys.path:
     sys.path.insert(0, str(TOPOBENCH_EVAL_ROOT))
 
-from topobench_eval.metadata_utils import load_task_intro_line
+from mindtopo_eval.metadata_utils import load_task_intro_line
 
 DEFAULT_BENCHMARK_ROOT = PROJECT_ROOT / "output" / "benchmark_output"
 DEFAULT_OUTPUT_JSON = DEFAULT_BENCHMARK_ROOT / "internvl3_knots_untangle.json"

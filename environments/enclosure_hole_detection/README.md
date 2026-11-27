@@ -1,6 +1,6 @@
 # Enclosure Hole Detection
 
-`enclosure_hole_detection` is a TopoBench reasoning task. Each data item contains one top-down board image. The model answers how many visible openings pass through the board to open space.
+`enclosure_hole_detection` is a MindTopo reasoning task. Each data item contains one top-down board image. The model answers how many visible openings pass through the board to open space.
 
 Canonical answer format:
 

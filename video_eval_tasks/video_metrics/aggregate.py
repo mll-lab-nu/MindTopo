@@ -64,7 +64,7 @@ def aggregate_runs(runs: Sequence[Path], output_dir: Path) -> Dict[str, Any]:
         writer = csv.DictWriter(handle, fieldnames=fields)
         writer.writeheader()
         writer.writerows(records)
-    lines = ["# TopoBench Report", "", report["note"], ""]
+    lines = ["# MindTopo Report", "", report["note"], ""]
     for pipeline, rows in report["pipelines"].items():
         lines.extend([f"## {pipeline.title()}", "", "| Run | Samples | Primary metric | Value | Scorable rate |", "|---|---:|---|---:|---:|"])
         for row in rows:

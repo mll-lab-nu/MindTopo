@@ -16,6 +16,6 @@ Run the public evaluator instead of importing detector-private functions:
   --run-dir logs/video_eval/<task>/<run> --overlays failures
 ```
 
-The backend expects a complete TopoBench checkout. Oracle metadata is loaded by the
+The backend expects a complete MindTopo checkout. Oracle metadata is loaded by the
 public run loader from the configured source question JSONL, with the tracked
 `environments/<task>/output/question.jsonl` files as fallbacks.

@@ -1,4 +1,4 @@
-"""Public video-fidelity evaluator for TopoBench video runs."""
+"""Public video-fidelity evaluator for MindTopo video runs."""
 
 from .evaluator import evaluate_run
 

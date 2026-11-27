@@ -2,8 +2,8 @@
 from pathlib import Path
 import sys
 HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE.parent / "topobench_eval"))
-from topobench_eval.datasets import question_path, validate_dataset
+sys.path.insert(0, str(HERE.parent / "mindtopo_eval"))
+from mindtopo_eval.datasets import question_path, validate_dataset
 
 def _question_jsonl_path(task_name):
     return question_path(task_name)

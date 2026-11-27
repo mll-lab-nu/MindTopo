@@ -1,6 +1,6 @@
 # Separation One Stroke
 
-`separation_one_stroke` is a TopoBench interactive planning task in the `separation` category.
+`separation_one_stroke` is a MindTopo interactive planning task in the `separation` category.
 
 The model sees one current-state board image at each turn and must output the next move as JSON:
 

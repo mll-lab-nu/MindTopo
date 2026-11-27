@@ -1,6 +1,6 @@
 # Continuity 2D Maze
 
-`continuity_2d_maze` is a TopoBench L1 reasoning task. It renders a top-down 2D maze inside a square background, samples two labeled navigation points, and asks whether the two points are connected through the maze passages.
+`continuity_2d_maze` is a MindTopo L1 reasoning task. It renders a top-down 2D maze inside a square background, samples two labeled navigation points, and asks whether the two points are connected through the maze passages.
 
 ## Task
 
@@ -26,7 +26,7 @@ Connectivity is defined identically in both variants: there must exist a path in
 
 ## Output Schema
 
-Each generated sample follows the universal TopoBench reasoning format. Q1 example (`reachability_set`):
+Each generated sample follows the universal MindTopo reasoning format. Q1 example (`reachability_set`):
 
 ```json
 {

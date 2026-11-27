@@ -1,5 +1,5 @@
-group: topobench
-group_alias: TopoBench
+group: mindtopo
+group_alias: MindTopo
 task:
   - continuity_2d_maze
   - continuity_3d_maze

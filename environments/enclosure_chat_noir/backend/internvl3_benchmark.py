@@ -21,7 +21,7 @@ if str(PROJECT_ROOT) not in sys.path:
 REPO_ROOT = PROJECT_ROOT.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
-TOPOBENCH_EVAL_ROOT = REPO_ROOT.parent / "topobench_eval"
+TOPOBENCH_EVAL_ROOT = REPO_ROOT.parent / "mindtopo_eval"
 if str(TOPOBENCH_EVAL_ROOT) not in sys.path:
     sys.path.insert(0, str(TOPOBENCH_EVAL_ROOT))
 GYM_DIR = PROJECT_ROOT / "gym"
@@ -48,7 +48,7 @@ from env import (
     validate_board_radius,
 )
 from internvl3_config import load_local_config, resolve_config_value
-from topobench_eval.metadata_utils import load_task_intro_line
+from mindtopo_eval.metadata_utils import load_task_intro_line
 from tqdm.auto import tqdm
 from jsonl_export import (
     flatten_answer_value,

@@ -1,6 +1,6 @@
 """Small, dependency-free helpers for structured model outputs.
 
-This module deliberately knows nothing about TopoBench tasks.  It provides
+This module deliberately knows nothing about MindTopo tasks.  It provides
 the shared mechanics used by both reasoning-answer and planning-action
 parsers: strict integer coercion, code-fence removal, and ordered extraction
 of embedded JSON values.

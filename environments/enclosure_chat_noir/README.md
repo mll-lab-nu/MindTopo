@@ -1,6 +1,6 @@
 # Enclosure Chat Noir
 
-`enclosure_chat_noir` is an interactive TopoBench task. The model sees one board image per turn and must block one open non-cat hex cell before the cat reaches the boundary.
+`enclosure_chat_noir` is an interactive MindTopo task. The model sees one board image per turn and must block one open non-cat hex cell before the cat reaches the boundary.
 
 Canonical answer format:
 

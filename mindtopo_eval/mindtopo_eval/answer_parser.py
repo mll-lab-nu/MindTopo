@@ -1,4 +1,4 @@
-"""Contract-driven parsing of TopoBench reasoning answers.
+"""Contract-driven parsing of MindTopo reasoning answers.
 
 This module owns parsing orchestration only.  Answer schemas live in
 ``answer_contract`` and semantic normalization/equality live in
@@ -11,14 +11,14 @@ from dataclasses import dataclass
 import re
 from typing import Any
 
-from topobench_eval.answer_contract import AnswerContract, AnswerMode, contract_from_spec
-from topobench_eval.answer_scoring import (
+from mindtopo_eval.answer_contract import AnswerContract, AnswerMode, contract_from_spec
+from mindtopo_eval.answer_scoring import (
     canonicalize_id_list,
     canonicalize_name_list,
     exact_json_format,
     normalize_answer_value,
 )
-from topobench_eval.structured_output import answer_objects
+from mindtopo_eval.structured_output import answer_objects
 
 
 UNCLEAR = "unclear"

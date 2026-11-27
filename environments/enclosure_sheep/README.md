@@ -1,6 +1,6 @@
 # Enclosure Sheep
 
-`enclosure_sheep` is a TopoBench reasoning task in the `enclosure` category.
+`enclosure_sheep` is a MindTopo reasoning task in the `enclosure` category.
 
 The standardized benchmark reads pre-rendered images from `output/` by default and writes `question.jsonl` plus `model_answer.jsonl` in the shared reasoning schema under `output/`.
 
@@ -149,7 +149,7 @@ The standardized benchmark writes:
 
 This runner evaluates existing images in place. The JSONL `images` fields therefore point back to files in the selected `--data-dir` rather than copying images into the benchmark output directory.
 
-The JSONL files follow the shared reasoning schema used across TopoBench tasks:
+The JSONL files follow the shared reasoning schema used across MindTopo tasks:
 
 - `question.jsonl` stores `id`, `category`, `type`, `meta_info`, `question`, `images`, and `gt_answer` per sample
 - `model_answer.jsonl` stores `id`, `category`, `type`, `meta_info`, `question`, `answer`, `correct`, `invalid_response`, `api_error`, and `raw_response_text` per sample

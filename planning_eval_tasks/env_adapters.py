@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Optional, Sequence
 from omegaconf import DictConfig
 
 from evaluator_utils import REPO_ROOT, resolve_repo_path
-from topobench_eval.structured_output import strict_int
+from mindtopo_eval.structured_output import strict_int
 from unified_types import (
     EpisodeRunResult,
     EpisodeSpec,
@@ -111,7 +111,7 @@ def _cfg_optional_int(value: Any) -> Optional[int]:
 
 
 def _source_question_jsonl_relpath(env_name: str) -> str:
-    from topobench_eval.datasets import question_path
+    from mindtopo_eval.datasets import question_path
     return str(question_path(env_name).relative_to(REPO_ROOT))
 
 

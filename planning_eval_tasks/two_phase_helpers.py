@@ -24,7 +24,7 @@ from model_adapter import (
     load_keys_from_env,
     resolve_slots_per_key,
 )
-from topobench_eval.provider_registry import resolve_model_registry_entry
+from mindtopo_eval.provider_registry import resolve_model_registry_entry
 from unified_types import Message, SavedImage
 
 

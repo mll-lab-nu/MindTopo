@@ -10,8 +10,8 @@ import tempfile
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
-sys.path.insert(0, str(ROOT / "topobench_eval"))
-from topobench_eval.datasets import REASONING_TASKS, question_path, selected_split
+sys.path.insert(0, str(ROOT / "mindtopo_eval"))
+from mindtopo_eval.datasets import REASONING_TASKS, question_path, selected_split
 
 
 def _write_atomic(path: Path, text: str) -> None:
@@ -45,5 +45,5 @@ def _include_path(split: str) -> Path:
             "_spec.loader.exec_module(_module)\n"
             "globals().update({name: value for name, value in vars(_module).items() if not name.startswith('__')})\n"
         )
-    _write_atomic(output / "topobench.yaml", (HERE / "topobench.yaml").read_text())
+    _write_atomic(output / "mindtopo.yaml", (HERE / "mindtopo.yaml").read_text())
     return output

@@ -8,7 +8,7 @@ import pytest
 from omegaconf import OmegaConf
 
 from conftest import ROOT
-from topobench_eval.datasets import (
+from mindtopo_eval.datasets import (
     TASKS, configure_run, data_root, question_path, read_rows,
     selected_split, validate_dataset, validate_images,
     require_same_dataset,
@@ -143,7 +143,7 @@ def test_expert_prompts_follow_saved_rules_and_restore_the_base_prompt():
 def test_planning_adapters_load_both_partitions_in_one_process():
     from hydra import compose, initialize_config_dir
     from env_adapters import build_adapter
-    from topobench_eval.datasets import PLANNING_TASKS
+    from mindtopo_eval.datasets import PLANNING_TASKS
     with initialize_config_dir(version_base=None, config_dir=str(ROOT / "planning_eval_tasks/configs")):
         for split in ("core", "extended"):
             for task in PLANNING_TASKS:

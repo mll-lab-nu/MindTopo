@@ -1,6 +1,6 @@
 # Interleaved Evaluation
 
-This directory contains TopoBench's image-generation-in-the-loop evaluation
+This directory contains MindTopo's image-generation-in-the-loop evaluation
 path. It reuses the planning runner and static answer parser, but wraps each
 model call in a two-phase protocol:
 
@@ -21,7 +21,7 @@ This minimal snapshot keeps five wired interleaved tasks:
 
 The planning tasks reuse `planning_eval_tasks/env_adapters.py`,
 `RolloutRunner`, Playwright screenshots, and the task frontends. The static QA
-tasks reuse `topobench_eval.answer_parser` for answer normalization and scoring.
+tasks reuse `mindtopo_eval.answer_parser` for answer normalization and scoring.
 
 ## Layout
 

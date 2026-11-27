@@ -20,13 +20,13 @@ _THIS_DIR = Path(__file__).resolve().parent
 _PLANNING_DIR = _THIS_DIR.parent / "planning_eval_tasks"
 if str(_PLANNING_DIR) not in sys.path:
     sys.path.append(str(_PLANNING_DIR))
-_TOPOBENCH_EVAL_DIR = _THIS_DIR.parent / "topobench_eval"
+_TOPOBENCH_EVAL_DIR = _THIS_DIR.parent / "mindtopo_eval"
 if str(_TOPOBENCH_EVAL_DIR) not in sys.path:
     sys.path.append(str(_TOPOBENCH_EVAL_DIR))
 
 from evaluator_utils import resolve_repo_path  # noqa: E402
-from topobench_eval.answer_contract import AnswerContract, contract_from_spec  # noqa: E402
-from topobench_eval.contract_resolver import name_list_keys, resolve_answer_contract  # noqa: E402
+from mindtopo_eval.answer_contract import AnswerContract, contract_from_spec  # noqa: E402
+from mindtopo_eval.contract_resolver import name_list_keys, resolve_answer_contract  # noqa: E402
 
 
 @dataclass

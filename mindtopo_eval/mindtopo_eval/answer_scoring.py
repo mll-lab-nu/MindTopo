@@ -6,8 +6,8 @@ import json
 import re
 from typing import Any, Iterable
 
-from topobench_eval.answer_contract import AnswerContract, AnswerMode
-from topobench_eval.structured_output import strict_int
+from mindtopo_eval.answer_contract import AnswerContract, AnswerMode
+from mindtopo_eval.structured_output import strict_int
 
 
 _NONE_RE = re.compile(

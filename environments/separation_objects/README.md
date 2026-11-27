@@ -1,6 +1,6 @@
 # Separation Objects
 
-`separation_objects` is a TopoBench reasoning task. Each data item contains one complete-object image plus five option images. The complete-object image combines front upper right and back upper left 45-degree oblique views. The model chooses which option is the correct decomposition of the complete object.
+`separation_objects` is a MindTopo reasoning task. Each data item contains one complete-object image plus five option images. The complete-object image combines front upper right and back upper left 45-degree oblique views. The model chooses which option is the correct decomposition of the complete object.
 
 Canonical answer format:
 

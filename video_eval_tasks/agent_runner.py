@@ -26,11 +26,11 @@ def main(cfg: DictConfig) -> None:
     load_dotenv(ROOT / ".env", override=False)
     ensure_common_tool_paths()
     ensure_runtime_settings()
-    from topobench_eval.datasets import configure_run
+    from mindtopo_eval.datasets import configure_run
     configure_run(cfg, probing=True)
     if bool(getattr(cfg.run, "check_only", False)):
         import json
-        from topobench_eval.datasets import REPO_ROOT, read_rows
+        from mindtopo_eval.datasets import REPO_ROOT, read_rows
         path = Path(str(cfg.env.source_question_jsonl))
         path = path if path.is_absolute() else REPO_ROOT / path
         rows = read_rows(path)
