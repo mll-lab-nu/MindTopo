@@ -27,12 +27,26 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--paper-root", type=Path, required=True)
     parser.add_argument("--benchmark-root", type=Path, required=True)
+    parser.add_argument("--core-manifest-ref", help="Read the Core manifest from this paper Git commit")
     args = parser.parse_args()
     paper, source = args.paper_root.resolve(), args.benchmark_root.resolve()
     manifests = paper / "arxiv/data"
     # paper_source_commit below must name a commit that contains these manifests.
     if subprocess.check_output(["git", "status", "--porcelain", "--", "arxiv/data"], cwd=paper, text=True).strip():
         raise SystemExit("Commit arxiv/data in the paper repository before exporting")
+    manifest_bytes = {
+        split: (manifests / f"{split}_manifest.jsonl").read_bytes()
+        for split in ("core", "extended")
+    }
+    core_manifest_source = None
+    if args.core_manifest_ref:
+        core_manifest_source = subprocess.check_output(
+            ["git", "rev-parse", "--verify", "--end-of-options", f"{args.core_manifest_ref}^{{commit}}"],
+            cwd=paper, text=True,
+        ).strip()
+        manifest_bytes["core"] = subprocess.check_output(
+            ["git", "show", f"{core_manifest_source}:arxiv/data/core_manifest.jsonl"], cwd=paper,
+        )
     target = ROOT / "data/manifests"
     target.mkdir(parents=True, exist_ok=True)
     source_cache: dict[str, tuple[Path, list[str]]] = {}
@@ -88,9 +102,8 @@ def main() -> None:
                 meta["config"] = os.path.relpath(metadata, output)
         return row
 
-    for split in ("core", "extended"):
-        manifest = manifests / f"{split}_manifest.jsonl"
-        entries = [json.loads(line) for line in manifest.read_text().splitlines() if line.strip()]
+    for split, content in manifest_bytes.items():
+        entries = [json.loads(line) for line in content.splitlines() if line.strip()]
         grouped: dict[str, list[dict]] = {}
         for entry in entries:
             base, lines = read_source(entry["source"])
@@ -110,7 +123,7 @@ def main() -> None:
             output = ROOT / "data" / split / task
             output.mkdir(parents=True, exist_ok=True)
             (output / "question.jsonl").write_text("".join(json.dumps(row, ensure_ascii=False) + "\n" for row in rows))
-        shutil.copy2(manifest, target / manifest.name)
+        (target / f"{split}_manifest.jsonl").write_bytes(content)
         print(f"Exported {split}: {len(entries)} records", flush=True)
 
     # Preserve the public snapshot's existing probing question text, IDs and
@@ -134,8 +147,11 @@ def main() -> None:
         (output / "question.jsonl").write_text("".join(json.dumps(row, ensure_ascii=False) + "\n" for row in rows))
 
     release = json.loads((manifests / "release_counts.json").read_text())
-    release["paper_manifest_sha256"] = {split: hashlib.sha256((manifests / f"{split}_manifest.jsonl").read_bytes()).hexdigest() for split in ("core", "extended")}
+    release["paper_manifest_sha256"] = {split: hashlib.sha256(content).hexdigest()
+                                       for split, content in manifest_bytes.items()}
     release["paper_source_commit"] = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=paper, text=True).strip()
+    if core_manifest_source is not None:
+        release["core_manifest_source_commit"] = core_manifest_source
     (target / "release_counts.json").write_text(json.dumps(release, indent=2) + "\n")
     (target / "assets.json").write_text(json.dumps(assets, indent=2, sort_keys=True) + "\n")
     print(f"Materialized {len(assets)} content-addressed images; no absolute symlinks", flush=True)

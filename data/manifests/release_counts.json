@@ -193,8 +193,9 @@
   "overlap_scope": "An Extended instance is shared with Core when its model input is identical. Reasoning uses normalized full question and ordered image-file SHA256s. Planning uses saved initial scene, reset state and action budget, ignoring seed and difficulty tags.",
   "core_duplicate_input_groups": 0,
   "paper_manifest_sha256": {
-    "core": "339d296a7e4b8eee743488662ae9cac85a04120ac593425db619f37d3813011f",
+    "core": "6db1e7283a9d8dac671e609f672c23054c7eb81d390016809615e3f156acfed9",
     "extended": "490180818deca36fcfda75c523a37978f0f51bd44a6b365467d09eadb8eaa6bc"
   },
-  "paper_source_commit": "68c601f51c8777513adc518e0ecb68a35bbde6c2"
+  "paper_source_commit": "68c601f51c8777513adc518e0ecb68a35bbde6c2",
+  "core_manifest_source_commit": "8b477adc910515561ab145955abf7f415ddd9f4e"
 }
